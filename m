@@ -1,63 +1,63 @@
-Received: from mail-pj1-f52.google.com (mail-pj1-f52.google.com [209.85.216.52])
+Received: from mail-pl1-f176.google.com (mail-pl1-f176.google.com [209.85.214.176])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 17A3948E0C7
-	for <target-devel@vger.kernel.org>; Sun, 18 Oct 2026 12:14:05 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.52
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3D33B46EF98
+	for <target-devel@vger.kernel.org>; Sun, 18 Oct 2026 14:05:58 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.176
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1792325647; cv=none; b=ODXQQgDfv9Ky1K58bdHgxy15d0HkZ4rsby5WYNbLBZ5NjgFo/Q+dJXE4ApSm6ILxJtd3n4mFn9dau4m+MTg1jJza5AWxQhIZV76sBYVPi3KGud181zbGDFU4spGeALB/mCnQ9tNsiIeTauS4lmPpXm+KpLd7DCmh6jbYXh2dgUM=
+	t=1792332359; cv=none; b=nHHhb7bmtiYxOmw3LgAPN7KNZZ5xiaFR8UigP56vVGPXrylzy4J5JxfceqM3dGzMXfFsX1goMKdJlrOjezua3eXb0KGF4Ge1eHn1qNIB9wN3vS2G6BdC99Gu6izyuzpPgnhSZ3gnZL+HwXKhsA22JlynS6YFHWDhqq0O7R9DG9Q=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1792325647; c=relaxed/simple;
-	bh=0ZUoTOrw2sVIIJsHysZ9LrpXCPGOLNSWoimGoqE2U2E=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=jxIOIiyMZuu/3sP9p17pXJGfs6nBv49lt/qkxc5ZIzyyBGjOmvxOv+oytq95+zH6pLx2EtrCxk0X/GzMv9iQCTJKpu6tjeziFvTNwe436hjNQdWQHwUg9XVZ90ly+SUaQNy3pxq2RbpuDlKLrXSLNGSJt51M719Wwa2sIX4qKhk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=hpinP1vp; arc=none smtp.client-ip=209.85.216.52
+	s=arc-20240116; t=1792332359; c=relaxed/simple;
+	bh=f5FX7hFfCqVhSVN2m/Vw4FFE3wckOMml10ljkFzuQ1o=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=CHbz9tffJ0f88G/apgu2ShcTV24rEV8uzU0WSzf8YwEOopoZFSYvHcgthud5In8IUmRXkmzLDSowKpZ1gyAcUMJvRTcHnCqs+qnMLYIUre7aWY9PAlxJ4zAqxtqZASrHH+1hT11de/fTvothS+DygkuEyj/lDRPZI7oLY8ohHyI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=mYftQRc1; arc=none smtp.client-ip=209.85.214.176
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="hpinP1vp"
-Received: by mail-pj1-f52.google.com with SMTP id 98e67ed59e1d1-3ab9268d90eso735086a91.3
-        for <target-devel@vger.kernel.org>; Sun, 18 Oct 2026 05:14:05 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="mYftQRc1"
+Received: by mail-pl1-f176.google.com with SMTP id d9443c01a7336-2e8246b13cbso10093045ad.2
+        for <target-devel@vger.kernel.org>; Sun, 18 Oct 2026 07:05:58 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1792325645; x=1792930445; darn=vger.kernel.org;
+        d=gmail.com; s=20251104; t=1792332357; x=1792937157; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=rTNuU8y07OWc3gpsCtxs9hMoDORTFAVO+j50HlgZwnM=;
-        b=hpinP1vpFyJpDdPHICXGzIQIRyImrKMVDhw1wgqsbp/SHHH8D77WA05IczWynz+ZQU
-         cE4hrlX3BUbq7wjQ2t4DM6bRSyXh/0EXGO5qZlEud8ZvnbFJGqykMI+TPhQQv0kS7MfQ
-         xFQoKTXBNyOirmkztWZlwE/YDM+shn63+be1LPBgy/2eS3R3X2gnx2amqEzRF2LNeQkE
-         HZseIBZNuNsA747O7X3E7lW71cbVvbIh/lGQg3N38dnYaB8kNGwKHCz7Ajg0WrVWuWx2
-         q2YRb2LbIMcOHjEUexc9g5nVeahpZZ7W33eKZE8hXJROfPktp6fSIBjvD7hMOqBXHKSr
-         Cxew==
+        bh=wpUr77bZYWUJxHRGn89lY5QrpxEuBo3N7WkSWCTOfBs=;
+        b=mYftQRc1+OAlsyFlYwS80Hmtf9YBEfD3qfmAUO8nJgJMQPowoXZ2ydJYelgiR+3Yey
+         yXcna3f7YfMBceUzWlWXOFbwgIOmv5h0y8U4tdjwVBV7J0IhvvDdnjPI6PNY3yWknkUb
+         Bb4Ecs1ialVGiX00bwnfr+/g3I/eTs/UBm5oxmtsGccDpG4S9cZlxHTSJjg3zCbMiwjS
+         GXVkXJfO64JCV0IfxMI0qAvz0GFoaDevYtu6dH0XQFnuMUAV1XGw4SYROCdl2z/x/yAM
+         ldpr9sXVJrZixlxglHvUng2bX+nnntrpVaj5gxRnMuSEouFiOcKAfBv+af+NhU1YPqU3
+         H7ng==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1792325645; x=1792930445;
+        d=1e100.net; s=20260707; t=1792332357; x=1792937157;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=rTNuU8y07OWc3gpsCtxs9hMoDORTFAVO+j50HlgZwnM=;
-        b=HVmm6T60mGYuBBJwJgX9TZE9bIeDGtMYoQPa7n7a0u9+AhAMcoR7NTsjW4purM4KoR
-         7gpViKie7AqCGJSQly2DW5O/Z/Man/zyKMgdHL5dbn6YjcoHdqbGWaQyzExwamWXc6qO
-         cLf746yOss1Wa+DyoMgLl2NKN+BqvgYimqVTiin0mUyZLYYgYIpwdTFH3EInrP6Frt7T
-         25d2WC2r5sseKYef0p7sM/+9kARl3Ma7bdNj4hKAnLGzAriCji7xgr2lSyM1/7A6PQ2i
-         nfink2pkPk1wTkSzG5nI8/BPneVcxVxGz7KARUDPVWiuG4GWoUYvb1e04TWU6Eyj+s6Z
-         2lsw==
-X-Forwarded-Encrypted: i=1; AKwUvBxBIkFuGh5or3mJbYrS7RTYg1cfbg1ueZziSOeREGEOXOonMcB5JNiyVBa13DC2tBO5F+T73NUEyqAEQAE=@vger.kernel.org
-X-Gm-Message-State: AFq9FYItDcmuKipnsRmik1QCK5LFb0zKSfVRwYWuoiRxNcQFJCNTL08k
-	m6TU1mbFvaYh2Na/KioPXRH3aV/EAHULOq6ul1pdfGzyMT0ml3/NK/F6
-X-Gm-Gg: AYBFou2ZRGwOw4/qxHkHPCfDqDOhVyyW8zjp9bu/jpalkkoPPj8EiLKE93AfOXvJJNt
-	VWg5LbfCVeetEqRw80Qa15DiiEdP+FuQ2TF70SZM8re4+1fOwH485qCHLtmD872V5YfZJyE/ryj
-	eqHYsH556ppp/Oj/r5PZ8zlFSyZlq5DuoqJw6RkSAiQXI/OhvzSGJOy/wOKs1YwCB9P/+whwIYE
-	TBFMQaEFrd1v2SExPX+pevyJ3Ag+wIyo5ctdFLwu02ietlcYQTa86vhALhBj0Ii+zZTriKgG7r1
-	P/48clTzI5G3+U8lovSN4ZEF2ryx+Wy47yOCmgruIAcQhh8SxBj+FcJkM1J/cdGXmBtJWJd6YNj
-	5uwEndFzeklOv9qEXVomMOqDY/mzK8+TyUdTxpvqfI7qZkkkloCbaShA3GSv4jq36EJlFYLrkjd
-	b5ewQ8r1GNbXUyQLhxLE5bwwjjCkkqiSh/UUHdrmGf1Y0sTmNDJwXTS8xU4N/W6YaCrZdnlyI7U
-	9I7vIYFibVS/eR12u/FVcTprV+MCc0DPYiuVGQvkgbq8n2qx7RvIZ7utQsHo12aA6dv4c1oMaH4
-	GGP5ODEZJfyLCvavPKZI+4YmpAbp11ENnZBktU+jspLmEkQL
-X-Received: by 2002:a17:90b:2c90:b0:3ac:a521:953 with SMTP id 98e67ed59e1d1-3acef0ff0cdmr4044977a91.46.1792325645279;
-        Sun, 18 Oct 2026 05:14:05 -0700 (PDT)
+        bh=wpUr77bZYWUJxHRGn89lY5QrpxEuBo3N7WkSWCTOfBs=;
+        b=wsG/72PJdEtpYDNr6tN35rTfTO2fVnYSmNwwDx09MZixrwXw69aFAFWsM1D4d8+hye
+         FbpudqtNLNA5nUTvFptbxWPSRs86TFzZmWldSmrjBDgUWlUVXoi90lfgwMD2DdqgEx/B
+         UUW3WobJ0lpNqvo7si/puPQw4ST+kI0IXMskg2wupHzgAaD7r/o+sNTMmTgoff6FZvys
+         NhyOH/m8jA+UtKHJ4tJEUT/1wDgDYaAhWcbAuDI8weCmpCaMwTUMAtyqJAlbYPcUgX0p
+         RIcIV4XBJveBH87wBtB7lBn2gQmX37FTqitvalC8RkXdsxuGD+cR/tXe3k/yhJSfTMdU
+         WC2w==
+X-Forwarded-Encrypted: i=1; AKwUvBzSswSbrYieI4Ot/7gJ6TbOOawD7SqR1Z/XDORjYbBLHjXY361Ksw5CCNHDMCu30tLpXmwApFseLl9ZFHg=@vger.kernel.org
+X-Gm-Message-State: AFq9FYKjg5NrAkOh8xNzn2vSUDE2xIEU+KYLhP6K7kNXO0WD9gRvP6Tj
+	0YHss+zEIX4/5KtbGLd4pos9j+yUHlP1nuXo8lxVdrkxtLPayIHHWegK
+X-Gm-Gg: AYBFou1lsa95/Zq71sllgyXKZl+vje2HAK1GYc0QTuTKFGW4Tvhj6/XIhI92ecYeE4c
+	CMiY6ti9w7U3mZS0bAeZRCsMTql8exTEgUAxZdXN3Ez8aCppd0C8Nx6Pkak+EJPXCjlGzETlJX2
+	rCcvsuZHlUdmRK2yx9ArxTr/U9FLRtDRynDDe82medflqugYPT0MXa2u5vPUUX+IIjEbgfj/kRz
+	V1aJOeJn1zLPqWGRBf6HxEfMij+DzSrTat9wFyghLXVZaoeBb0n20oyr+6CCxM/L5b8UZwRRGK3
+	bPCU8/ChQgn0ru+c1JxJKA7h1cHB8VrfS0sGaNzRm+QRUTzFR0bVOwnb/RJB1Kjh3AmPOXL78Y8
+	NdwAxe5PqqUBG3AbfeYUjtZv4aBzEA2Z8ASAisjI+H+KC41BRToI5FC9iqRRq0vlYnQD86NafaH
+	LEESgtH1G3vDdFacEW7GeWbBTmmcStSGuJxGMU/KqWki8GIQjFryrfOl3Kjn0nD/SZzUIDZyR7f
+	mY4gLYNGJvjc4bIG0VyeUKnpuofgi1yGZPZls9hgv0E9G/cV3D5iWTuO2rHrkmXNjFqU7qPJFol
+	TCIeWqx/Jn6UCm8zIdL2jmcMd/s8GyuIN36W76bdlhOVQuUn
+X-Received: by 2002:a17:90b:2e46:b0:3ac:9e76:aa9e with SMTP id 98e67ed59e1d1-3acee276f13mr4625395a91.3.1792332357473;
+        Sun, 18 Oct 2026 07:05:57 -0700 (PDT)
 Received: from EAIT-H54D9Q2FJQ.eait.uq.edu.au ([130.102.10.249])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3acc48e8646sm11116604a91.10.2026.10.18.05.14.02
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3acc980a548sm5988739a91.0.2026.10.18.07.05.53
         (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
-        Sun, 18 Oct 2026 05:14:04 -0700 (PDT)
+        Sun, 18 Oct 2026 07:05:56 -0700 (PDT)
 From: Yu Zhang <yuz08559@gmail.com>
 To: Mike Christie <michael.christie@oracle.com>
 Cc: Dmitry Bogdanov <d.bogdanov@yadro.com>,
@@ -65,10 +65,11 @@ Cc: Dmitry Bogdanov <d.bogdanov@yadro.com>,
 	target-devel@vger.kernel.org,
 	linux-scsi@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
-	Yu Zhang <yuz08559@gmail.com>
-Subject: [BUG] scsi: target: PR OUT CLEAR registration-list teardown races concurrent PR OUT -> UAF / double list_del
-Date: Sun, 18 Oct 2026 22:13:57 +1000
-Message-ID: <20261018121357.63980-1-yuz08559@gmail.com>
+	Yu Zhang <yuz08559@gmail.com>,
+	stable@vger.kernel.org
+Subject: [PATCH] scsi: target: fix se_lun use-after-free in SET TARGET PORT GROUPS secondary path
+Date: Mon, 19 Oct 2026 00:05:47 +1000
+Message-ID: <20261018140547.67428-1-yuz08559@gmail.com>
 X-Mailer: git-send-email 2.55.0
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
@@ -78,71 +79,81 @@ List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-core_scsi3_emulate_pro_clear() tears down the global registration_list holding
-only pr_tmpl->registration_lock, and __core_scsi3_free_registration() drops that
-lock across its pr_res_holders busy-wait:
+target_emulate_set_target_port_groups() handles a SECONDARY target-port
+asymmetric access state (OFFLINE) by walking dev->dev_sep_list under
+dev->se_port_lock to find the se_lun whose relative target port identifier
+matches the request, then dropping se_port_lock and calling
+core_alua_set_tg_pt_secondary_state() on that lun:
 
-	spin_lock(&pr_tmpl->registration_lock);
-	list_for_each_entry_safe(pr_reg, pr_reg_tmp,
-			&pr_tmpl->registration_list, pr_reg_list) {
-		...
-		__core_scsi3_free_registration(dev, pr_reg, NULL, calling_it_nexus);
-		...
+	list_for_each_entry(lun, &dev->dev_sep_list, lun_dev_link) {
+		if (lun->lun_tpg->tpg_rtpi != rtpi)
+			continue;
+		// XXX: racy unlock
+		spin_unlock(&dev->se_port_lock);
+		if (!core_alua_set_tg_pt_secondary_state(lun, 1, 1))
+			found = true;
+		spin_lock(&dev->se_port_lock);
+		break;
 	}
-	spin_unlock(&pr_tmpl->registration_lock);
 
-__core_scsi3_free_registration():
+core_alua_set_tg_pt_secondary_state() sleeps while using the lun --
+msleep(trans_delay_msecs) and, when alua_write_metadata is set, a
+kernel_write() of the ALUA metadata. The matched lun is a different target
+port than the one the command arrived on, so it is not pinned by the
+command's own lun_ref. A concurrent core_tpg_remove_lun() of that port
+(configfs LUN removal) drains its lun_ref, removes it from dev_sep_list and
+frees the se_lun via call_rcu(); since the command holds no reference and
+is not in an RCU read-side section across the sleep, the grace period can
+elapse and the lun is freed under it:
 
-	if (!list_empty(&pr_reg->pr_reg_list))
-		list_del(&pr_reg->pr_reg_list);
-	...
-	spin_unlock(&pr_tmpl->registration_lock);
-	while (atomic_read(&pr_reg->pr_res_holders) != 0)
-		cpu_relax();
-	...
-	spin_lock(&pr_tmpl->registration_lock);
-	...
-	kmem_cache_free(t10_pr_reg_cache, pr_reg);
+	BUG: KASAN: slab-use-after-free in core_alua_set_tg_pt_secondary_state
+	 core_alua_set_tg_pt_secondary_state
+	 target_emulate_set_target_port_groups
+	 __target_execute_cmd
+	Allocated by task 3486:
+	 configfs_mkdir
+	Freed by task 0:
+	 __call_rcu_common
 
-Unlike PR OUT PREEMPT (core_scsi3_pro_preempt), which holds
-dev->dev_reservation_lock across its entire registration_list free loop, CLEAR
-drops dev_reservation_lock before the loop. The same registration_lock-only
-teardown appears in core_scsi3_free_pr_reg_from_nacl() and the PR OUT REGISTER
-unregister path. PR OUT has no device-level serialization, so two I_T nexuses
-can run teardown loops concurrently.
+Take the matched lun's lun_ref with percpu_ref_tryget_live() before
+dropping se_port_lock and release it after the transition, mirroring
+core_alua_queue_state_change_ua(). This pins the se_lun across the sleep,
+so a concurrent LUN removal waits in transport_clear_lun_ref() instead of
+freeing it.
 
-list_for_each_entry_safe() caches the next entry. While one CLEAR is parked in
-__core_scsi3_free_registration()'s registration_lock drop, a second concurrent
-CLEAR acquires registration_lock and list_del()s + kmem_cache_free()s exactly
-that cached next entry. The first CLEAR then advances onto the freed entry ->
-use-after-free read of ->pr_reg_list.next, list_del() on a poisoned node, and a
-double kmem_cache_free().
+Reproduced with two tcm_loop target ports (distinct RTPIs) on one
+backstore, explicit ALUA, large trans_delay_msecs: a SET TARGET PORT
+GROUPS (secondary OFFLINE, targeting the second port's RTPI) on the
+first port races a configfs removal of the second port's LUN -> the
+KASAN splat above; with this patch the LUN removal blocks until the
+transition completes and there is no use-after-free.
 
-Reproduced on a KASAN kernel with two tcm_loop I_T nexuses mapped to one iblock
-LUN, each looping { PR OUT REGISTER own-key ; PR OUT CLEAR own-key } via SG_IO:
+Fixes: adf653f92f38e8 ("target: Subsume se_port + t10_alua_tg_pt_gp_member into se_lun")
+Cc: stable@vger.kernel.org
+Signed-off-by: Yu Zhang <yuz08559@gmail.com>
+---
+ drivers/target/target_core_alua.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
-	list_del corruption, ffff...->next is LIST_POISON1 (dead000000000100)
-	kernel BUG at lib/list_debug.c:56!
-	RIP: __list_del_entry_valid_or_report+0xc2/0x140
-	Call Trace:
-	 __core_scsi3_free_registration+0x12d/0x430
-	 target_scsi3_emulate_pr_out+0xac0/0x13f0
-	 __target_execute_cmd+0x56/0x140
-	 target_execute_cmd+0x1a0/0x5b0
-	 tcm_loop_write_pending+0x15/0x20
-	 transport_generic_new_cmd+0x40b/0x700
-	 __target_submit+0xae/0x1e0
-	 target_queued_submit_work+0x64/0x190
-
-Note for a fix: simply taking dev_reservation_lock across the CLEAR teardown
-loop (mirroring PREEMPT) is not sufficient -- it deadlocks. A PR OUT command
-takes a pr_res_holders reference on its own registration via
-core_scsi3_locate_pr_reg() *before* acquiring dev_reservation_lock, so one CLEAR
-busy-waiting in __core_scsi3_free_registration() for another nexus's
-registration to reach pr_res_holders == 0 waits forever on a nexus whose own PR
-OUT is blocked on dev_reservation_lock (observed as an RCU stall). A correct fix
-likely needs the registration lifetime reworked (drop the locate reference
-before teardown, or defer the free to the last put) rather than only widening
-the lock.
-
-Reported-by: Yu Zhang <yuz08559@gmail.com>
+diff --git a/drivers/target/target_core_alua.c b/drivers/target/target_core_alua.c
+index 1111111..2222222 100644
+--- a/drivers/target/target_core_alua.c
++++ b/drivers/target/target_core_alua.c
+@@ -402,13 +402,16 @@
+ 				if (lun->lun_tpg->tpg_rtpi != rtpi)
+ 					continue;
+ 
+-				// XXX: racy unlock
++				if (!percpu_ref_tryget_live(&lun->lun_ref))
++					continue;
++
+ 				spin_unlock(&dev->se_port_lock);
+ 
+ 				if (!core_alua_set_tg_pt_secondary_state(
+ 						lun, 1, 1))
+ 					found = true;
+ 
++				percpu_ref_put(&lun->lun_ref);
+ 				spin_lock(&dev->se_port_lock);
+ 				break;
+ 			}
