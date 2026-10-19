@@ -1,75 +1,73 @@
-Received: from mail-pl1-f176.google.com (mail-pl1-f176.google.com [209.85.214.176])
+Received: from mail-pf1-f175.google.com (mail-pf1-f175.google.com [209.85.210.175])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3D33B46EF98
-	for <target-devel@vger.kernel.org>; Sun, 18 Oct 2026 14:05:58 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.176
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6F18919D074
+	for <target-devel@vger.kernel.org>; Mon, 19 Oct 2026 03:35:42 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.175
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1792332359; cv=none; b=nHHhb7bmtiYxOmw3LgAPN7KNZZ5xiaFR8UigP56vVGPXrylzy4J5JxfceqM3dGzMXfFsX1goMKdJlrOjezua3eXb0KGF4Ge1eHn1qNIB9wN3vS2G6BdC99Gu6izyuzpPgnhSZ3gnZL+HwXKhsA22JlynS6YFHWDhqq0O7R9DG9Q=
+	t=1792380943; cv=none; b=YCEnuDhvqkmfF3EH2RRkzhnyUNZxWlDkfDXohG1v6yedXqtBkshOngsBcJ9S7Jtx3GbhK0rftbJ75CJ+QF1bIwyWCH4VTomYDWeSYM9IAK8QhA4HjrZo63Av1TWHKVKfDS3XPvnlMD9IqOGfkHHMtzPj28r8byt3lEwG5RrZ0Vg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1792332359; c=relaxed/simple;
-	bh=f5FX7hFfCqVhSVN2m/Vw4FFE3wckOMml10ljkFzuQ1o=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=CHbz9tffJ0f88G/apgu2ShcTV24rEV8uzU0WSzf8YwEOopoZFSYvHcgthud5In8IUmRXkmzLDSowKpZ1gyAcUMJvRTcHnCqs+qnMLYIUre7aWY9PAlxJ4zAqxtqZASrHH+1hT11de/fTvothS+DygkuEyj/lDRPZI7oLY8ohHyI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=mYftQRc1; arc=none smtp.client-ip=209.85.214.176
+	s=arc-20240116; t=1792380943; c=relaxed/simple;
+	bh=cvuvWuvGv9Z2Lk/0KigTFd9FadnFFHEycgAfdzJtmgE=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=cDgpLaZcfuBsusiw9ZJpEDSSuuiZ6nUtdZQn9dNnfkZNmmwSD4kSOj3vFtQT1aUKQcD7G2MhozCVYU3UGpYdZ2DiZJ8fcKLDz7PgKzXXaG+RvBwOgdbklRMLYAEMrgIEJETCI3rmnDHLxzYUOwYcpj2iE0Ew6fOsTGTEL4pSfEQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=M22mcz+G; arc=none smtp.client-ip=209.85.210.175
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="mYftQRc1"
-Received: by mail-pl1-f176.google.com with SMTP id d9443c01a7336-2e8246b13cbso10093045ad.2
-        for <target-devel@vger.kernel.org>; Sun, 18 Oct 2026 07:05:58 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="M22mcz+G"
+Received: by mail-pf1-f175.google.com with SMTP id d2e1a72fcca58-8a070781f63so58662b3a.1
+        for <target-devel@vger.kernel.org>; Sun, 18 Oct 2026 20:35:42 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1792332357; x=1792937157; darn=vger.kernel.org;
+        d=gmail.com; s=20251104; t=1792380942; x=1792985742; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=wpUr77bZYWUJxHRGn89lY5QrpxEuBo3N7WkSWCTOfBs=;
-        b=mYftQRc1+OAlsyFlYwS80Hmtf9YBEfD3qfmAUO8nJgJMQPowoXZ2ydJYelgiR+3Yey
-         yXcna3f7YfMBceUzWlWXOFbwgIOmv5h0y8U4tdjwVBV7J0IhvvDdnjPI6PNY3yWknkUb
-         Bb4Ecs1ialVGiX00bwnfr+/g3I/eTs/UBm5oxmtsGccDpG4S9cZlxHTSJjg3zCbMiwjS
-         GXVkXJfO64JCV0IfxMI0qAvz0GFoaDevYtu6dH0XQFnuMUAV1XGw4SYROCdl2z/x/yAM
-         ldpr9sXVJrZixlxglHvUng2bX+nnntrpVaj5gxRnMuSEouFiOcKAfBv+af+NhU1YPqU3
-         H7ng==
+        bh=WIXgzDkcDaZz08s4IW9pP5BfYLuDRW0ADUF3wvX19Fg=;
+        b=M22mcz+GrKOvc8MzD83mg7JUIfH2n4Sm/vuJ4QDoFEyvjYCZ0M630bKVCy//UWT9a9
+         2Ae8GJAo168iez7YT4RXzjYF6PSq++toYlY9e92Xqs6o8KYj1Y5bm+Zq53EvLl/tqvCF
+         t6ijQZRVjpWbpkZknqhgZobR5sVE4Au8iyH6lBZ0gIenpP0fHcdChPUcu3WYk5HA7DqY
+         8oZyBfqDnnj9QfU7n518JMgQP5kZrCqOyQYa9gMieYquvqsa9fdstleEVwqnN5srsomI
+         gBV6hXPYZjVOX9+RzQxypn4eDKlLq8BW3szrZtvcAh7uxxokAo3jj6t/sDTODBhVoG+b
+         nNjg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1792332357; x=1792937157;
+        d=1e100.net; s=20260707; t=1792380942; x=1792985742;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=wpUr77bZYWUJxHRGn89lY5QrpxEuBo3N7WkSWCTOfBs=;
-        b=wsG/72PJdEtpYDNr6tN35rTfTO2fVnYSmNwwDx09MZixrwXw69aFAFWsM1D4d8+hye
-         FbpudqtNLNA5nUTvFptbxWPSRs86TFzZmWldSmrjBDgUWlUVXoi90lfgwMD2DdqgEx/B
-         UUW3WobJ0lpNqvo7si/puPQw4ST+kI0IXMskg2wupHzgAaD7r/o+sNTMmTgoff6FZvys
-         NhyOH/m8jA+UtKHJ4tJEUT/1wDgDYaAhWcbAuDI8weCmpCaMwTUMAtyqJAlbYPcUgX0p
-         RIcIV4XBJveBH87wBtB7lBn2gQmX37FTqitvalC8RkXdsxuGD+cR/tXe3k/yhJSfTMdU
-         WC2w==
-X-Forwarded-Encrypted: i=1; AKwUvBzSswSbrYieI4Ot/7gJ6TbOOawD7SqR1Z/XDORjYbBLHjXY361Ksw5CCNHDMCu30tLpXmwApFseLl9ZFHg=@vger.kernel.org
-X-Gm-Message-State: AFq9FYKjg5NrAkOh8xNzn2vSUDE2xIEU+KYLhP6K7kNXO0WD9gRvP6Tj
-	0YHss+zEIX4/5KtbGLd4pos9j+yUHlP1nuXo8lxVdrkxtLPayIHHWegK
-X-Gm-Gg: AYBFou1lsa95/Zq71sllgyXKZl+vje2HAK1GYc0QTuTKFGW4Tvhj6/XIhI92ecYeE4c
-	CMiY6ti9w7U3mZS0bAeZRCsMTql8exTEgUAxZdXN3Ez8aCppd0C8Nx6Pkak+EJPXCjlGzETlJX2
-	rCcvsuZHlUdmRK2yx9ArxTr/U9FLRtDRynDDe82medflqugYPT0MXa2u5vPUUX+IIjEbgfj/kRz
-	V1aJOeJn1zLPqWGRBf6HxEfMij+DzSrTat9wFyghLXVZaoeBb0n20oyr+6CCxM/L5b8UZwRRGK3
-	bPCU8/ChQgn0ru+c1JxJKA7h1cHB8VrfS0sGaNzRm+QRUTzFR0bVOwnb/RJB1Kjh3AmPOXL78Y8
-	NdwAxe5PqqUBG3AbfeYUjtZv4aBzEA2Z8ASAisjI+H+KC41BRToI5FC9iqRRq0vlYnQD86NafaH
-	LEESgtH1G3vDdFacEW7GeWbBTmmcStSGuJxGMU/KqWki8GIQjFryrfOl3Kjn0nD/SZzUIDZyR7f
-	mY4gLYNGJvjc4bIG0VyeUKnpuofgi1yGZPZls9hgv0E9G/cV3D5iWTuO2rHrkmXNjFqU7qPJFol
-	TCIeWqx/Jn6UCm8zIdL2jmcMd/s8GyuIN36W76bdlhOVQuUn
-X-Received: by 2002:a17:90b:2e46:b0:3ac:9e76:aa9e with SMTP id 98e67ed59e1d1-3acee276f13mr4625395a91.3.1792332357473;
-        Sun, 18 Oct 2026 07:05:57 -0700 (PDT)
+        bh=WIXgzDkcDaZz08s4IW9pP5BfYLuDRW0ADUF3wvX19Fg=;
+        b=WTBpSsZ2Q/TtSKbQXXFb4ewYHSNlh9tUfNpx1LlxmtExa41d+jy5j38CP+F4YBveH8
+         bkucgl+ELqUdLj/g9zFKGW56PCIWn/WuNdwgv4lRYNtUD9LziWhylU246+DDBsPCM1E6
+         MFZ0YPOi/3C56nyujev5GAgfG+H2G5u14M1w+dn4x0PUe5s0LrPR6sE2WiEiAcX1Qcm5
+         +ymu7lpJDeICSZ1/bcIbE2z1xZFW0ZzRe1gi22MeDm78UcGyBNfCSTWGizQB9DtcfmjH
+         nZhMWgGbb9N75+oSk53LAGBHUI+BwcpMnwNxGEjLBbuCHl88d8f+7bt44j+xAjjm5RFD
+         axvA==
+X-Gm-Message-State: AFq9FYKpkFrzmNVciBGdymaqlm41edW9o8M6fnPi20muK5G+hEGxQtwE
+	gFH/PD6QExMJTv1IMzNoeCJUwhscOgxKvPzuyubqbFKY1pPZNdyUAhTfUbptNLoL
+X-Gm-Gg: AYBFou3rNvXgyBq/Sd+bBs242QBdShUPn2FSF9VZ4Khe1hIXiyocaVXa5a7HQE5R6Vo
+	C0qTpmtF2zLqCEp+BB6Nr5eYhAbf+8v4sOUf5Km7vIHpdocn3QBNmhXMk0MCQiNExHDcqXHHLe0
+	jIjWz90l3fuhzo0uf8mq1EQQFLwlXRkFb8DfjitxjIMnLKzJXiwtCuJfBwdSpc4Oku5aWyWaDhk
+	trS85CqxbCSohrUJuZRmwAC/eee2sIqTvvkDrq1yhYOJSGpTfALY5AGUxhJ/pW9+5YoUEjqY1kV
+	ewCnsoih9R0ysEPfUkLmwSez2HUsP58bdAq3q3H1TpMI29eM3ZLvsFS7A2NfCeSB/vQhJkFjRFB
+	u/hM8gESau8mnKeT07n378Ex1avMHa33HFl/5eYLQIwoDOINt4evmOzsBEczHrAcBptWc5aY0eE
+	uWFNw2I25+gbGc139WASkYYMWcuo+u6hBLPkFZYBvNqcxKTgOn0l3KaoMrtz5u5rhpr54BJx3NJ
+	qJWfk02zo6KqswMPxq7Gp7iVpIPxJZ330RkXcWBwPNOHv+zG4JIJTTRWzTWZwH5Ps/G/V+L4vDM
+	7e7FTyEXvQdgBhahC5cWI8Jsk0fCLYTngLv/MDnzWN9hzDyF
+X-Received: by 2002:a05:6a20:9184:b0:3e2:5624:694e with SMTP id adf61e73a8af0-3e256247190mr664484637.39.1792380941823;
+        Sun, 18 Oct 2026 20:35:41 -0700 (PDT)
 Received: from EAIT-H54D9Q2FJQ.eait.uq.edu.au ([130.102.10.249])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3acc980a548sm5988739a91.0.2026.10.18.07.05.53
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-89f57268ff1sm3352670b3a.22.2026.10.18.20.35.38
         (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
-        Sun, 18 Oct 2026 07:05:56 -0700 (PDT)
+        Sun, 18 Oct 2026 20:35:41 -0700 (PDT)
 From: Yu Zhang <yuz08559@gmail.com>
-To: Mike Christie <michael.christie@oracle.com>
-Cc: Dmitry Bogdanov <d.bogdanov@yadro.com>,
-	"Martin K . Petersen" <martin.petersen@oracle.com>,
-	target-devel@vger.kernel.org,
+To: "Martin K . Petersen" <martin.petersen@oracle.com>,
+	Mike Christie <michael.christie@oracle.com>
+Cc: target-devel@vger.kernel.org,
 	linux-scsi@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
 	Yu Zhang <yuz08559@gmail.com>,
 	stable@vger.kernel.org
-Subject: [PATCH] scsi: target: fix se_lun use-after-free in SET TARGET PORT GROUPS secondary path
-Date: Mon, 19 Oct 2026 00:05:47 +1000
-Message-ID: <20261018140547.67428-1-yuz08559@gmail.com>
+Subject: [PATCH] scsi: target: fix list corruption in core_alua_free_tg_pt_gp()
+Date: Mon, 19 Oct 2026 13:35:32 +1000
+Message-ID: <20261019033532.73575-1-yuz08559@gmail.com>
 X-Mailer: git-send-email 2.55.0
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
@@ -79,81 +77,88 @@ List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-target_emulate_set_target_port_groups() handles a SECONDARY target-port
-asymmetric access state (OFFLINE) by walking dev->dev_sep_list under
-dev->se_port_lock to find the se_lun whose relative target port identifier
-matches the request, then dropping se_port_lock and calling
-core_alua_set_tg_pt_secondary_state() on that lun:
+core_alua_free_tg_pt_gp() moves every se_lun off the group being freed
+and reattaches it to the default group.  For each lun it removes the
+membership link under tg_pt_gp->tg_pt_gp_lock, drops that lock, and only
+then takes lun->lun_tg_pt_gp_lock to call __target_attach_tg_pt_gp().
 
-	list_for_each_entry(lun, &dev->dev_sep_list, lun_dev_link) {
-		if (lun->lun_tpg->tpg_rtpi != rtpi)
-			continue;
-		// XXX: racy unlock
-		spin_unlock(&dev->se_port_lock);
-		if (!core_alua_set_tg_pt_secondary_state(lun, 1, 1))
-			found = true;
-		spin_lock(&dev->se_port_lock);
-		break;
-	}
+lun->lun_tg_pt_gp still points at the group being freed across that gap.
+A concurrent core_alua_store_tg_pt_gp_info() holds lun->lun_tg_pt_gp_lock
+across both the detach and the attach (via target_swap_tg_pt_gp()), so it
+can move the same lun to a third group and re-add lun_tg_pt_gp_link to
+that group's list in the window.  When the free path then runs
+__target_attach_tg_pt_gp(), its bare list_add_tail() links the
+already-linked node a second time, corrupting both lists; the lun's
+group pointer is also overwritten and tg_pt_gp_members is decremented
+twice.
 
-core_alua_set_tg_pt_secondary_state() sleeps while using the lun --
-msleep(trans_delay_msecs) and, when alua_write_metadata is set, a
-kernel_write() of the ALUA metadata. The matched lun is a different target
-port than the one the command arrived on, so it is not pinned by the
-command's own lun_ref. A concurrent core_tpg_remove_lun() of that port
-(configfs LUN removal) drains its lun_ref, removes it from dev_sep_list and
-frees the se_lun via call_rcu(); since the command holds no reference and
-is not in an RCU read-side section across the sleep, the grace period can
-elapse and the lun is freed under it:
+Writing a new group id to a LUN's alua_tg_pt_gp attribute while another
+process removes the LUN's current group (both via configfs) is enough to
+trigger it:
 
-	BUG: KASAN: slab-use-after-free in core_alua_set_tg_pt_secondary_state
-	 core_alua_set_tg_pt_secondary_state
-	 target_emulate_set_target_port_groups
-	 __target_execute_cmd
-	Allocated by task 3486:
-	 configfs_mkdir
-	Freed by task 0:
-	 __call_rcu_common
+  list_add double add: new=ffff8880055a64e0, prev=ffff8880055a64e0, next=ffff8880055a64e0.
+  kernel BUG at lib/list_debug.c:35!
+  RIP: 0010:__list_add_valid_or_report+0xdf/0xf0
+  Call Trace:
+   __target_attach_tg_pt_gp+0x9b/0x190
+   core_alua_free_tg_pt_gp+0x22f/0x3a0
+   config_item_put+0x89/0xa0
+   configfs_rmdir+0x42f/0x5b0
+   vfs_rmdir+0x22a/0x4b0
 
-Take the matched lun's lun_ref with percpu_ref_tryget_live() before
-dropping se_port_lock and release it after the transition, mirroring
-core_alua_queue_state_change_ua(). This pins the se_lun across the sleep,
-so a concurrent LUN removal waits in transport_clear_lun_ref() instead of
-freeing it.
+Re-check under lun->lun_tg_pt_gp_lock that the lun still references the
+group being freed before reattaching it to the default group.  If a
+concurrent store has already moved it, there is nothing to do: that
+store holds lun->lun_tg_pt_gp_lock across its own detach and attach, so
+the node stays consistently linked in the new group's list.
 
-Reproduced with two tcm_loop target ports (distinct RTPIs) on one
-backstore, explicit ALUA, large trans_delay_msecs: a SET TARGET PORT
-GROUPS (secondary OFFLINE, targeting the second port's RTPI) on the
-first port races a configfs removal of the second port's LUN -> the
-KASAN splat above; with this patch the LUN removal blocks until the
-transition completes and there is no use-after-free.
+The store side was already made atomic in commit f9793d649c29 ("scsi:
+target: Perform ALUA group changes in one step"); the free path was left
+reattaching without revalidating the lun's group.
 
-Fixes: adf653f92f38e8 ("target: Subsume se_port + t10_alua_tg_pt_gp_member into se_lun")
+Fixes: adf653f92f38 ("target: Subsume se_port + t10_alua_tg_pt_gp_member into se_lun")
 Cc: stable@vger.kernel.org
 Signed-off-by: Yu Zhang <yuz08559@gmail.com>
 ---
- drivers/target/target_core_alua.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+ drivers/target/target_core_alua.c | 23 +++++++++++++++--------
+ 1 file changed, 15 insertions(+), 8 deletions(-)
 
 diff --git a/drivers/target/target_core_alua.c b/drivers/target/target_core_alua.c
-index 1111111..2222222 100644
+index 10250ac..3a085e2 100644
 --- a/drivers/target/target_core_alua.c
 +++ b/drivers/target/target_core_alua.c
-@@ -402,13 +402,16 @@
- 				if (lun->lun_tpg->tpg_rtpi != rtpi)
- 					continue;
+@@ -1746,16 +1746,23 @@ void core_alua_free_tg_pt_gp(
  
--				// XXX: racy unlock
-+				if (!percpu_ref_tryget_live(&lun->lun_ref))
-+					continue;
-+
- 				spin_unlock(&dev->se_port_lock);
+ 		spin_unlock(&tg_pt_gp->tg_pt_gp_lock);
+ 		/*
+-		 * If the passed tg_pt_gp does NOT match the default_tg_pt_gp,
+-		 * assume we want to re-associate a given tg_pt_gp_mem with
+-		 * default_tg_pt_gp.
++		 * tg_pt_gp_lock was dropped above, so a concurrent
++		 * core_alua_store_tg_pt_gp_info() may already have moved this
++		 * lun to another group and re-added lun_tg_pt_gp_link to that
++		 * group's list.  Reattach to the default group only while the
++		 * lun still references the group being freed; otherwise the
++		 * bare list_add_tail() in __target_attach_tg_pt_gp() would add
++		 * the already-linked node a second time and corrupt the list.
+ 		 */
+ 		spin_lock(&lun->lun_tg_pt_gp_lock);
+-		if (tg_pt_gp != dev->t10_alua.default_tg_pt_gp) {
+-			__target_attach_tg_pt_gp(lun,
+-					dev->t10_alua.default_tg_pt_gp);
+-		} else
+-			rcu_assign_pointer(lun->lun_tg_pt_gp, NULL);
++		if (rcu_dereference_check(lun->lun_tg_pt_gp,
++				lockdep_is_held(&lun->lun_tg_pt_gp_lock)) == tg_pt_gp) {
++			if (tg_pt_gp != dev->t10_alua.default_tg_pt_gp)
++				__target_attach_tg_pt_gp(lun,
++						dev->t10_alua.default_tg_pt_gp);
++			else
++				rcu_assign_pointer(lun->lun_tg_pt_gp, NULL);
++		}
+ 		spin_unlock(&lun->lun_tg_pt_gp_lock);
  
- 				if (!core_alua_set_tg_pt_secondary_state(
- 						lun, 1, 1))
- 					found = true;
- 
-+				percpu_ref_put(&lun->lun_ref);
- 				spin_lock(&dev->se_port_lock);
- 				break;
- 			}
+ 		spin_lock(&tg_pt_gp->tg_pt_gp_lock);
+-- 
+2.43.0
+
