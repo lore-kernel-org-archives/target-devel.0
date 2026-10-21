@@ -1,66 +1,61 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=199.89.1.14
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1792601890;
-	b=u1osFgkw93LJS9+TsKzujKCqF4mfqvK94YeEa1JxlddHV6s2B4FB7A8NJSjHBoF2JywJ
-	 h2r+hcCz7uGNSpGM5pbTAX3ZgbF/2BauHzenQdM7LhVwrHciVsaXfAJ0oObY0wDrhISQh
-	 p2ZHvBcigrSCdFT6YuKy2BFyDRfMn7WU/CM3nucq19Ichgj/kGSeF55Q6sNLk/u9wJWBt
-	 C6csXOuPFbCjD4awhN9y4a60O5iFTh6bKgmez1o3N4f8gJbiCmRkKEbARK88QXMXJ90fG
-	 kl1vHr/6Boaz+T6YmdRVnVJDm7YfZv4D8sv+Iay3VjyoxwUdYpdPqUQcTRmMf7PB9pw==
+	t=1792615394;
+	b=1etMaZXVMGCch1gjVQwbe4CfIMaa8ZW+gJvuQ3BUk/0aih5LZlbh+H41zrcxtUmHpDlz
+	 0ZxIdVVT+B0FVqczoNrLlSTyhaX5DaIEnxa3VfZgMwsG95g5OXZWDin2YSJ/E0A9yVZqm
+	 4MyQ6SArqttiDDkES3+KqNSBKEOeU35Vzua4w4KaDuR1Kz24q6X35uc4rLInCUY4kDW/V
+	 jnnn7NPcFEBGNzaG9sovFzaP8EOKrLjztu9KfuR7kFrMvcYKG1o+ilrfIKX/jaI+4Jx0r
+	 lQjVQt2Jbg/HbAGx4Pa+xc6fKtYNajQV8Ml0oSEsvJnTk6VIP3UkAAhV5lVNkPJM/5A==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1792601890;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Virus-Scanned:Received:
-	 Received:Message-ID:Date:MIME-Version:User-Agent:Subject:To:Cc:
-	 References:Content-Language:From:In-Reply-To:Content-Type:
-	 Content-Transfer-Encoding;
-	bh=nj+iuLYFqPKGLuk1V/E9vvGG8pcq2PgpgfmlaoYvIbU=;
-	b=MjalNkNbx4E2iSbZVPUmKcydfe+BWUSdFNYs84okxLLkzIf2lt7Ka3dvzFmFGdWQS+/E
-	 8btbs2NiDOd189S1wJRHItIVOuXiY3geLkTXvCLlqNM7rUvNl4JNja8y2avNm4NCz7D6b
-	 J8njtY4/yD89aBoO7kU+n85XkJSe4uEZ2bilQB0DvxxtPZS+u46+1G6WOyzg4OnurnaVQ
-	 2pBmeko/u6ZPqmp2BXlpL4gNrzVOnnSk4wfLagKBm0dQFzroAsviOi5o2r3QRCr1LWH0P
-	 EHXoLRJfvoTV9eb0PRrEElCHzrjc4BUIIeWsHoCrH4nCvETqw/rIbmX5n4W1cthX/nA==
+	a=rsa-sha256; c=relaxed/relaxed; t=1792615394;
+	h=Received:DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:
+	 References:MIME-Version:Content-Type:Content-Disposition:In-Reply-To;
+	bh=X+hgZpi6s8zitINqxdtV3NY32G2toc0s1ujAuu40Bds=;
+	b=JWsjWYs/6POFVc0FE2/auMT3d2UDTF/8v0JumvEsdEjShfelE04FPl0Un/FPefxgbDVR
+	 60gT6LKUSTa4LQqmzqsb2e4cSACyGUFoashCfPIOcpc24M82lp73R4ZHQaewQOjYx0Cm+
+	 5SJJd8sNpNG+DooXvQ6yYwpJs8jOEjce6V8tsuFEIFyZlTYtFbKZvIRzsIXQLyVE4pnM3
+	 hmg8IMGp31FH6FnqadBcl031ygjS7fMsF6s4afk0iWkSgEfFfHmKw97YXjYONqFYhmsMG
+	 hxEJfXLytJ9c7RWQgkkCz1Rokdf9Ck89U/S9ig/J5jWYwM4U2EV9ST3EEjWy8jetqvQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=acm.org;
-	spf=pass smtp.mailfrom=acm.org;
-	dkim=pass header.d=acm.org header.i=@acm.org header.a=rsa-sha256 header.s=mr01 header.b=ebYM3BT8;
-	arc=none smtp.remote-ip=199.89.1.14
-Received: from 011.lax.mailroute.net (011.lax.mailroute.net [199.89.1.14])
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=WCvT85l+;
+	arc=none smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 702E2606A31F;
-	Wed, 21 Oct 2026 16:58:09 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 702E2606A31F
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=acm.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=acm.org
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BA901606A31A;
+	Wed, 21 Oct 2026 20:43:13 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=acm.org header.i=@acm.org header.a=rsa-sha256 header.s=mr01 header.b=ebYM3BT8
-Received: from localhost (localhost [127.0.0.1])
-	by 011.lax.mailroute.net (Postfix) with ESMTP id 4j8wTD6HKtz1XM4Tn;
-	Wed, 21 Oct 2026 16:58:08 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=acm.org; h=
-	content-transfer-encoding:content-type:content-type:in-reply-to
-	:from:from:content-language:references:subject:subject
-	:user-agent:mime-version:date:date:message-id:received:received;
-	 s=mr01; t=1792601885; x=1795193886; bh=nj+iuLYFqPKGLuk1V/E9vvGG
-	8pcq2PgpgfmlaoYvIbU=; b=ebYM3BT8/5SXWwxSowH0s6PNVJJ5u/gKE5SoZdYR
-	ht+0xF8xJOpcPK8tXjOD4KZ9Z6FdmBuftZOS8TDHcdbzCStGutL9IWMF9G0AVHtD
-	KApB3LoGtS52PMHf3gE9sTXlSRtIs/8I+pB/G9Rdn45+RyIwoJuiD2MdnOOj6DSo
-	kaCo9JxCX9mkdVldJ93qHi1/jBLW/2hzaPQhKcG5Wlc9hhQJ8Zx8WoNVDV2aGUwF
-	G9S/MV+0XFRpOJ9/DYAzKD34eOjbFFFyJrCTp/YXkgKjXHdg6ECBZYkIrpe1UPRA
-	aHcEYfwQO5Uql8XbVmg1ms8W/s51LCxRp2JCiBTTt4VYmg==
-X-Virus-Scanned: by MailRoute
-Received: from 011.lax.mailroute.net ([127.0.0.1])
- by localhost (011.lax [127.0.0.1]) (mroute_mailscanner, port 10029) with LMTP
- id mJCtlsC6kclW; Wed, 21 Oct 2026 16:58:05 +0000 (UTC)
-Received: from [100.80.231.125] (unknown [104.135.182.41])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	(Authenticated sender: bvanassche@acm.org)
-	by 011.lax.mailroute.net (Postfix) with ESMTPSA id 4j8wT90Z3bz1XM4Tl;
-	Wed, 21 Oct 2026 16:58:04 +0000 (UTC)
-Message-ID: <266b742e-5568-421f-a861-945e6dd54eed@acm.org>
-Date: Wed, 21 Oct 2026 09:58:04 -0700
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=WCvT85l+
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C56C61F000C1;
+	Wed, 21 Oct 2026 20:43:12 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1792615393;
+	bh=X+hgZpi6s8zitINqxdtV3NY32G2toc0s1ujAuu40Bds=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=WCvT85l+M7vTXVdOSjvWu80mi6GWub+PZZf3lI8wNnsP/A/vd2Xa6CnSvLHJF1lYJ
+	 ldFG4vYTZ4hx0b0/Uu0Iz19+/9418gCW0jP79P/LMsCtGL4YnMULwet2uEGibn1jh8
+	 pbjUcYUH424ZeWdOvaP0RHhndcc6u7bQnNKyzAOAunAUt8/xRIqQHYbc77/eKe46wD
+	 o6b8akppup4YR0drKqecUYAaRet3P9REgqiSo+CzN/r7TUHmdZe7HSFqvCkxbnpCoZ
+	 KCp1zteSv40HEZNvYL+U6u4dhQtinkxeKoHLjN1O0P0bB0gduZ9PAAMY0MAfPrUb2v
+	 9wOy2B/bMwq0g==
+Date: Wed, 21 Oct 2026 14:43:11 -0600
+From: Keith Busch <kbusch@kernel.org>
+To: Runyu Xiao <runyu.xiao@seu.edu.cn>
+Cc: Christoph Hellwig <hch@lst.de>, Breno Leitao <leitao@debian.org>,
+	Andreas Hindborg <a.hindborg@kernel.org>,
+	Sagi Grimberg <sagi@grimberg.me>,
+	Chaitanya Kulkarni <kch@nvidia.com>,
+	Logan Gunthorpe <logang@deltatee.com>,
+	"Martin K. Petersen" <mkp@kernel.org>,
+	Lee Duncan <lduncan@suse.com>, Hannes Reinecke <hare@suse.com>,
+	Nicholas Bellinger <nab@linux-iscsi.org>,
+	linux-nvme@lists.infradead.org, linux-scsi@vger.kernel.org,
+	target-devel@vger.kernel.org, linux-kernel@vger.kernel.org,
+	stable@vger.kernel.org, Jianhao Xu <jianhao.xu@seu.edu.cn>
+Subject: Re: [PATCH v6 0/4] nvmet: avoid recursive configfs open
+Message-ID: <atkj3yg7e_ff1vt2@kbusch-mbp>
+References: <20260926092148.128937-1-runyu.xiao@seu.edu.cn>
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Post: <mailto:target-devel@vger.kernel.org>
@@ -70,42 +65,24 @@ List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:target-devel+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2] RDMA/srpt: bound the indirect descriptor table and
- widen the counters
-To: Yehyeong Lee <yhlee@isslab.korea.ac.kr>
-Cc: Leon Romanovsky <leon@kernel.org>, Jason Gunthorpe <jgg@ziepe.ca>,
- linux-rdma@vger.kernel.org, target-devel@vger.kernel.org,
- linux-kernel@vger.kernel.org, stable@vger.kernel.org
-References: <20261021001854.2343027-1-yhlee@isslab.korea.ac.kr>
-Content-Language: en-US
-From: Bart Van Assche <bvanassche@acm.org>
-In-Reply-To: <20261021001854.2343027-1-yhlee@isslab.korea.ac.kr>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260926092148.128937-1-runyu.xiao@seu.edu.cn>
 
-On 10/20/26 5:18 PM, Yehyeong Lee wrote:
->    BUG: KASAN: slab-out-of-bounds in srpt_alloc_rw_ctxs+0x6ee/0x950
->    Read of size 4 at addr 000000006318205c by task kunit_try_catch/33
+On Sat, Sep 26, 2026 at 05:21:44PM +0800, Runyu Xiao wrote:
+> Several configfs store callbacks open user-configured paths while holding
+> the item's frag_sem.  If a configured path resolves into configfs, the open
+> can re-enter __configfs_open_file() and try to acquire the same
+> non-recursive semaphore again.
+> 
+> Add helpers in configfs for opening non-configfs paths, then use them in the
+> nvmet file-backed namespace and passthru paths.  The series also pins the
+> target-core db_root path and uses the root-relative helper for ALUA and APTPL
+> metadata, so the helper has its target-core consumer in the same series.
 
-Some feedback about this patch:
-* Since this patch fixes two separate bugs, should it perhaps be split
-   into two patches? The fixed issues are:
-    - The missing bound on the descriptor table goes back to
-      commit a42d985bd5b2. The original code did `memcpy(ioctx->rbufs,
-      db, n_rbuf * sizeof *db)` with the same missing check.
-    - The `u8` `n_rw_ctx`/`n_rdma` counters came in with commit
-      b99f8e4d7bcd ("IB/srpt: convert to the generic RDMA READ/WRITE
-      API").
-* n_rdma can overflow without many descriptors. It is the sum of
-   rdma_rw_ctx_init() return values (work requests per context), and that
-   can exceed 255 even for a few large descriptors. Widening it fixes
-   more than the commit message says; please mention that.
-* The `idb` header ends at most at offset 320, and `MIN_MAX_REQ_SIZE` is
-   996, so reading it is never out of bounds; at worst it reads stale
-   data. The extra check is fine, but both checks could be folded into
-   one, placed after the existing descriptor-count check.
+For the nvme changes:
 
-Thanks,
+Acked-by: Keith Busch <kbusch@kernel.org>
 
-Bart.
+The bulk of the series is outside nvme though, so probably should go
+through a different tree.
