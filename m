@@ -1,82 +1,84 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.82.171
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.210.172
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1792588133;
-	b=YGbR8kVilDRQCNqFlgYWdvhZj7DkhpFVXaP35buIKpQJhjTxuU184W//vXvJmAE3FIi3
-	 ti1mFk4lQlyLJ6/735PlRAVSmuA5MAGaLASmZFgx4M83omls0kh7C4HwqpklrMr8dpDlY
-	 /6niLLELcHxWeOHUZiAZRgr8hCL8z3BcyPzqxcHua9iF8A/lN5Or5+Z2FJKneidgpvhha
-	 393vxsRAxg37vn6xoAmA3ABmzQMcmuJC3AOWqNNmyFzg66/AouWuoy7BGd3L0Hnw6vxZ3
-	 6WqzrfM+6qhC3WrbyDxyFhLVE+d+R8TlLi8ASe+gl+IlROdSGk5BLYQoFFA3IGxk9rg==
+	t=1792588507;
+	b=B0xwYAt7UJIOBiCkwI6JN5l5WmGf4n5mA41XW0A5PlYR8jYXSHEf6JH1kmAP5u6tc8Qv
+	 vd40ICBpC16otDEt4zs5Vw8ti6d0yYSDm+6uk1p5LVux/KtYL3M7FGlt8XhXSs3QmYsMf
+	 0gJIQ+6PKDQqZPwOteqCer8+6m+RJXWglL99v6PX546MEFr1gMhNc8AFkOLXpApuhnO+l
+	 gUkogLXAlCIxceztjZUDtYS3cpoA8K0V194+x3fNZ1mN47QeOH11ugMX4xVEakUwHDLpF
+	 OMbtS2i/RgtCDmO7IF0OFHKzHW0RJZy5qks+8fFxvfJhRXd885NCqOFythQvVTVYQDg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1792588133;
+	a=rsa-sha256; c=relaxed/relaxed; t=1792588507;
 	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
 	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:MIME-Version:
-	 Content-Transfer-Encoding;
-	bh=7Ve8ZNksPYVItMCXMNZb+IruVuyPRZOJDuAdFAJU5Yk=;
-	b=3ZjZaQk01FOpbPL/oN2QGTHqTudFYHn1GWWW24i2h2BMdu5ex37BhSAVz5Dc01pH8eh+
-	 +zy68B0qmqNVUNvTQdwtlQT/Cckn1phPDtepN3It0zdWtDycAm8sMDr2PvieroxoTuO+y
-	 GUKn5hcki0d3u7v8qnMuS4NVKRd/szHuUabWUvlucXtRE1YU2FyW4J36u5L78sC/OhcDY
-	 rCWXhUzsWr+P1gzWkCjoLDBqeY1udBgx0maRcWRXaAa4IPhhA+qTI8ou2788NLy22zlhE
-	 Nh0IkGDI6y4NzPtRmq+dbxZiPh2HGsdAeVqqvEKzEcf4RxEwrtIASn4uUIijE51OC0g==
+	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:
+	 MIME-Version:Content-Transfer-Encoding;
+	bh=MqUHtb91EGdlurTZlXxP4P7Tr3AqGBBA+lpnZnmX+hs=;
+	b=iw2uGDq9vy2YpObFccfCTvPPHQwLro55h0Vr3MRXIbE3P9XWodJdeiFRN4w+fjST3xwf
+	 0cgMNkOSOd2+tYsEDIWwoErFkS9vh7L2/8lzBX2KMkhN+hbE1hFOg2X71y1oMXOz6RlSo
+	 CCDMHr3PAL0mEU9KsCbL2va1M7LxvtwK9CQcyz5pwpyElMiBznJZSVwQTXwHXesRWpf6x
+	 oJXChu546uUSdY1jlX3v3xoGQsBDJA6xGiLBDajDhf6TRSAUwBbOkTLUCIc3oxoL1M4yZ
+	 ifp4e2PMpX8w1rmLXhf4grlSrVTmT0fsbqGXorUMm5myqUhY08B0z8/OwL0mxKpgvxg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=fail header.from=isslab.korea.ac.kr;
 	spf=none smtp.mailfrom=isslab.korea.ac.kr;
-	dkim=pass header.d=isslab-korea-ac-kr.20251104.gappssmtp.com header.i=@isslab-korea-ac-kr.20251104.gappssmtp.com header.a=rsa-sha256 header.s=20251104 header.b=S4gwn3cy;
-	arc=none smtp.remote-ip=74.125.82.171
-Received: from mail-dy1-f171.google.com (mail-dy1-f171.google.com [74.125.82.171])
+	dkim=pass header.d=isslab-korea-ac-kr.20251104.gappssmtp.com header.i=@isslab-korea-ac-kr.20251104.gappssmtp.com header.a=rsa-sha256 header.s=20251104 header.b=cZxc9PMc;
+	arc=none smtp.remote-ip=209.85.210.172
+Received: from mail-pf1-f172.google.com (mail-pf1-f172.google.com [209.85.210.172])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 78AED606A31D
-	for <target-devel@vger.kernel.org>; Wed, 21 Oct 2026 13:08:52 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 78AED606A31D
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3917F606A325
+	for <target-devel@vger.kernel.org>; Wed, 21 Oct 2026 13:15:06 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 3917F606A325
 Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=isslab.korea.ac.kr
 Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=isslab.korea.ac.kr
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=isslab-korea-ac-kr.20251104.gappssmtp.com header.i=@isslab-korea-ac-kr.20251104.gappssmtp.com header.a=rsa-sha256 header.s=20251104 header.b=S4gwn3cy
-Received: by mail-dy1-f171.google.com with SMTP id 5a478bee46e88-35c76e9614aso1246578eec.0
-        for <target-devel@vger.kernel.org>; Wed, 21 Oct 2026 06:08:52 -0700 (PDT)
+	dkim=pass (2048-bit key, unprotected) header.d=isslab-korea-ac-kr.20251104.gappssmtp.com header.i=@isslab-korea-ac-kr.20251104.gappssmtp.com header.a=rsa-sha256 header.s=20251104 header.b=cZxc9PMc
+Received: by mail-pf1-f172.google.com with SMTP id d2e1a72fcca58-8a052aff9e9so421754b3a.0
+        for <target-devel@vger.kernel.org>; Wed, 21 Oct 2026 06:15:06 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=isslab-korea-ac-kr.20251104.gappssmtp.com; s=20251104; t=1792588131; x=1793192931; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=7Ve8ZNksPYVItMCXMNZb+IruVuyPRZOJDuAdFAJU5Yk=;
-        b=S4gwn3cyFGOKzCs0BoufHQqIDvW0Fn6fef5tjun/OK0UuOvXJornzAJHMw7QQJN8FG
-         pAkpmZUfjE4vJohYdBe8MqR4sm9s1Zt3mud3Fk2Wg/SMc6LdWPJO0oeceiYhZn5iD4hd
-         gAdKs7e9bX6OyOjIVQuWc02WWF0fPqBnnWj3OZRA/8bP01/WNbvCBroPSCKSQx5OSdiS
-         7/JSzmvC4bN1+T/+P4C/1idY46gVoUmTIhmv0IGP9AXnLTnEEGSNlMyu9s3Z3fD98gYh
-         G1Q21d/1rmgXdiMzLJogsAlgSFbyIzsGON0W/g76CcDKbYwxIx8p/hygQO5JOTK4abxn
-         73KQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1792588131; x=1793192931;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+        d=isslab-korea-ac-kr.20251104.gappssmtp.com; s=20251104; t=1792588506; x=1793193306; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=7Ve8ZNksPYVItMCXMNZb+IruVuyPRZOJDuAdFAJU5Yk=;
-        b=gqa5m43Q3TIeoiCdW57vrZPUvMO8agOAodZfNfNeeyHDPnJqiisw86b3LKidPb3Md0
-         lecbI+/6CtwfkrmAzkeflUJ88X1ieOIvCST4SER8DrEpXO8D+6lxqfgwM9vGvSgD0Gkx
-         +vqE3IUHel0NWzvrE6EWDJgPel/CJl9XjOYY7yxppkPmV0tmxr/I+Xga6pWQC7nBgdjE
-         ENLzGpz6GYsAvUTd2HwZMZoPLlDhqO/u9F2PStr/+S2ESUifrlcIQVbXEozpxKAUAMIq
-         ULPUm4c8DGlMFbubT/Wl37NJpChg95/D4T34b8+KBUJnP9hnTxeDbROBUGChOKxCwiem
-         I44A==
-X-Forwarded-Encrypted: i=1; AKwUvBx2Q/wSVOVJsBt4TDrv2s9NO/P3vZOZMM7+CysehDagT0MtQmMakBPcZijn1nbjVlkDXsKlqD8zwHQduec=@vger.kernel.org
-X-Gm-Message-State: AFq9FYIaBz4UX72XqT00EZBt3YBKJPzoule4Sy7Ea3XENyx2nGUTAnjc
-	oSawynq5gwJvbHaChpZCU6WYBdKMwC4vxa+N2Mr5K98yIGoLiNG5sIMMZ1awDtG+upQ=
-X-Gm-Gg: AYBFou3ZL+CctCLdhHh/F4KIW2QWPI4A56tRDDBawj0Ooel0mUpBnqE+LANDfjvKsfI
-	2HZcBoNK3VFCajcC5GeZsAsOTBJ+pAup+H7E4p0qeQD1XyXNIUlinrSq55zT5JXmhyIxkxJNA+s
-	ofxK+T5rGPVki4eLLAT/yVqyh+cjll7csM6u7bB1/3PIO3lHcpE141SwFte8hQYuIHg56QsCXXD
-	W2Q61/CSbhxFG+E8vrTvGvrjaef9nR+tFjx2iMBPw1kHkB6tI7dLXirQXHe1t9qUy/4zdgn/LDP
-	wwpy9wuxSte+BrO8wh7aQ79FyQ2PNpwv0IYEG9Y8voJzVYo81ZZZ7tR+pTIYbbJon1FH2Pu+Km3
-	qCjykZrLa8ziCkd8TxFsV7Ioo67icv9VPCbIKa+knyuOrvr8j6v880eO6qqboJtj5jG3D/6uBHA
-	EwohojiYSkK9qJnWgqkfKotG0rX4vOs63WO90aJHAxDYcegdToy2jk0uoES19ukCCJJfkCMfbtX
-	1fXPVLP+ImqibmeLsrAvNifqB8prQZBoknJplj+QaI9uqc4/+0oQVK7jfmDRaHLlrgvk8ylnL/4
-	7TOTB0ncC3+WF+rfUHXno+I=
-X-Received: by 2002:a05:7022:4092:b0:18a:3911:ec1 with SMTP id a92af1059eb24-190a7ff8258mr2087001c88.39.1792588130972;
-        Wed, 21 Oct 2026 06:08:50 -0700 (PDT)
+        bh=MqUHtb91EGdlurTZlXxP4P7Tr3AqGBBA+lpnZnmX+hs=;
+        b=cZxc9PMcIDgAEbwFGgeWmIkWu13zDvGzXhwYXDl7NUKjiQEQsPJx+aSIuD2HbjHwoB
+         2wtQxmUnjvfhc5m2a3I35zEoJMBAcryVhJSov80BDZl60z26TtQJsjdr/qy0thVk0LrF
+         kpLxwtHLWM/ym8GOUg4WbdeHOr9DHJ/znHnB2YxbyANnCFPFPJtddye9YXGarifnw4JJ
+         YYV4kJDRNlsf5+Rxv/FI++/YBD2RUltaTb6FDZD9KHT4OtSrgSCVIjFHNCWzPg1JdU75
+         olwTLsl42+8Jvb/Qp8mwazf2pgnMhJ9sCsvvjRNrLU45TMLkXgKkG2ULnWkRUfsYF4gy
+         3uYg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1792588506; x=1793193306;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to:content-type;
+        bh=MqUHtb91EGdlurTZlXxP4P7Tr3AqGBBA+lpnZnmX+hs=;
+        b=TGkcoWmpvVj+1noMqfQp8Wdz5J0IlIYcPETlElmoIzrw6lc0QztXm8MA+jvt5/8Pdt
+         d/b5oMppX6csbBEMJXGdg7AUCcnwd3JMvjrlAlNVOviW6tfhUgL/nLTfhXphYSBC+JSQ
+         Ejs2CMAZ/7xfMFvUFoAUFRfNRA8Zg467aCFn+FAClp8vYkbK/Ad0XBuh4cs15nUJB2D/
+         fm2Z8KyBSsDa/076VhTF2Lat4eJbBSdKOxlnJABy80YxBxlwngdoPFtxOfIGcUVxX59h
+         Dr5797Dhtqe6yQhNQkPjhtwJxQbEAUynn4WaY62rqoBcbJStbuOF0QZB9x4fTeJcQNoa
+         PFsw==
+X-Forwarded-Encrypted: i=1; AKwUvBzfWaT4t8JzbVbZayjGSN/UIB7mr6NF3RJqnsLAu7114027e811zkkKHhWVjvNCdVK/ejyyAGIVt1pO0yU=@vger.kernel.org
+X-Gm-Message-State: AFq9FYKh8OV0+Qup6IdzwUywy8jX7rSPLYAFVqOhWjDNmC/ugoZ0YUUs
+	extAYrtLYoCgbP/U7gNYHZz3Vg+NGVGE+DhGhgbsUwrffhxNb41EgtKa/MaFDUdiVthvTYRigDF
+	Xu7gk
+X-Gm-Gg: AYBFou2ujeVuaA+7sbRrypi+3I2zVA+4HW/rgDCPx5oTVOogrUPhY61UTVXwa9Eo5Ik
+	VWwSxb0SH0nbAcaLexqFFAmGiiiis68N89qgE4FmGqoeG33IvByJjIzJgLVwiCQgF1lIWhHX48Y
+	1LT+6cFF+DJDebn5CfmhCPjbTfI1sM4NkLKG2vHTC5HMDvz4LuIwJHp4o0O/cB8Ym0xsDNN5JsM
+	snvgql3e9xCwA/4fKXvbh+fIMm0zi3F70jcGLhD26EeniyMGFkxdtBsm2F1Xcz3a0sc6jTXKUEz
+	yngC78y0C9b3w8a+FvkYWKm5+VnHLnD8SsIuYG8t9KMeEHoAikX/gy268HdhxZE3LsvU/d1tJ20
+	Lo99kKoCP4pURiP+M4o0hyS4hlnXSLLxaWLL71kJgrmVKZbTGBBorlSBMqiF8nlmDsohEtv8FgV
+	FIWE+uzMHNTbsCm87Fw3n10HLIO32OQMSTxVEOl0DpM3YsvuHymBxBmqRAplQfmo5SVzH72N4YN
+	PodC4uOqY7RdQHbybOc8LJzzucLhGgKuyRR8giTWvCnInFtlMbGczgjLV7JOrdWj989U60Dx+pR
+	OA==
+X-Received: by 2002:a05:6a00:22c5:b0:878:34d7:6a24 with SMTP id d2e1a72fcca58-8a089dfdc7emr1689491b3a.38.1792588504540;
+        Wed, 21 Oct 2026 06:15:04 -0700 (PDT)
 Received: from yhlee-960QFG.Davolink ([2406:5900:1044:110c:e416:85ef:f22:6c5d])
-        by smtp.gmail.com with ESMTPSA id a92af1059eb24-19035c0c9a6sm5923746c88.3.2026.10.21.06.08.44
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-8a0895e273bsm889414b3a.41.2026.10.21.06.15.00
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 21 Oct 2026 06:08:50 -0700 (PDT)
+        Wed, 21 Oct 2026 06:15:03 -0700 (PDT)
 From: Yehyeong Lee <yhlee@isslab.korea.ac.kr>
 To: Ram Vegesna <ram.vegesna@broadcom.com>,
 	Daniel Wagner <dwagner@suse.de>,
@@ -88,12 +90,13 @@ Cc: James Smart <jsmart2021@gmail.com>,
 	linux-scsi@vger.kernel.org,
 	target-devel@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
-	stable@vger.kernel.org,
 	yhlee@isslab.korea.ac.kr
-Subject: [PATCH v2] scsi: elx: efct: fix target session lifetime against node teardown
-Date: Wed, 21 Oct 2026 22:08:02 +0900
-Message-ID: <20261021130802.2691833-1-yhlee@isslab.korea.ac.kr>
+Subject: Re: [PATCH] scsi: elx: efct: hold a node reference across asynchronous session setup
+Date: Wed, 21 Oct 2026 22:14:48 +0900
+Message-ID: <20261021131448.2692313-1-yhlee@isslab.korea.ac.kr>
 X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20261021022209.2580332-1-yhlee@isslab.korea.ac.kr>
+References: <20261021022209.2580332-1-yhlee@isslab.korea.ac.kr>
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Post: <mailto:target-devel@vger.kernel.org>
@@ -105,383 +108,19 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-efct_scsi_new_initiator() hands a bare struct efc_node pointer to lio_wq
-and returns EFC_SCSI_CALL_ASYNC, so the node state machine keeps running
-while efct_lio_setup_session() is still queued. Three things go wrong
-over that window.
+Thanks for the review. The concern is right, so I have sent a v2 rather
+than argue it.
 
-The node itself can be freed under the work item. efc_node_alloc() takes
-a single reference and efc_node_free() drops it as the last step of a
-node shutdown, which a peer LOGO, an FC link down, a domain or fabric
-change or target teardown can all start. efct_get_vport_tpg() reads
-node->nport before target_setup_session(), efct_session_cb() reads it
-from inside that call, and node->tgt_node is read after it returns. The
-node pool is created with curr_nr == min_nr, so mempool_free() calls
-kfree() rather than refilling the reserve and the work item reads freed
-slab memory:
+v1 gated the setup work on node->nport and node->req_free, but that is
+not enough. req_free is only set in __efc_node_shutdown(), which the node
+reaches after efct_scsi_del_initiator() has already run and returned, so
+a node sitting in __efc_d_wait_del_node still passes the test. On that
+path the setup work can register a session that nothing ever removes, and
+in the narrow window where efct_session_cb() has published node->tgt_node
+it can store a lookup entry after efct_scsi_del_initiator() erased it,
+leaving a freed pointer in efct->lookup.
 
-  BUG: KASAN: slab-use-after-free in efct_lio_setup_session+0xc44/0xde0
-  Read of size 8 at addr ffff888002d538a0 by task kworker/u4:0/12
-
-  CPU: 0 UID: 0 PID: 12 Comm: kworker/u4:0 Tainted: G                 N  7.3.0-00342-gbe448252d3e7-dirty #4 PREEMPT(lazy)
-  Tainted: [N]=TEST
-  Workqueue: efct-kunit-wq efct_lio_setup_session
-  Call Trace:
-   <TASK>
-   print_report+0xcd/0x620
-   ? efct_lio_setup_session+0xc44/0xde0
-   ? __virt_addr_valid+0x208/0x3f0
-   ? efct_lio_setup_session+0xc44/0xde0
-   kasan_report+0xfb/0x130
-   ? efct_lio_setup_session+0xc44/0xde0
-   efct_lio_setup_session+0xc44/0xde0
-   ? __pfx_efct_lio_setup_session+0x10/0x10
-   ? lock_acquire+0x100/0x2d0
-   ? process_one_work+0x835/0x1c40
-   ? process_one_work+0x735/0x1c40
-   ? lock_release+0xc3/0x250
-   process_one_work+0x88b/0x1c40
-   ? __pfx_process_one_work+0x10/0x10
-   ? lock_acquire+0x100/0x2d0
-   ? worker_thread+0x2c7/0x11b0
-   ? lock_is_held_type+0x84/0xf0
-   ? __pfx_efct_lio_setup_session+0x10/0x10
-   worker_thread+0x649/0x11b0
-   ? __pfx_worker_thread+0x10/0x10
-   kthread+0x3aa/0x550
-   ? _raw_spin_unlock_irq+0x23/0x40
-   ? __pfx_kthread+0x10/0x10
-   ret_from_fork+0x493/0x940
-   ? __pfx_ret_from_fork+0x10/0x10
-   ? __switch_to+0x22/0xdc0
-   ? __pfx_kthread+0x10/0x10
-   ret_from_fork_asm+0x19/0x30
-   </TASK>
-
-  Allocated by task 33:
-   kasan_save_stack+0x33/0x60
-   kasan_save_track+0x14/0x30
-   __kasan_kmalloc+0x8f/0xa0
-   __kmalloc_noprof+0x23b/0x580
-   mempool_alloc_noprof+0x143/0x230
-   efct_kt_node_alloc.isra.0+0x38/0x4b0
-   efct_kt_uaf_after_cb+0x7a/0x370
-   kunit_try_run_case+0x1ca/0x4c0
-   kunit_generic_run_threadfn_adapter+0x7b/0xe0
-   kthread+0x3aa/0x550
-   ret_from_fork+0x493/0x940
-   ret_from_fork_asm+0x19/0x30
-
-  Freed by task 12:
-   kasan_save_stack+0x33/0x60
-   kasan_save_track+0x14/0x30
-   kasan_save_free_info+0x3b/0x60
-   __kasan_slab_free+0x43/0x70
-   kfree+0x119/0x490
-   mempool_free+0xbc/0x100
-   efc_node_free+0x311/0x4a0
-   efct_lio_setup_session+0xa4a/0xde0
-   process_one_work+0x88b/0x1c40
-   worker_thread+0x649/0x11b0
-   kthread+0x3aa/0x550
-   ret_from_fork+0x493/0x940
-   ret_from_fork_asm+0x19/0x30
-
-  The buggy address belongs to the object at ffff888002d53800
-   which belongs to the cache kmalloc-1k of size 1024
-  The buggy address is located 160 bytes inside of
-   freed 1024-byte region [ffff888002d53800, ffff888002d53c00)
-
-Teardown can also run while the session does not exist yet.
-__efc_d_initiate_shutdown() moves the node to __efc_d_wait_del_node and
-only then calls efct_scsi_del_initiator(), which finds node->tgt_node
-still NULL and returns -EIO without queueing the removal work. The node
-waits there with node->nport set and node->req_free still clear, since
-req_free is only set later in __efc_node_shutdown(). The setup work
-therefore sees nothing wrong, registers a session, and nothing ever
-removes it: the se_session and the struct efct_node leak, and
-se_session->fabric_sess_ptr keeps pointing at a node that is freed
-moments later.
-
-Or teardown can run just after the session became visible.
-efct_session_cb() publishes node->tgt_node from inside
-target_setup_session(). If efct_scsi_del_initiator() runs between that
-and the end of the setup work it erases the efct->lookup entry and
-queues the removal work, and the tail of the setup work then puts the
-entry back. efct_lio_remove_session() frees the struct efct_node without
-erasing the key a second time, so efct->lookup keeps a freed pointer
-that efct_node_find() returns, and takes a reference on, for every
-inbound FCP or BLS frame. That is the case the comment above
-efct_node_find() states cannot happen.
-
-Give the node a reference for the life of the work item, and give the
-backend an explicit session state, read and written under efc->lock,
-which is the lock the node state machine holds when it calls in. The
-work claims EFCT_TGT_SESS_SETUP before it is queued and reaches
-EFCT_TGT_SESS_REGISTERED in the same critical section that stores the
-lookup entry. efct_scsi_del_initiator() now decides from that state
-rather than from node->tgt_node. While a setup is in flight it marks the
-node EFCT_TGT_SESS_DELETE_PENDING and reports completion instead of
--EIO, and the setup work unwinds the session it built instead of
-publishing it. Once the session is registered the existing removal path
-runs unchanged, and because the state transition and the lookup store
-share one critical section, a store can no longer follow an erase.
-
-The same state closes a smaller hole next door. An initiator that
-repeats PRLI while registration is pending used to get a second session
-for one node, which left the first one unreachable;
-efct_scsi_new_initiator() now reports completion rather than building
-it.
-
-An earlier version gated the work on node->nport and node->req_free
-instead, which is not enough, because req_free is only set well after
-efct_scsi_del_initiator() has already run and returned.
-
-Fixes: 692e5d73a811 ("scsi: elx: efct: LIO backend interface routines")
-Cc: stable@vger.kernel.org
-Signed-off-by: Yehyeong Lee <yhlee@isslab.korea.ac.kr>
----
- drivers/scsi/elx/efct/efct_lio.c | 90 +++++++++++++++++++++++++++++---
- drivers/scsi/elx/efct/efct_lio.h |  9 ++++
- drivers/scsi/elx/libefc/efclib.h |  2 +
- 3 files changed, 94 insertions(+), 7 deletions(-)
-
-diff --git a/drivers/scsi/elx/efct/efct_lio.c b/drivers/scsi/elx/efct/efct_lio.c
-index 67d686dd6fb33..634200c1a61b5 100644
---- a/drivers/scsi/elx/efct/efct_lio.c
-+++ b/drivers/scsi/elx/efct/efct_lio.c
-@@ -1062,17 +1062,33 @@ _efct_tgt_node_free(struct kref *arg)
- 	kfree(tgt_node);
- }
- 
-+/* True only while a setup is in flight. The caller holds efc->lock. */
-+static bool efct_tgt_sess_may_register(struct efc_node *node)
-+{
-+	return node->tgt_sess_state == EFCT_TGT_SESS_SETUP &&
-+	       node->nport && !node->req_free;
-+}
-+
- static int efct_session_cb(struct se_portal_group *se_tpg,
- 			   struct se_session *se_sess, void *private)
- {
- 	struct efc_node *node = private;
- 	struct efct_node *tgt_node;
- 	struct efct *efct = node->efc->base;
-+	unsigned long flags;
- 
- 	tgt_node = kzalloc_obj(*tgt_node);
- 	if (!tgt_node)
- 		return -ENOMEM;
- 
-+	/* target_setup_session() sleeps, so the node may be in teardown now */
-+	spin_lock_irqsave(&node->efc->lock, flags);
-+	if (!efct_tgt_sess_may_register(node)) {
-+		spin_unlock_irqrestore(&node->efc->lock, flags);
-+		kfree(tgt_node);
-+		return -ENODEV;
-+	}
-+
- 	kref_init(&tgt_node->ref);
- 	tgt_node->release = _efct_tgt_node_free;
- 
-@@ -1086,6 +1102,7 @@ static int efct_session_cb(struct se_portal_group *se_tpg,
- 	tgt_node->port_fc_id = node->nport->fc_id;
- 	tgt_node->vpi = node->nport->indicator;
- 	tgt_node->rpi = node->rnode.indicator;
-+	spin_unlock_irqrestore(&node->efc->lock, flags);
- 
- 	spin_lock_init(&tgt_node->active_ios_lock);
- 	INIT_LIST_HEAD(&tgt_node->active_ios);
-@@ -1157,15 +1174,26 @@ static void efct_lio_setup_session(struct work_struct *work)
- 		container_of(work, struct efct_lio_wq_data, work);
- 	struct efct *efct = wq_data->efct;
- 	struct efc_node *node = wq_data->ptr;
-+	struct efc *efc = node->efc;
- 	char wwpn[WWN_NAME_LEN];
- 	struct efct_lio_tpg *tpg;
- 	struct efct_node *tgt_node;
- 	struct se_portal_group *se_tpg;
- 	struct se_session *se_sess;
-+	unsigned long flags;
- 	int watermark;
- 	int ini_count;
- 	u64 id;
- 
-+	spin_lock_irqsave(&efc->lock, flags);
-+	if (!efct_tgt_sess_may_register(node)) {
-+		node->tgt_sess_state = EFCT_TGT_SESS_NONE;
-+		spin_unlock_irqrestore(&efc->lock, flags);
-+		efc_log_debug(efct, "node %p torn down before session setup\n",
-+			      node);
-+		goto done;
-+	}
-+
- 	/* Check to see if it's belongs to vport,
- 	 * if not get physical port
- 	 */
-@@ -1176,8 +1204,10 @@ static void efct_lio_setup_session(struct work_struct *work)
- 		tpg = efct->tgt_efct.tpg;
- 		se_tpg = &tpg->tpg;
- 	} else {
-+		node->tgt_sess_state = EFCT_TGT_SESS_NONE;
-+		spin_unlock_irqrestore(&efc->lock, flags);
- 		efc_log_err(efct, "failed to init session\n");
--		return;
-+		goto done;
- 	}
- 
- 	/*
-@@ -1186,14 +1216,43 @@ static void efct_lio_setup_session(struct work_struct *work)
- 	 * ConfigFS NodeACLs.
- 	 */
- 	efct_format_wwn(wwpn, sizeof(wwpn), "",	efc_node_get_wwpn(node));
-+	spin_unlock_irqrestore(&efc->lock, flags);
- 
- 	se_sess = target_setup_session(se_tpg, 0, 0, TARGET_PROT_NORMAL, wwpn,
- 				       node, efct_session_cb);
- 	if (IS_ERR(se_sess)) {
- 		efc_log_err(efct, "failed to setup session\n");
--		kfree(wq_data);
-+		spin_lock_irqsave(&efc->lock, flags);
-+		if (!efct_tgt_sess_may_register(node)) {
-+			node->tgt_sess_state = EFCT_TGT_SESS_NONE;
-+			spin_unlock_irqrestore(&efc->lock, flags);
-+			goto done;
-+		}
-+		node->tgt_sess_state = EFCT_TGT_SESS_NONE;
-+		spin_unlock_irqrestore(&efc->lock, flags);
- 		efc_scsi_sess_reg_complete(node, -EIO);
--		return;
-+		goto done;
-+	}
-+
-+	spin_lock_irqsave(&efc->lock, flags);
-+	if (!efct_tgt_sess_may_register(node)) {
-+		tgt_node = node->tgt_node;
-+		node->tgt_node = NULL;
-+		node->tgt_sess_state = EFCT_TGT_SESS_NONE;
-+		spin_unlock_irqrestore(&efc->lock, flags);
-+		/*
-+		 * No kref_put(), because efct_scsi_del_initiator() already
-+		 * reported completion. tgt_node never reached efct->lookup
-+		 * and node->tgt_node is cleared above, so nothing else can
-+		 * reach it and its count is the one kref_init() gave it.
-+		 */
-+		efc_log_debug(efct, "node %p torn down during session setup\n",
-+			      node);
-+		target_stop_session(se_sess);
-+		target_wait_for_sess_cmds(se_sess);
-+		target_remove_session(se_sess);
-+		kfree(tgt_node);
-+		goto done;
- 	}
- 
- 	tgt_node = node->tgt_node;
-@@ -1202,8 +1261,10 @@ static void efct_lio_setup_session(struct work_struct *work)
- 	efc_log_debug(efct, "new initiator sess=%p node=%p id: %llx\n",
- 		      se_sess, node, id);
- 
--	if (xa_err(xa_store(&efct->lookup, id, tgt_node, GFP_KERNEL)))
-+	if (xa_err(xa_store(&efct->lookup, id, tgt_node, GFP_ATOMIC)))
- 		efc_log_err(efct, "Node lookup store failed\n");
-+	node->tgt_sess_state = EFCT_TGT_SESS_REGISTERED;
-+	spin_unlock_irqrestore(&efc->lock, flags);
- 
- 	efc_scsi_sess_reg_complete(node, 0);
- 
-@@ -1215,7 +1276,9 @@ static void efct_lio_setup_session(struct work_struct *work)
- 			efct->tgt_efct.watermark_min : watermark;
- 	atomic_set(&efct->tgt_efct.io_high_watermark, watermark);
- 
-+done:
- 	kfree(wq_data);
-+	kref_put(&node->ref, node->release);
- }
- 
- int efct_scsi_new_initiator(struct efc *efc, struct efc_node *node)
-@@ -1223,6 +1286,10 @@ int efct_scsi_new_initiator(struct efc *efc, struct efc_node *node)
- 	struct efct *efct = node->efc->base;
- 	struct efct_lio_wq_data *wq_data;
- 
-+	/* a repeated PRLI must not build a second session for one node */
-+	if (node->tgt_sess_state != EFCT_TGT_SESS_NONE)
-+		return EFC_SCSI_CALL_COMPLETE;
-+
- 	/*
- 	 * Since LIO only supports initiator validation at thread level,
- 	 * we are open minded and accept all callers.
-@@ -1231,6 +1298,10 @@ int efct_scsi_new_initiator(struct efc *efc, struct efc_node *node)
- 	if (!wq_data)
- 		return -ENOMEM;
- 
-+	/* the work outlives this call and undoes both of these */
-+	kref_get(&node->ref);
-+	node->tgt_sess_state = EFCT_TGT_SESS_SETUP;
-+
- 	wq_data->ptr = node;
- 	wq_data->efct = efct;
- 	INIT_WORK(&wq_data->work, efct_lio_setup_session);
-@@ -1287,17 +1358,22 @@ int efct_scsi_del_initiator(struct efc *efc, struct efc_node *node, int reason)
- 	if (reason == EFCT_SCSI_INITIATOR_MISSING)
- 		return EFC_SCSI_CALL_COMPLETE;
- 
--	if (!tgt_node) {
--		efc_log_err(efct, "tgt_node is NULL\n");
--		return -EIO;
-+	if (node->tgt_sess_state == EFCT_TGT_SESS_SETUP) {
-+		/* hand the session being built back to the setup work */
-+		node->tgt_sess_state = EFCT_TGT_SESS_DELETE_PENDING;
-+		return EFC_SCSI_CALL_COMPLETE;
- 	}
- 
-+	if (node->tgt_sess_state != EFCT_TGT_SESS_REGISTERED || !tgt_node)
-+		return EFC_SCSI_CALL_COMPLETE;
-+
- 	wq_data = kzalloc_obj(*wq_data, GFP_ATOMIC);
- 	if (!wq_data)
- 		return -ENOMEM;
- 
- 	id = (u64) tgt_node->port_fc_id << 32 | tgt_node->node_fc_id;
- 	xa_erase(&efct->lookup, id);
-+	node->tgt_sess_state = EFCT_TGT_SESS_NONE;
- 
- 	wq_data->ptr = node;
- 	wq_data->efct = efct;
-diff --git a/drivers/scsi/elx/efct/efct_lio.h b/drivers/scsi/elx/efct/efct_lio.h
-index 569a0d4b1894c..8f550ad0e349b 100644
---- a/drivers/scsi/elx/efct/efct_lio.h
-+++ b/drivers/scsi/elx/efct/efct_lio.h
-@@ -65,6 +65,15 @@ struct efct_scsi_tgt_nport {
- 	struct efct_lio_nport	*lio_nport;
- };
- 
-+/* Target session state of a struct efc_node, kept under efc->lock. */
-+enum efct_tgt_sess_state {
-+	EFCT_TGT_SESS_NONE = 0,
-+	EFCT_TGT_SESS_SETUP,
-+	EFCT_TGT_SESS_REGISTERED,
-+	/* teardown raced setup; the setup work must unwind it */
-+	EFCT_TGT_SESS_DELETE_PENDING,
-+};
-+
- struct efct_node {
- 	struct list_head	list_entry;
- 	struct kref		ref;
-diff --git a/drivers/scsi/elx/libefc/efclib.h b/drivers/scsi/elx/libefc/efclib.h
-index 57e3386128127..7c00a3fd79ad6 100644
---- a/drivers/scsi/elx/libefc/efclib.h
-+++ b/drivers/scsi/elx/libefc/efclib.h
-@@ -336,6 +336,8 @@ struct efc_node {
- 	struct list_head	els_ios_list;
- 	void			*ini_node;
- 	void			*tgt_node;
-+	/* enum efct_tgt_sess_state, private to the target backend */
-+	u8			tgt_sess_state;
- 
- 	struct efc_remote_node	rnode;
- 	/* Declarations private to FC trannport */
-
-base-commit: f47d223627f80cb7a1eb14c585fe6cb35de5e984
--- 
-2.43.0
-
+v2 drops that predicate and gives the node an explicit target-session
+state, read and written under efc->lock, so efct_scsi_del_initiator() and
+the setup work agree on who owns the session. I have posted it as a v2 at
+https://lore.kernel.org/r/20261021130802.2691833-1-yhlee@isslab.korea.ac.kr
