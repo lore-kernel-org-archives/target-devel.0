@@ -1,66 +1,96 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=199.89.1.14
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.215.173
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1792684629;
-	b=09maRbRdhbdvrrA3YKHxoa8LcffcWuZwRIyV49jjLKICpKCBElA2mXQ+rWpcCqcomuZo
-	 tcAtaGYgfGnRmdB6LpjjgAsVFlgSdPDEfEtlc8cT0NZ+9TbvqjZM+uUD9Zte0NK/GMGNT
-	 IAPHqugfaREqHUGcVhNj9L/tbLaw1UY8axNloPBh8+DfmpJ33YwP9cqrKZqCA3xPJ27pR
-	 BjexXT8gQBJZIYeTpTNtm+ZCOktuPDfxZbVYrUbESK37/bpDqTOHXG2aKiTMCaLGZk/ja
-	 oyt9V7lfSpaEH9FDALJLwNFkhFKjfHLJnA71pkZrziRSH8pAMw5Lpzhw/tmVmSSHS4Q==
+	t=1792692959;
+	b=EXAfS9Yc16eoazx804/N2qBpgQK/hq2u8E0gSongAiRF7xWdWweP3oqGNwr1jVbU/ZHR
+	 gKDVedyKAxKODj/WirvnY8mBSF7F4wPKOKvSZx1XD1gwemepKJLEKtvkY/dafQK3MU7qZ
+	 jWczLVgRB9FwOHDvtsX/QUqLQceq8uXNE5CBIJ7r0+t/oETE/N90oyGrjRuYp1gA1BJ+E
+	 6zYGbpPPX8JcDkCvpRSoc6lquQQXfoaYEn0tqCwBWQt+uKDHo/tGPQ41hgAh2tzPdNwaK
+	 43g5ZEihAwyIDUv55N96wYQki0yTv3GV9ZXQWpiBGBA7KB1vCXiR5NcJzQYiVMPLJNQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1792684629;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Virus-Scanned:Received:
-	 Received:Message-ID:Date:MIME-Version:User-Agent:Subject:To:Cc:
-	 References:Content-Language:From:In-Reply-To:Content-Type:
-	 Content-Transfer-Encoding;
-	bh=FX/sU3FBedZKsYkZYV38KBHElp5MTIf0KxoEfx1Y/RY=;
-	b=RDcLuuOsTenntf/cfvInCNN6jfzwYGtg7gkGjiKfG36amAth4DqvviycL5WkK1RCgnNA
-	 Ie9MeDVpqpfDgyHg9Z/CXqRxkW2xMVCKtoN4gJ9QCAKKGljyRpTHaOH8UGKL4fPTkL5Ka
-	 8YQVZxqK89sWU5GyL21JBTcrYizojt1q1V7/QiuTpxh6k3pcIIvlWbR1ewy64tY5NE361
-	 RYbVX0llDVIyteD2Sl9U2q/bD3g4K3W51Q8wSKuRY7wSI2jYTo/uTfajuwdIdcsmn4I9k
-	 W13W/c207LaVBErZwZt6G8qq7bOvnum6o91md4Hy8DXVtapTf0xo7v0x80+ZjewUOBw==
+	a=rsa-sha256; c=relaxed/relaxed; t=1792692959;
+	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
+	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:
+	 MIME-Version:Content-Transfer-Encoding;
+	bh=PaN8bw/YeTmYvJNsbSyjovsCwKlcPndZnsf1s/btpFU=;
+	b=QbU4Ls3P8NnqFp5bVTbqhEspXCgA6TYYPkyP4yjEcZ/nO56xolfgP7N8W71ClERt1lyP
+	 Wpxe7GS1l8GMwc/ldshY0yhIfcgNYE0eqt2JW8GE4D6V3zW71Q2h3fJgyJ2NMtttm2COG
+	 MEDwXcBQCjy9Qsa+7UIDOvlawyMNJyvHK8oZ9m4NQalIFu97aAegVI3qDADCwoMTAxnz2
+	 Tt4NP1zSUro83k9SxaMXpFVcxpmlDyLjpbI3RE/bdupPyInwNG6f657gNlblYLHLnY+/I
+	 s682ZkiFMxwiuXRZXvHZJbY9I/l3DNLFRC1UwWzrgefI6ZyAHnSwxw3DUAyaUeEIWbQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=acm.org;
-	spf=pass smtp.mailfrom=acm.org;
-	dkim=pass header.d=acm.org header.i=@acm.org header.a=rsa-sha256 header.s=mr01 header.b="DIS/zmcX";
-	arc=none smtp.remote-ip=199.89.1.14
-Received: from 011.lax.mailroute.net (011.lax.mailroute.net [199.89.1.14])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	dmarc=fail header.from=isslab.korea.ac.kr;
+	spf=none smtp.mailfrom=isslab.korea.ac.kr;
+	dkim=pass header.d=isslab-korea-ac-kr.20251104.gappssmtp.com header.i=@isslab-korea-ac-kr.20251104.gappssmtp.com header.a=rsa-sha256 header.s=20251104 header.b=HUdkciLA;
+	arc=none smtp.remote-ip=209.85.215.173
+Received: from mail-pg1-f173.google.com (mail-pg1-f173.google.com [209.85.215.173])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0E3B8606A319;
-	Thu, 22 Oct 2026 15:57:08 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 0E3B8606A319
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=acm.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=acm.org
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D9D8E606A31A
+	for <target-devel@vger.kernel.org>; Thu, 22 Oct 2026 18:15:52 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org D9D8E606A31A
+Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=isslab.korea.ac.kr
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=isslab.korea.ac.kr
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=acm.org header.i=@acm.org header.a=rsa-sha256 header.s=mr01 header.b=DIS/zmcX
-Received: from localhost (localhost [127.0.0.1])
-	by 011.lax.mailroute.net (Postfix) with ESMTP id 4j9W4N3M4Vz1XM30h;
-	Thu, 22 Oct 2026 15:57:08 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=acm.org; h=
-	content-transfer-encoding:content-type:content-type:in-reply-to
-	:from:from:content-language:references:subject:subject
-	:user-agent:mime-version:date:date:message-id:received:received;
-	 s=mr01; t=1792684626; x=1795276627; bh=FX/sU3FBedZKsYkZYV38KBHE
-	lp5MTIf0KxoEfx1Y/RY=; b=DIS/zmcXbCt1BwILH255jWVcBc6m9gM7HNq9VI/4
-	e5o3U163TDXtnQUZXxvB92eZVdHIvvPxVi1zr4YZLXjU+2FzfmVk19ax1hxR2MU6
-	5aozhp4P5xXOQmRR1duzaQZvZ9v6j1FgMEEfbOJSRjnAGQNOSv84VwHwfcCF+/Ji
-	TY6NaTVg3tx7A4XKzYa63rh1X794Q6QWni67K5p8YcOYTY1Gt4HMjdDGIYYNKIZ5
-	sljKcQthdhsn6vea5O9t0rWgRVZOGmizbdITy9P/BOX9e5wqwReNEyNqwFMLebi0
-	ayl9+Gfgtdk1ZnyOuwD5ESsM4P+P5imwg70QdB56f5HOsw==
-X-Virus-Scanned: by MailRoute
-Received: from 011.lax.mailroute.net ([127.0.0.1])
- by localhost (011.lax [127.0.0.1]) (mroute_mailscanner, port 10029) with LMTP
- id ogSJCXhAogOe; Thu, 22 Oct 2026 15:57:06 +0000 (UTC)
-Received: from [100.80.231.125] (unknown [104.135.182.41])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	(Authenticated sender: bvanassche@acm.org)
-	by 011.lax.mailroute.net (Postfix) with ESMTPSA id 4j9W4K5SsTz1XM30g;
-	Thu, 22 Oct 2026 15:57:05 +0000 (UTC)
-Message-ID: <65d23010-ca3e-402f-8384-732678b6ffb3@acm.org>
-Date: Thu, 22 Oct 2026 08:57:04 -0700
+	dkim=pass (2048-bit key, unprotected) header.d=isslab-korea-ac-kr.20251104.gappssmtp.com header.i=@isslab-korea-ac-kr.20251104.gappssmtp.com header.a=rsa-sha256 header.s=20251104 header.b=HUdkciLA
+Received: by mail-pg1-f173.google.com with SMTP id 41be03b00d2f7-cc52c1b8286so14392a12.1
+        for <target-devel@vger.kernel.org>; Thu, 22 Oct 2026 11:15:52 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=isslab-korea-ac-kr.20251104.gappssmtp.com; s=20251104; t=1792692952; x=1793297752; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=PaN8bw/YeTmYvJNsbSyjovsCwKlcPndZnsf1s/btpFU=;
+        b=HUdkciLAp5pcrgIMeGlsE49QqY4c/gj8GGPVNzXjaemqOnDMlsMfhrFlrzH0TK9E1j
+         M/NMp2TN5BE5twQ4b6AQzmZ7l+6ZJZgEtiWVLZknISktkyKaWT7sTcYlVlV25yu+2lRl
+         nFDgf1FQ697hKc3Gs96cp0ZT66kdn7EQ/dURcm4cV24EASFIOs0hdzq8tNHG1CevRc0l
+         hGVt2EW9JdQd10jMH8Q1YGCVlbe1mFIRYICPJ2D2EIVNSULGH6qnSa6ubh+SgDkBur6v
+         cLJlxp/p7/9O6Vg7ndjQvBalbX8MvaL/AzPh2gVkMOYnmKdV5Ey0LVL3LB3xf/4Ejopw
+         nINQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1792692952; x=1793297752;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to:content-type;
+        bh=PaN8bw/YeTmYvJNsbSyjovsCwKlcPndZnsf1s/btpFU=;
+        b=bOv9+Hk6rN0Tb2XwX3oerE2ibHuiY8sMg8qWIFdShUG1TV6puLBz1tcRCR+iws8E9D
+         ZJujUK0t+jbM21euJ7azpMJeD1Vyj9UE74zMM0SgMyi4ln40Tn+t6z0qpkmN+0hj67vF
+         nvDJn7l4UT04C1oG5YzbxJlnh6mGbwzcUL9jwemYqGHU0YyFddNCzpG8MrC8HDKSF0ij
+         uS6HOwfQJ8gTlbmZYT2jaPEW8tKV2/LTXV+bVXw91Nxyc4dmI7knLwuD03RDrcazRnLd
+         XLzYXop0sADhVqdbPvqKRQqAAjFG4YotMXo+VZXggxkv0CPOktE38EFWPNUwYA2XeCdr
+         Hsnw==
+X-Forwarded-Encrypted: i=1; AKwUvBwbs8xJjuCv/K3sgPakTJIk/oNi5pDJbVvhS+uY32XMHTzucagpcAD3myb79AlGEG9SJCuXGlilvkL/rmQ=@vger.kernel.org
+X-Gm-Message-State: AFq9FYKrFcAdKBg+FODMp2bw3vY6yYWJPvsI97vb97hHJ+hOwobFLed1
+	5/r6uBIrXglOH+PhX67Z9MYddTJkWX06CdaDy0Tapt3+V5JxM+XyPklC2cgFT2qMrTE=
+X-Gm-Gg: AYBFou0E6is4TVidu50fZb4mOOcV0RCItywbFPhUzctK8dkpP7r3TfHc0f2agdndd5w
+	7/LRuCcP0zNUaSJJEvVTnDWZenqF1lDEnQ6hVbCD4fk+5u/izJ7uxBJyjWyKPL2qo1x0lDygaFz
+	CDuX5RWozMA7CQU8HtM05Jt6DyFEzjeE+v6Y7Ry8TpyKGLGgZJ9rpIwcUaeBHWl5N5dkk5CYT9c
+	b6aB5Movb0KHJmANmDsokU+bE3zuMta15nvHbul561rvsGu8/O0U9J9K9LGmBzbMCmXmrYHN9V8
+	L9S4uKqsTBV/PZrSGGOeN8j2ljspQAv1TS4ef4irLwcQOgaoRrRW6LazXDOyuksPXdUqm8grEW9
+	13H90ovKpS07oJD+PojSIvROuojLeCw70+3X3hF9ju1Z/lfpc48/M/mNEcp8t7jqTuBVxzM3+pb
+	tH5rJRcc5KS08BW4S4S9nn+qpulvcRGr9634i/PjRRvvwGjqIJVNmKhVHVRRhMVglYcolQk+BMT
+	XZf1+1PrcVq16pWvbit3Ky1BhaM+maf5sFhOflFfReDJCKFmZ9aH4h/e2Q51GXpdIGDoLmSzA==
+X-Received: by 2002:a17:90b:5403:b0:3a7:a3c8:8f4a with SMTP id 98e67ed59e1d1-3ada6c7e603mr1884805a91.18.1792692951864;
+        Thu, 22 Oct 2026 11:15:51 -0700 (PDT)
+Received: from yhlee-960QFG.Davolink ([115.138.38.139])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3adc8ed1b23sm176638a91.2.2026.10.22.11.15.48
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 22 Oct 2026 11:15:51 -0700 (PDT)
+From: Yehyeong Lee <yhlee@isslab.korea.ac.kr>
+To: Bart Van Assche <bvanassche@acm.org>
+Cc: Leon Romanovsky <leon@kernel.org>,
+	Jason Gunthorpe <jgg@ziepe.ca>,
+	linux-rdma@vger.kernel.org,
+	target-devel@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	yhlee@isslab.korea.ac.kr
+Subject: Re: [PATCH v3 1/2] RDMA/srpt: bound the indirect descriptor table to the IU
+Date: Fri, 23 Oct 2026 03:15:37 +0900
+Message-ID: <20261022181537.3002021-1-yhlee@isslab.korea.ac.kr>
+X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20261022143901.2991062-2-yhlee@isslab.korea.ac.kr>
+References: <20261022143901.2991062-2-yhlee@isslab.korea.ac.kr>
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Post: <mailto:target-devel@vger.kernel.org>
@@ -70,26 +100,17 @@ List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:target-devel+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 2/2] RDMA/srpt: widen the indirect RDMA context
- counters
-To: Yehyeong Lee <yhlee@isslab.korea.ac.kr>
-Cc: Leon Romanovsky <leon@kernel.org>, Jason Gunthorpe <jgg@ziepe.ca>,
- linux-rdma@vger.kernel.org, target-devel@vger.kernel.org,
- linux-kernel@vger.kernel.org, stable@vger.kernel.org
-References: <20261022143901.2991062-1-yhlee@isslab.korea.ac.kr>
- <20261022143901.2991062-3-yhlee@isslab.korea.ac.kr>
-Content-Language: en-US
-From: Bart Van Assche <bvanassche@acm.org>
-In-Reply-To: <20261022143901.2991062-3-yhlee@isslab.korea.ac.kr>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 
-On 10/22/26 7:39 AM, Yehyeong Lee wrote:
-> Make both counters int, the type the values they accumulate already have.
+Thanks, I will switch desc_off to a uintptr_t subtraction.
 
-Why int, which is signed, instead of an unsigned type?
+The room check is also wrong for a short IU, as Sashiko noted and as the
+commit message wrongly denies. The division truncates toward zero, so a
+byte_len one to fifteen bytes short of the header gives room zero rather
+than negative, and a table_desc.len below one descriptor gives nbufs
+zero, so nbufs > room is false and the truncated request is not refused.
 
-Thanks,
-
-Bart.
+v4 drops the division and compares the span the table needs,
+desc_off + sizeof(*idb) + nbufs * sizeof(struct srp_direct_buf), against
+recv_ioctx->byte_len, which refuses a short IU with no reliance on sign
+or truncation.
