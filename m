@@ -1,98 +1,57 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.216.42
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1792680355;
-	b=GFehD8sBCx3nn+ieNfVUaGkpxhe0L5ay4Zbq97bcQeRg5tMlYjs16G7O+4PdMSHsMAUF
-	 7cMGqHYdt1GQWZn+RrQc8Lh9dYYYUcZcZYhVov0imyuZGLy0/LytRheZ2mRRffoR81VV2
-	 5KjwFPrZdSRaF4d5af5J/czuyP5saXu1ZmWeYtS/3FwC2nXgsVEM/1O+JY5TzXO92LxQx
-	 7gcKWaC+eCIYzhmzB7VHGdRktnlgT9RHjslMGJvUPe32otUSz9VoPcFmenH34YPUbMjmJ
-	 C1W5wdBR4WhzQexXBb+tdkSVZLcpCgxNrk1+/jYO8C4mces5wVAl+p3DWG7X8oqmpMg==
+	t=1792681199;
+	b=KEPgDxRhD7Gkb+dEnQiAmnPgsuK/cAHAtiGcCWgvIbjEzzslEOnT88NoSRM1T2d2dDiA
+	 wpIhf/MIhAbt/r4sHsozypjLKBwLiiyCSuVplMU0kOu5FMqnRrlrpLeGRfIgfWbEb6WBs
+	 Hl/d+ROz18FCSzXpK9dqIKEiZHi8xJA2aXHFQAYr0peCMMuRtHo2QDRO0l6cgRn6dTlWY
+	 3H9I+dXm7XTwHw7x0pAChwebqya75PcT7Uac9pdfC61urX3EJX5Hc+KhJKnvh/RNcf9xH
+	 ps16GpM51pBN3Zid8eJd/SdL5/eiPRIHQixnArj5YwYYcM3ZPP7SKYzfazAkzYhpDUA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1792680355;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:
-	 MIME-Version:Content-Transfer-Encoding;
-	bh=HS2nYUP5ow9Zp0MfzPStFKFHiEiipsNUBE3EourQz5U=;
-	b=LxLkQUy+xCvfiImJJnQKUY34M7T3sYwJOnL4a3jM7efegeaFyReKWwo977HOwySmMr3G
-	 hHQqlrMvNdX5ZCPjOQeKnACNztK1NNgbl/Z4tr8UwWGCqFW9rlt7cMpzojzB3PFoqCblr
-	 vq10pcI5YSmulSex5SQ5T0ovD5d0g9QgPMaDNT6f+XMmkaUS4dJJrYabEeEZJyAJPWgqj
-	 51GJDsu4YxHeCps0zMnjrls1mFLP0ZCxbBNliupbiositB1ZQouh+nvD0LKvfC+h5kHFM
-	 PjpJP0TgLlOyH3Kum8gDj2PcDhJkX5relyaB8+8oBBjZXj2UGVNo5fIdNCUkLL0k2jQ==
+	a=rsa-sha256; c=relaxed/relaxed; t=1792681199;
+	h=Received:DKIM-Signature:Message-ID:From:Subject:Reply-To:To:Cc:
+	 In-Reply-To:References:Content-Type:Content-Transfer-Encoding:Date;
+	bh=EMK8ff4gDCLQQthwdNajnBjualPDoFPlRFZ7lSTwWXQ=;
+	b=Y1ZZo6xHgZcHGSZ+WBUF1mKlOiS5ZsHawR9UyV94XMXJJ/Eq01DIChMLUNPwhLSgqv+c
+	 50P1PP0TKZaWyFtycswZQuWCu4GDWPVrqTBNV72a9GYm7ll8qJzWwpEyAkA6Ll0MIhIfb
+	 5nIIHTSrK/LZJ+B+AH8FV6wBUUtRYffMFuoJbBNRE/UzcU62gwIPp6WQFpiPCOMw6ie2J
+	 VsGcjcsep8zAsWmF2FOVATh+zNnex5sSn54xSH8hkG0mtCLzr2qCw1w5ehOLmj7wi7GRX
+	 tMkNNa552FaY395P5GMg2QedCIOJyhvzF6T6jk4ebDI1a/5dA99DamcFyyxP2fukN1g==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=fail header.from=isslab.korea.ac.kr;
-	spf=none smtp.mailfrom=isslab.korea.ac.kr;
-	dkim=pass header.d=isslab-korea-ac-kr.20251104.gappssmtp.com header.i=@isslab-korea-ac-kr.20251104.gappssmtp.com header.a=rsa-sha256 header.s=20251104 header.b=qBNLJbzy;
-	arc=none smtp.remote-ip=209.85.216.42
-Received: from mail-pj1-f42.google.com (mail-pj1-f42.google.com [209.85.216.42])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=lEETWfvD;
+	arc=none smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6434E606A327
-	for <target-devel@vger.kernel.org>; Thu, 22 Oct 2026 14:45:55 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 6434E606A327
-Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=isslab.korea.ac.kr
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=isslab.korea.ac.kr
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4E1C1606A319;
+	Thu, 22 Oct 2026 14:59:59 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=isslab-korea-ac-kr.20251104.gappssmtp.com header.i=@isslab-korea-ac-kr.20251104.gappssmtp.com header.a=rsa-sha256 header.s=20251104 header.b=qBNLJbzy
-Received: by mail-pj1-f42.google.com with SMTP id 98e67ed59e1d1-3ab98332238so1447815a91.3
-        for <target-devel@vger.kernel.org>; Thu, 22 Oct 2026 07:45:55 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=isslab-korea-ac-kr.20251104.gappssmtp.com; s=20251104; t=1792680355; x=1793285155; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=HS2nYUP5ow9Zp0MfzPStFKFHiEiipsNUBE3EourQz5U=;
-        b=qBNLJbzyQ2fv9FJJZOr8XO2+DYEM9XBI3CpfM2+b/SPLKiMsDlJZQrMSr++dmOT1LS
-         OxzwP8FIXM5d/9mkVTFj6in4DKBcl8IsYD3pldGLfLoOYLfFv0zVF8+1oqWZVYLOHPh6
-         z5KS1ApsTdd5TJFmv6N3bjVE/QZz4IDsrCRjFue/lWVRZPMjYWCzez7jjNwnQWZUfxyP
-         bBA3zd4jd7iWBpgb24N62Cc7h/nlKVB8tMHrLZOk7D4ZVcUhtvsjhzkP2eFPWbe3vKnU
-         glLIe/5+aQutul0CSUe+RWL4WB9TbRonzcS4ZMaAYffs7UOPI4Qt05s5PX98DtoF14Xp
-         gtiA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1792680355; x=1793285155;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=HS2nYUP5ow9Zp0MfzPStFKFHiEiipsNUBE3EourQz5U=;
-        b=mckQ0+0egO3G/CKbGRE/ef7nBqYGpv0R40gOgGDb22l8Ev4/Ip+0IHr5LD2EzFKe1O
-         uIakqQmBPGHVrasQacKgWmxqEEmso9uY4yS6SZOFETrfZsmMYLngtxXKu5GbdDWD0yuv
-         nKLqwQTAezkKoTazI8iXQ9gNwdoiXDmyzCgYF1bpm6mA6ScjxxDcVo9IK8bGrUITPZup
-         nYjw2qUqfkqSpj4DbxeUaaQJJ9VRG8cd51HyELH14NtDNyPsoYOo6e1dFabrV5aTO6B4
-         4kB52uaM4jUTjqRVuZAA1sqyS94n7CUkzYEp1YeYyHVSeYcO0J9O3iSXZsR2Yb/abiBz
-         Oraw==
-X-Forwarded-Encrypted: i=1; AKwUvBxnA5pCH1LqA3VP5r1gF11QvwT3T0V2bEdGkSQ2VZlwSy39dyuqGY8Ceg3kgeWIG5yu+Lt4y7rMpaWJ/IA=@vger.kernel.org
-X-Gm-Message-State: AFq9FYLiBThvR/JycI4EoWK+GczFNGq1iZzmTLbcFMf1WFptnStQrtFG
-	S2yJE53wqgQL62YahqaI5EPIwOrugnJ6CZ+wCer6Ywh3i5U5mrW9TnpP5xyzkLzx6JVni9lo8Os
-	CrQt3
-X-Gm-Gg: AYBFou21Oy2Yr5D0dmvIPC1mQCEOtozfE5FDyokWWEN4EcQNAG89rOYivvqWLvEE2iF
-	jyrBI24wMpkf8Cl7Kfj7yxpx0NLbF7SO8EmgH6v7OMvrwaxUqaR5n7KYDaVpFGV5M4s6rNXkKYu
-	3jHuG1JQJjB71lzIOeOZ9Ba5cBl7t2w0LM/yWuYUaaWhoJ85y5GCFYl4DsVkbo523zRJhyunrgs
-	W3lU6Th6ECdlnIFzLSMSdShtxrWbqgfSz9r+Rypv2WMdak9PAIUMmSSocfft/RnS/ZMcgKQCgdX
-	x5zujq89w8G6oCosrNBKW4RGoFHbUw38xZcnbZrGMc2GjQH2a46vBWVoJpY8BZADUxuBJfyTAyb
-	uJcVCV8N6Glq464Ef9d/vvkpmbE6izc/SQvOb4TazjSydwx+bMns3p3rkAxO6Yu9dLVum40T6Bg
-	1dlG5FFOgBPzGTmdCw18ZoLDc9v7nRG4AFPuDXEqqHi/TCe8IpZg37uTUjHIG0o3lRDuqgIheeg
-	dWtO06uJY1Mbtsfqg+LXVmBa3vBDxHjL7OKiywEdFoSFCEPkrRiX7EZKgVS4K4XiM1zPucQVwvE
-	tG4=
-X-Received: by 2002:a17:90b:4d85:b0:3a7:250:333e with SMTP id 98e67ed59e1d1-3ad86ccc8a6mr4599506a91.11.1792680354722;
-        Thu, 22 Oct 2026 07:45:54 -0700 (PDT)
-Received: from localhost.localdomain ([2406:5900:1044:110c:13e0:b266:5a7d:e119])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3ada48ed74bsm4551444a91.3.2026.10.22.07.45.51
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 22 Oct 2026 07:45:54 -0700 (PDT)
-From: Yehyeong Lee <yhlee@isslab.korea.ac.kr>
-To: Bart Van Assche <bvanassche@acm.org>
-Cc: Leon Romanovsky <leon@kernel.org>,
-	Jason Gunthorpe <jgg@ziepe.ca>,
-	linux-rdma@vger.kernel.org,
-	target-devel@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	yhlee@isslab.korea.ac.kr
-Subject: Re: [PATCH v2] RDMA/srpt: bound the indirect descriptor table and widen the counters
-Date: Thu, 22 Oct 2026 23:45:18 +0900
-Message-ID: <20261022144518.2991452-1-yhlee@isslab.korea.ac.kr>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20261021001854.2343027-1-yhlee@isslab.korea.ac.kr>
-References: <20261021001854.2343027-1-yhlee@isslab.korea.ac.kr>
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=lEETWfvD
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 961F91F000C1;
+	Thu, 22 Oct 2026 14:59:58 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1792681198;
+	bh=EMK8ff4gDCLQQthwdNajnBjualPDoFPlRFZ7lSTwWXQ=;
+	h=From:Subject:Reply-To:To:Cc:In-Reply-To:References:Date;
+	b=lEETWfvD7YsumdrbhDUFv9qdbi7yX2z5E4GKoN3Zg+6xjXCVCM1BWlH8TzFeN+8NV
+	 s0uczil0lzRDEjaNTqIQxxJJkAzPlhvgqypor7lKtf97ncruumIQhk/7BdMXo8p6Ln
+	 NSbQR8d9N8d+fT6GPrqmYHY/t3rz7ssSWm58l0a6Z6shjz5rlsQmjULu0tkAyfQILE
+	 Mj9HSwWSeQchRF/99XjdiJk2Bc6BQ9XM+tU9J/7fpOVUK0MU9BH0qHtWidVLw4ki3n
+	 kTVURWqPFcDQ0Jo96vM2CKbsVkeB2jT+6xiDtbuKBVWy2T5WRg3GNzP6SmE5PFf7ft
+	 +gUxp9u5BCuVg==
+Message-ID: <sashiko-outbox-181668@kernel.org>
+From: sashiko-bot@kernel.org
+Subject: Re: [PATCH v3 1/2] RDMA/srpt: bound the indirect descriptor table
+ to the IU
+Reply-To: sashiko-reviews@lists.linux.dev
+To: "Yehyeong Lee" <yhlee@isslab.korea.ac.kr>
+Cc: linux-rdma@vger.kernel.org, target-devel@vger.kernel.org
+In-Reply-To: <20261022143901.2991062-2-yhlee@isslab.korea.ac.kr>
+References: <20261022143901.2991062-1-yhlee@isslab.korea.ac.kr>
+ <20261022143901.2991062-2-yhlee@isslab.korea.ac.kr>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+Date: Thu, 22 Oct 2026 14:59:58 +0000
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Post: <mailto:target-devel@vger.kernel.org>
@@ -101,18 +60,83 @@ List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:target-devel+owner@vger.kernel.org>
 Precedence: list
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
 
-Thanks, all three are addressed in v3.
+Thank you for your contribution! Sashiko AI review found 1 potential issue(=
+s) to consider:
+- [Medium] RDMA/srpt: signed division truncation in srpt_get_desc_tbl() roo=
+m check
+--
 
-It is two patches now, the descriptor-table bound and the counter
-widening, each with its own Fixes tag. The widening patch says that
-n_rdma accumulates the rdma_rw_ctx_init() work request counts, so it can
-pass 255 with a handful of descriptors rather than only at 256
-descriptors. The separate header pre-check is gone, folded into the one
-room test after the existing count guard, since the header never falls
-outside the buffer.
+commit a65e69a3e5c91bb2033461a63cf75aa8305efc27
+Author: Yehyeong Lee <yhlee@isslab.korea.ac.kr>
 
-v3 is at
-https://lore.kernel.org/r/20261022143901.2991062-1-yhlee@isslab.korea.ac.kr
+RDMA/srpt: bound the indirect descriptor table to the IU
+
+This commit bounds the indirect descriptor count in srpt_get_desc_tbl()
+against the remaining space in recv_ioctx->byte_len to prevent out-of-bounds
+reads in srpt_alloc_rw_ctxs().
+
+> diff --git a/drivers/infiniband/ulp/srpt/ib_srpt.c b/drivers/infiniband/u=
+lp/srpt/ib_srpt.c
+> index 7197d95f2216b..97758082f71d2 100644
+> --- a/drivers/infiniband/ulp/srpt/ib_srpt.c
+> +++ b/drivers/infiniband/ulp/srpt/ib_srpt.c
+> @@ -1117,6 +1117,8 @@ static int srpt_get_desc_tbl(struct srpt_recv_ioctx=
+ *recv_ioctx,
+>  		struct srp_indirect_buf *idb =3D srpt_get_desc_buf(srp_cmd);
+>  		int nbufs =3D be32_to_cpu(idb->table_desc.len) /
+>  				sizeof(struct srp_direct_buf);
+> +		int desc_off =3D (u8 *)idb - (u8 *)srp_cmd;
+> +		int room;
+> =20
+>  		if (nbufs >
+>  		    (srp_cmd->data_out_desc_cnt + srp_cmd->data_in_desc_cnt)) {
+> @@ -1128,6 +1130,14 @@ static int srpt_get_desc_tbl(struct srpt_recv_ioct=
+x *recv_ioctx,
+>  			return -EINVAL;
+>  		}
+> =20
+> +		room =3D (recv_ioctx->byte_len - desc_off - (int)sizeof(*idb)) /
+> +			(int)sizeof(struct srp_direct_buf);
+> +		if (nbufs > room) {
+> +			pr_err("received SRP_CMD with %d descriptors but room for %d in the I=
+U\n",
+> +			       nbufs, room);
+> +			return -EINVAL;
+> +		}
+> +
+>  		*data_len =3D be32_to_cpu(idb->len);
+>  		return srpt_alloc_rw_ctxs(ioctx, idb->desc_list, nbufs,
+>  				sg, sg_cnt);
+
+[Severity: Medium]
+The commit message notes:
+
+"recv_ioctx->byte_len is signed, so a byte_len too small to cover even the
+descriptor header yields a negative room and the same test refuses it."
+
+In srpt_get_desc_tbl() in drivers/infiniband/ulp/srpt/ib_srpt.c, signed
+integer division truncates toward zero. When recv_ioctx->byte_len is 1 to 15
+bytes short of covering desc_off + sizeof(*idb), the numerator
+(recv_ioctx->byte_len - desc_off - (int)sizeof(*idb)) is in [-15, -1], so
+dividing by sizeof(struct srp_direct_buf) (16) produces room =3D=3D 0 rathe=
+r than
+a negative value.
+
+Also, idb->table_desc.len is read before recv_ioctx->byte_len is checked:
+
+	int nbufs =3D be32_to_cpu(idb->table_desc.len) /
+			sizeof(struct srp_direct_buf);
+
+If be32_to_cpu(idb->table_desc.len) < 16, nbufs is 0. With both nbufs =3D=
+=3D 0
+and room =3D=3D 0, the nbufs > room check passes on the truncated request,
+allowing srpt_get_desc_tbl() to read idb->len past recv_ioctx->byte_len and
+call srpt_alloc_rw_ctxs() with nbufs =3D=3D 0.
+
+Can a truncated srp_cmd request bypass this bounds check when the byte
+deficit is between 1 and 15 bytes and nbufs is 0?
+
+--=20
+Sashiko AI review =C2=B7 https://sashiko.dev/#/patchset/20261022143901.2991=
+062-1-yhlee@isslab.korea.ac.kr?part=3D1
