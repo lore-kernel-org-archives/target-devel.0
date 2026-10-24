@@ -1,97 +1,57 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.215.179
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1792860496;
-	b=4dUTyICBZIdWrk++HwP+sfl3C2LNXAn2NTp9QX336FI2kiVwOMQjmXreiSvDOQe+aRum
-	 jvt6KCw/in4HiFOxWUGMjExqI1ddEsIfsv0o0A/cCibFzliplcqZXyZtrkmrngioCZnxa
-	 SQDcH1kWY7/J+DFCN6ArtSdT9JYbLlyzGU6YLEFlSqKqtHYdbohEVuGT9C0Vw8WD50EYW
-	 DqIpfQN6l1ueoVzDkwXnDJDq4+TnV/ZTWqGTs2UIxi/mv0cohgkoYPK/teChrErJxgTjs
-	 Y2eR/QTSQOb7fajTxaFAGul0zSOgWm2OZTSUHYBpMjF1jwVodIwoZIiZ6GB7CHeZbgA==
+	t=1792861618;
+	b=v3jKQE5FVn2mSHfobumfg0Pg9qY0yaQcCnahHDkR93/zeYk9H4C7coRsHgoJFp8+n/r/
+	 6zQHTleX+DsFamo4I14SgQYsloHHpDKKYzbMFiJqKBpSsRg1ixk08LS6dM80Rp0W48vG5
+	 1VXDw5jYoxywsp70BEP9R8yx5J2RPAEUX8moUimArtbm7JXDx6WL3eMyfH18h0AUASS95
+	 +X535XOdcIeae0TCjWNWOJtRssxQZc75ErXcXuD9ScSWdI1lzYK4d2Teh8wPKrWmMeDHY
+	 vf6EUIMDD2pPQW2wUQXILv2B844C1Hz2izFFXb7+3neyfsNHA8vM4qcBCDrO6OhVwXQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1792860496;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:
-	 MIME-Version:Content-Transfer-Encoding;
-	bh=isFDLv8vN/snFPyaQLe+9KSLlWtekB0w1jnYJnzpvG4=;
-	b=Y8x11dKW84hsZHp6Wn5/V+cUAVDfMqlqDWBAc+YPClsPFgnQ6FhdJJzPkf0ySWwpIl09
-	 9rTwSSddP6N1Twr+j2f4A+FqR0b2i3PnmXWIvvacuWY33zC9oS1LiA56gfc49CqS6aDfm
-	 XvUrTpqWkZaviwRipMSUcVfFTNNWEngzbr2A6EfTn/9pnsghZMVbwFg8Me2d+dNUnLAx9
-	 xe4kXEH2JWoGkSi69DlXFv1j67AP2IwV0Eqq6F7uR45/O5uhAYpt8O+2Z3HT++LQ+u35k
-	 nEnm1PauC8Ljmq6JCgdvr9VwJZTK/ixlYFx+2cTUKjrFkXLm0RgknAwbHEmWVyBcVCw==
+	a=rsa-sha256; c=relaxed/relaxed; t=1792861618;
+	h=Received:DKIM-Signature:Message-ID:From:Subject:Reply-To:To:Cc:
+	 In-Reply-To:References:Content-Type:Content-Transfer-Encoding:Date;
+	bh=oeoM2TMsWghRgj7db/pOVmmLge3UEPMn4GDw/KxDpyE=;
+	b=g6TLD6Um03YUnbT0/R6B5PaR9poLZ87G7zDiBpoE9yh7PZcXFRgNFWDNXnbJ3cpqeHUO
+	 394AxtaO4UGS4epV6dIuvKojucf+TWhUYrX9Pz9kUIwnnIVkSdVVt/J5IMqsTOHKEgPrg
+	 o+kLLCBXbbmT/53TUHEKmLP3fp657Fg0c0CW/po3ERUfrwJ039MLF3Qbz45tU1lBrLs8n
+	 S+bVVmHinXwShRUIBlja+/j7UuKfWRVjsovspXYVVC63fOmRXgO+aDYACfwkotdKgnQdr
+	 o3vzrzII4w8ocg1+z8BbCF7P9KAu8R0IzEl+47vAzcbLgfhFuPfGlm3a5ugprNZ0BHg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=fail header.from=isslab.korea.ac.kr;
-	spf=none smtp.mailfrom=isslab.korea.ac.kr;
-	dkim=pass header.d=isslab-korea-ac-kr.20251104.gappssmtp.com header.i=@isslab-korea-ac-kr.20251104.gappssmtp.com header.a=rsa-sha256 header.s=20251104 header.b=uGZeaz9N;
-	arc=none smtp.remote-ip=209.85.215.179
-Received: from mail-pg1-f179.google.com (mail-pg1-f179.google.com [209.85.215.179])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=XqHWavwK;
+	arc=none smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6A9BC606A31B
-	for <target-devel@vger.kernel.org>; Sat, 24 Oct 2026 16:48:16 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 6A9BC606A31B
-Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=isslab.korea.ac.kr
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=isslab.korea.ac.kr
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 39D5F606A31A;
+	Sat, 24 Oct 2026 17:06:57 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=isslab-korea-ac-kr.20251104.gappssmtp.com header.i=@isslab-korea-ac-kr.20251104.gappssmtp.com header.a=rsa-sha256 header.s=20251104 header.b=uGZeaz9N
-Received: by mail-pg1-f179.google.com with SMTP id 41be03b00d2f7-cc758830601so1140284a12.2
-        for <target-devel@vger.kernel.org>; Sat, 24 Oct 2026 09:48:16 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=isslab-korea-ac-kr.20251104.gappssmtp.com; s=20251104; t=1792860496; x=1793465296; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=isFDLv8vN/snFPyaQLe+9KSLlWtekB0w1jnYJnzpvG4=;
-        b=uGZeaz9NSx8x8gU+5cVfYPY+kB08j9XyRrFWMUzY05K9ULUlFZQLvOrYR7d5zfdDSY
-         OENhR8C/AekQGYvo/bT99vvkW0/rKfFydRbWCkudpEC0XmNB+0ARnxjo9WXk3bFqQ8VS
-         uI3IPA3/93wuN88jA+BPyVvpnS5zfJERS+7UwiKD2f+0zromq4oVSdAN7HZ5eXwBaNwF
-         fd3QeQSFGRU2sZjJwNMwF748LcB9ExXzJ4z0p/tlV8UV8KhSJ48HIq3QlNFDfquR+HKs
-         Z34YDIG1yDQCcyA5B3ljIYIlxKnCq7RPrMq+WCK41KYLmQHDI5agHHnYfDXYhWpx/4ZP
-         2XyA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1792860496; x=1793465296;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=isFDLv8vN/snFPyaQLe+9KSLlWtekB0w1jnYJnzpvG4=;
-        b=1NRaedKYBaxnyzEKaoskiVEvECd0qZPq92T3DtbMy12iSpk3kz4lbNWSVbIikDLHU6
-         qy4axYcjCAiNBneBODH1WlCoSNiXVUp35tESZQ1egEhmXcOcsngtvPDn2uZ3GWdlO+uQ
-         gsPhmtydYQYhQXtLgGF4XnWZwRJAouyb9GofaMweM2cumMvUusuglbKPIYJoqBAWpdcw
-         cr0NzdLLnYOEMnf/tYdCzxd3Ok9GAWqy1r7gj9n1EU5UWhSaSBW+Zq1h/ijG8wjK9K2W
-         9NdUpxBPwWJnfQYMhAHM3k22ZMWA2YXBG4WCcfCxgqlpaKWBKEoQgFHtlQ248VDXHz0J
-         92mQ==
-X-Forwarded-Encrypted: i=1; AKwUvByFj1GmEK9sMW214szjUWprCx/ZGh6t1RFUu+Dvzhj5+MkXIBNppXaWMCQmzug+ZTU09Regxyqy0ri7yHM=@vger.kernel.org
-X-Gm-Message-State: AFq9FYJOu9CIiGLSscemkrupLZdvtynJoCHm8Bucx1vVRyfuaSvjGitB
-	iGXtG+mE7uF1xeqkV/i9AXqBQ4uAVzX7SK3TBnSw/6DYfFn58aOmPc6o5zfYROSu4NI=
-X-Gm-Gg: AYBFou3QmQm+JIaPeAfQiyaQzy0N1L3ygLelGSYvUXwiM1Rm4cAbSGCSLFtxFi9mrVB
-	94eDSbOuiEmLklcZuZYSOlGrF6nTAvHeyky0b5KdiC5KIqELh1bXvFEKZ3gMo9s/bylJBXTYJMJ
-	gi/TQu/wLXn456Z+QSWxos33TrGWcYwLx7pb4uiJVQlXTO9iky8DB0q4NseM3a5t4IWfZhAm49C
-	g/4W1rIZH7z/CuX9vvS0lLVNS9u9gZbpxO+PemqiZ4bRR/5xWh6/pig+bHHKKX6xKEzRsNqFtIZ
-	GLPpTMhO+Rn4+nyu9o2E/dsrE1mqMF1WyuCoruH0FDXObmKgSR6O+12F/ejjFfN6k3eM1jKmrSA
-	iHj9W9+Fki9eukJLiBmFYOnaCDw657jnqlNzj6oMmJSqADs9nt/gVES3I7+hpPMGZXOLozioBnT
-	Hp8NPgp7hWI8R1vlNrf4DJPWO8QbEIOvbTsKteR2SKwTYdRxEtL1pmEXajWsNNR/5f5zBtdVkvr
-	cuMwVjqNeWlLXqcT7UAFtd9f5K1eTHAOECgB6R08N8KPPDM6v9wwYaXH1aDVlWEMDrj35XR4kE9
-	eqzAwZF9eqg6Su83J5/y87EdDHwogeq4SbDCOgnLRF9v73bPj1Ce9sYKoXh7HHaC
-X-Received: by 2002:a17:90b:582d:b0:3ac:c024:b275 with SMTP id 98e67ed59e1d1-3ade9b2ef33mr2135648a91.9.1792860495722;
-        Sat, 24 Oct 2026 09:48:15 -0700 (PDT)
-Received: from yhlee-960QFG.Davolink ([2406:5900:1044:110c:dba3:be57:a674:a67f])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3adeba31797sm2193053a91.1.2026.10.24.09.48.12
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 24 Oct 2026 09:48:15 -0700 (PDT)
-From: Yehyeong Lee <yhlee@isslab.korea.ac.kr>
-To: Bart Van Assche <bvanassche@acm.org>
-Cc: Leon Romanovsky <leon@kernel.org>,
-	Jason Gunthorpe <jgg@ziepe.ca>,
-	linux-rdma@vger.kernel.org,
-	target-devel@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	yhlee@isslab.korea.ac.kr
-Subject: Re: [PATCH v3 2/2] RDMA/srpt: widen the indirect RDMA context counters
-Date: Sun, 25 Oct 2026 01:48:05 +0900
-Message-ID: <20261024164805.3531156-1-yhlee@isslab.korea.ac.kr>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <65d23010-ca3e-402f-8384-732678b6ffb3@acm.org>
-References: <20261022143901.2991062-1-yhlee@isslab.korea.ac.kr> <20261022143901.2991062-3-yhlee@isslab.korea.ac.kr> <65d23010-ca3e-402f-8384-732678b6ffb3@acm.org>
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=XqHWavwK
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6C9731F01825;
+	Sat, 24 Oct 2026 17:06:56 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1792861617;
+	bh=oeoM2TMsWghRgj7db/pOVmmLge3UEPMn4GDw/KxDpyE=;
+	h=From:Subject:Reply-To:To:Cc:In-Reply-To:References:Date;
+	b=XqHWavwK679ouX2lWhi5b3tNZRleGJJ62hvDwrxB9K6kIK5UA9Pc0SXygzpOHsIWT
+	 t0FD8g6vAvbT1ahQIX9zqvr5mybPNQASCO69pBmJzLQES+llUOiTuFJGgf5XNc8Xkz
+	 G3sFtWTiNqjKyE6mdFMNH4D/wPBVbR/m84GhwwDuRwI34cR+x2xis1MavAXgMmleyf
+	 jRX6grZKCiz7Ll++b7r5DaqwIBnvTthwfmHzz/VBkH1qvySLnKlPMMbckNvyEX8XRS
+	 Z8NgeteA3LIljUZzCbcX1BZpuKpZZjdI3EPTK65KGBsGZjhjEDIqajxPwcqViZ34fY
+	 Be+LgRDvhtncw==
+Message-ID: <sashiko-outbox-183819@kernel.org>
+From: sashiko-bot@kernel.org
+Subject: Re: [PATCH v4 1/2] RDMA/srpt: bound the indirect descriptor table
+ to the IU
+Reply-To: sashiko-reviews@lists.linux.dev
+To: "Yehyeong Lee" <yhlee@isslab.korea.ac.kr>
+Cc: linux-rdma@vger.kernel.org, target-devel@vger.kernel.org
+In-Reply-To: <20261024162852.3528224-2-yhlee@isslab.korea.ac.kr>
+References: <20261024162852.3528224-1-yhlee@isslab.korea.ac.kr>
+ <20261024162852.3528224-2-yhlee@isslab.korea.ac.kr>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+Date: Sat, 24 Oct 2026 17:06:55 +0000
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Post: <mailto:target-devel@vger.kernel.org>
@@ -100,17 +60,119 @@ List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:target-devel+owner@vger.kernel.org>
 Precedence: list
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
 
-On Thu, 22 Oct 2026 08:57:04 -0700, Bart Van Assche wrote:
-> Why int, which is signed, instead of an unsigned type?
+Thank you for your contribution! Sashiko AI review found 1 potential issue(=
+s) to consider:
+- [High] RDMA/srpt: unrejected zero-descriptor indirect table in srpt_get_d=
+esc_tbl()
+--
 
-v4 is posted and 2/2 is unchanged, still int. The cover letter keeps the
-offer to make both unsigned int and turn the WARN_ON in
-srpt_rdma_read_done() into == 0 if you prefer that.
+commit 8189d07cfa54a6ae2404e7715f0d334dafe9c38a
+Author: Yehyeong Lee <yhlee@isslab.korea.ac.kr>
 
-https://lore.kernel.org/linux-rdma/20261024162852.3528224-1-yhlee@isslab.korea.ac.kr
+RDMA/srpt: bound the indirect descriptor table to the IU
 
-Thanks,
-Yehyeong
+This commit bounds the indirect descriptor table in srpt_get_desc_tbl()
+against the received IU length (recv_ioctx->byte_len) to prevent an
+out-of-bounds read in srpt_alloc_rw_ctxs().
+
+> diff --git a/drivers/infiniband/ulp/srpt/ib_srpt.c b/drivers/infiniband/u=
+lp/srpt/ib_srpt.c
+> index 43c3ff1ad8e7e..21264264356a2 100644
+> --- a/drivers/infiniband/ulp/srpt/ib_srpt.c
+> +++ b/drivers/infiniband/ulp/srpt/ib_srpt.c
+> @@ -1117,6 +1117,7 @@ static int srpt_get_desc_tbl(struct srpt_recv_ioctx=
+ *recv_ioctx,
+>  		struct srp_indirect_buf *idb =3D srpt_get_desc_buf(srp_cmd);
+>  		int nbufs =3D be32_to_cpu(idb->table_desc.len) /
+>  				sizeof(struct srp_direct_buf);
+> +		size_t desc_off =3D (uintptr_t)idb - (uintptr_t)srp_cmd;
+> =20
+>  		if (nbufs >
+>  		    (srp_cmd->data_out_desc_cnt + srp_cmd->data_in_desc_cnt)) {
+> @@ -1128,6 +1129,14 @@ static int srpt_get_desc_tbl(struct srpt_recv_ioct=
+x *recv_ioctx,
+>  			return -EINVAL;
+>  		}
+> =20
+> +		if (desc_off + sizeof(*idb) +
+> +		    (size_t)nbufs * sizeof(struct srp_direct_buf) >
+> +		    (size_t)recv_ioctx->byte_len) {
+> +			pr_err("received SRP_CMD indirect table (%d descriptors) that does no=
+t fit the %d-byte IU\n",
+> +			       nbufs, recv_ioctx->byte_len);
+> +			return -EINVAL;
+> +		}
+
+[Severity: High]
+Does this check actually reject an indirect descriptor table when
+idb->table_desc.len is smaller than sizeof(struct srp_direct_buf), as
+described in the commit message ("and so is a table_desc.len below one
+descriptor")?
+
+In include/scsi/srp.h, struct srp_indirect_buf defines desc_list[] as a
+flexible array member, so sizeof(*idb) is 20 bytes (only the header). When =
+an
+initiator sends an SRP_CMD with SRP_DATA_DESC_INDIRECT and
+be32_to_cpu(idb->table_desc.len) < sizeof(struct srp_direct_buf), integer
+division in srpt_get_desc_tbl() sets nbufs to 0.
+
+If recv_ioctx->byte_len is at least desc_off + sizeof(*idb) (for example, 68
+bytes when add_cdb_len is 0), both the existing descriptor count check and =
+the
+new bounds check pass with nbufs =3D=3D 0, and srpt_get_desc_tbl() calls
+srpt_alloc_rw_ctxs() with nbufs =3D=3D 0:
+
+drivers/infiniband/ulp/srpt/ib_srpt.c:srpt_alloc_rw_ctxs() {
+	if (nbufs =3D=3D 1) {
+		ioctx->rw_ctxs =3D &ioctx->s_rw_ctx;
+	} else {
+		ioctx->rw_ctxs =3D kmalloc_objs(*ioctx->rw_ctxs, nbufs);
+		if (!ioctx->rw_ctxs)
+			return -ENOMEM;
+	}
+	...
+	for (i =3D ioctx->n_rw_ctx; i < nbufs; i++, db++) {
+		...
+	}
+	return 0;
+}
+
+Because kmalloc_objs() with a count of 0 returns ZERO_SIZE_PTR (non-NULL),
+srpt_alloc_rw_ctxs() executes zero loop iterations and returns 0 with
+ioctx->n_rw_ctx =3D=3D 0 and *sg_cnt =3D=3D 0.
+
+For a write command (DMA_TO_DEVICE) with idb->len > 0, target_submit_prep()
+then allocates target scatterlists and transport_generic_new_cmd() invokes
+srpt_write_pending():
+
+drivers/infiniband/ulp/srpt/ib_srpt.c:srpt_write_pending() {
+	...
+	cqe->done =3D srpt_rdma_read_done;
+	for (i =3D ioctx->n_rw_ctx - 1; i >=3D 0; i--) {
+		struct srpt_rw_ctx *ctx =3D &ioctx->rw_ctxs[i];
+
+		first_wr =3D rdma_rw_ctx_wrs(&ctx->rw, ch->qp, ch->sport->port,
+				cqe, first_wr);
+		cqe =3D NULL;
+	}
+
+	ret =3D ib_post_send(ch->qp, first_wr, NULL);
+}
+
+With ioctx->n_rw_ctx =3D=3D 0, the loop does not run and ib_post_send() is =
+called
+with first_wr =3D=3D NULL. Depending on the RDMA provider, this either trig=
+gers a
+NULL pointer dereference on wr (for example, in rvt_post_send() at !wr->nex=
+t)
+or returns 0 without posting ioctx->rdma_cqe, leaving the command stuck in
+SRPT_STATE_NEED_DATA and hanging session teardown in
+target_wait_for_sess_cmds().
+
+Should srpt_get_desc_tbl() also reject !nbufs (or table_desc.len <
+sizeof(struct srp_direct_buf))?
+
+--=20
+Sashiko AI review =C2=B7 https://sashiko.dev/#/patchset/20261024162852.3528=
+224-1-yhlee@isslab.korea.ac.kr?part=3D1
