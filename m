@@ -1,119 +1,66 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=170.10.129.124
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=199.89.1.16
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1792939422;
-	b=eK6F1RI0Yr1z34PyUNlumQtkUIVrnQUuSK9Pca76GrGRcVqfZoHA48S7iMMoN1Dolc8E
-	 yiqkzmBbgw3IsZjxb9qBQgcnqg79i2t8O5JG56SSTPGRZP4HGqTm07/AT0/3v8fi5rP2q
-	 FXeWuAOHUndGyGiJNJO4RZE+3SDNEMHg4E8jcwrHdjxyYTx7Fy5FDs69C7sJizmfSqqV/
-	 lfIa8anns4yIbn9VfN7fE7oLndNv59PteBsu8Z5RP89WvYZEIiq4u9QStTkPaVCEWvklG
-	 Tf4KzFBHqOPNRxiiyzicfbvhbbixZRGKofBdwbpNFstTKeS3F1wKwEIr3aAsBbfzUHA==
+	t=1792946408;
+	b=GHKvuKupbFkrZVd96ldQhDb8GU0GxDme1HbkW2aLoctmtmcVKq30zTzVa9e5kyEyZ3Re
+	 2YRozfBzi8XfNUpyu4OLPX68RvZYYeMsuindrPa8uJVDz0oW+b6dELoMn+9kWwcRmhcs8
+	 idKPRXarqEom8bRuJ8cSB4IOUmxhsedbYqGYVHz7XGqiopJ+yJUavzC7tYCcIN5kpJ+Dm
+	 Z6RYvFWJR+GEl6+0JqrvXa34IcrFggBopW8Fxy01rx9qEJrJ7gwktyEiFTtodT6sSRcjt
+	 0PQsD3vzLSI0yYSh7vuFClTUpwxTEcHig7TvZ7KU+PEuOxJxYYK/IFgME3OHwGm3wnw==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1792939422;
-	h=DMARC-Filter:DKIM-Signature:Received:X-MC-Unique:
-	 X-Mimecast-MFC-AGG-ID:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:
-	 X-Received:Received:Message-ID:Subject:From:To:Cc:Date:References:
-	 In-Reply-To:Content-Type:Content-Transfer-Encoding:User-Agent:
-	 MIME-Version;
-	bh=10Wn98wCYjGze7UfrWdQv3o7MdZOhneadzomG6iUcnw=;
-	b=wqD4tIIZWf2X4LmJmL0prBaz/9XVmOCX7uVadeIR5tV8XNn9tYm5E525DEmgTXxhwCmj
-	 +Oaex1JY/Y3mJQqLBt//dWGNjndASIlAWjEwYoLX0yLva+K6iZx+GVzCX0O+XsHE7KLYs
-	 4kcQwdqkmqgNrzebLJcd2CpJN1NfxIoXybcJizrlKlq3rH2dW961LjnDnBsGvl8ScAVIg
-	 T2ItAhoGmAUH2y17qeOvhBpdV4fYgpp4kjCdP8jw+0IIPz6Y/P3n+ny31hqyC6DilamBA
-	 x1egHIz50Xn+KPYvRUXVhSVsjAP/OSOaxbY3oKLF3g0WCMuad72gHdHJqVZiqA+tzuQ==
+	a=rsa-sha256; c=relaxed/relaxed; t=1792946408;
+	h=DMARC-Filter:Received:DKIM-Signature:X-Virus-Scanned:Received:
+	 Received:Content-Type:Message-ID:Date:MIME-Version:User-Agent:Subject:
+	 To:Cc:References:Content-Language:From:In-Reply-To;
+	bh=Uh/jV+RKdu40i5W3iEKoOk51H35K6TRUWCc2sdumjMw=;
+	b=y1oSUw3/XTgYu2Vtw/6esFzjXkIna5iiIU8EmlxE+xIQ4l5OU3RE0uUjthC1caOINjiY
+	 wGlgXPCoh3VpMMFPwL1e1rZN2MessJc+6tig7YVAG14W5kD/Ez72gaAfMphVTZ+XQBZe7
+	 YWO7Q4/EdoPjcZ2ukA4psRWo+I/qAZiF4eE3mhTi7RIo7I2nQ3gYp/0fnjkvp+IwlVRbu
+	 TKb3s00ieAvh8xZuJf8SHLo1c2DAbBN6teWWJQHHjIowHWT5HqmdaB2VuFrEwijsoLLmE
+	 +nKG2A8CU6wQ7bPymL+8F9RpLUI5DC571A8lplRZgRMLJKV7UUbTz7mOQYltWPUaH4g==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=redhat.com;
-	spf=pass smtp.mailfrom=redhat.com;
-	dkim=pass header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=iSkvP56O;
-	dkim=pass header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=google header.b=LZ6VZpXX;
-	arc=none smtp.remote-ip=170.10.129.124
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+	dmarc=pass header.from=acm.org;
+	spf=pass smtp.mailfrom=acm.org;
+	dkim=pass header.d=acm.org header.i=@acm.org header.a=rsa-sha256 header.s=mr01 header.b=RFQh4fhu;
+	arc=none smtp.remote-ip=199.89.1.16
+Received: from 013.lax.mailroute.net (013.lax.mailroute.net [199.89.1.16])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D365D606A31A
-	for <target-devel@vger.kernel.org>; Sun, 25 Oct 2026 14:43:41 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org D365D606A31A
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 952F2606A31A;
+	Sun, 25 Oct 2026 16:40:07 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 952F2606A31A
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=acm.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=acm.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=iSkvP56O;
-	dkim=pass (2048-bit key, unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=google header.b=LZ6VZpXX
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1792939420;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=10Wn98wCYjGze7UfrWdQv3o7MdZOhneadzomG6iUcnw=;
-	b=iSkvP56OB5I1M6u+7ChOCNdqySSgPXHBEQ0GMfvsD81Akm0XKgN6W/y/IbpAQ8Qlu3yJ85
-	8YAIzdsNuCguQCOvBXSOBBLjujc1EbVZ+lUchFR3e8Hi6rMpJ/y9GfhAQmZNg3ggpZqBnY
-	fkFHReA3ETsPSAj215S8/QAsLtyHcYY=
-Received: from mail-qk1-f199.google.com (mail-qk1-f199.google.com
- [209.85.222.199]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-537-5BYpseAaO62iMh9ePGgykw-1; Sun, 25 Oct 2026 10:43:39 -0400
-X-MC-Unique: 5BYpseAaO62iMh9ePGgykw-1
-X-Mimecast-MFC-AGG-ID: 5BYpseAaO62iMh9ePGgykw_1792939419
-Received: by mail-qk1-f199.google.com with SMTP id af79cd13be357-92e82060977so520197685a.1
-        for <target-devel@vger.kernel.org>; Sun, 25 Oct 2026 07:43:39 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=redhat.com; s=google; t=1792939419; x=1793544219; darn=vger.kernel.org;
-        h=mime-version:user-agent:content-transfer-encoding:content-type
-         :in-reply-to:references:date:cc:to:from:subject:message-id:from:to
-         :cc:subject:date:message-id:reply-to:content-type;
-        bh=10Wn98wCYjGze7UfrWdQv3o7MdZOhneadzomG6iUcnw=;
-        b=LZ6VZpXXYJPBh7Eo/6JLPcahSa91lQyu+TLZsV1dIjIT0vyK1vwGSS0zpxKYXVPyJr
-         tbZl8scZ9lgWeP4KaiOd2Dezc8ce3nNus+q/BZQpRcVDqBP2OlGTu3DdyhONKR9+xFPi
-         L93vgLuv2MiT+W9eswMDd9LB/7SaCxnLp/SH2AKx+rjI9MYsPjbrBXUaAwi2UI5OHTMd
-         Ywdxbw4SCFz2S7CU6orzFpaQZ8VApWSo6bZqadUj0hLbBhfZmYDOUs6xRWRqc1C1lIRf
-         TxUDjcHkfLiyGyGcHY/pEWI1wFpeIMgxG6RgT9duyiPUQDmqvYzwZkUpi2Z8l0h1gzqx
-         tcvg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1792939419; x=1793544219;
-        h=mime-version:user-agent:content-transfer-encoding:content-type
-         :in-reply-to:references:date:cc:to:from:subject:message-id:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=10Wn98wCYjGze7UfrWdQv3o7MdZOhneadzomG6iUcnw=;
-        b=GWAm4xxF7OIWoUlV7fR5QfY6wTMCh9gKx9GVshFGK4SE7yORBpprPybPCrH3QixJdL
-         222OMClLanwGLd+DNKyXVhgqUQ5qcn54keow3jcl9jFZDbI0AG99M1kLyirRPUpIusiv
-         vNc0CmvlCns5NGoRU1KETiWgjFGBYEyCpaKuevPN9MmIXX4PlgEaRXxNrPVylJ7InCoO
-         WBHCSIzpaH/AwXHi4zyFLe7nCKJCsqLub/rZXoEv9IB2Vwff/wZl8OqtNLb5XUKoPcXw
-         VHkwJPLj3TCfQ4OkxyKvsciDq5kTc66o39TS98ndeIpJQX/gu0UiLl7Ur/6vqLoVe/qY
-         EgeA==
-X-Forwarded-Encrypted: i=1; AKwUvBxSt6i71a4VC5fhzpF0hsPirxqdaB6lIbZMXk+5Fl1guHUJidVGwpEL9jBC6VCBHBYvdn8n4levqPLyYPs=@vger.kernel.org
-X-Gm-Message-State: AFq9FYJ/D2qOlu2NxfgCrm5qluw97OuzVDXVUIUh5BjDPSuKX/tws+rt
-	CQoMHy8drnTUzcxZjtG/c5v5yH7Q/9lxtcxwQocDGjkGTYgiYROtFeNxAZM6Ngtz1uE5XpNVOCw
-	okLQ91N5R14IKg2KYRblwMp4y8lxne4JM+vvY3zhP9gCXeiU3Xr33PuAA+Ia362qZQw==
-X-Gm-Gg: AYBFou0oHDRN98M1dyUhVFagzk4V07Yc0PcSEjFef1o/2QJM4n5LZsfPHNVMW3FfQ1C
-	7itdWH80+l98ltMollVu/K+wR4zGD90hJvvwRuf9kR1HVGsm3wIDFPkrxV9h42hL/9GA1WavM9z
-	64j64miF6kiCwHDVYNAS7EOqY5LUaqdgh8FPYMLRiiURPqVgRlF2/k/9TLUpVXRPCNUwQ0n1eoE
-	qW6jnOlxLueiSkgM05nPqvQUhIIoD7tmEghsKGx8iJjzFtdMQPsp3z4BDDHw4PlgbEYgah8xSTR
-	hR80WxQghGJ4XombQ+ZQMR4UG5SZRzg7+u8nIRpP9L2ADECLbx/Kphqngp3SHfVCfJ+IEVs5XIA
-	dFMBZT7BIAiURRm40Bp9k3K8x7IV+WjFqfOI4A5OiJvsDMc28KmWvk4lyPr5NX/83XLp63k9AEG
-	vXBvpefX5Z7qSHrbKI4H1s
-X-Received: by 2002:a05:620a:4543:b0:93f:21db:851a with SMTP id af79cd13be357-940ef9f050fmr591914285a.40.1792939418664;
-        Sun, 25 Oct 2026 07:43:38 -0700 (PDT)
-X-Received: by 2002:a05:620a:4543:b0:93f:21db:851a with SMTP id af79cd13be357-940ef9f050fmr591911985a.40.1792939418182;
-        Sun, 25 Oct 2026 07:43:38 -0700 (PDT)
-Received: from loberman-thinkpadp1gen5.rmtusma.csb ([2600:6c65:2440:d8c:929c:b769:6def:faa3])
-        by smtp.gmail.com with ESMTPSA id af79cd13be357-940f0669112sm436834785a.10.2026.10.25.07.43.36
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 25 Oct 2026 07:43:37 -0700 (PDT)
-Message-ID: <60cf407142a0663a811a2ccd64cf387cb71808ab.camel@redhat.com>
-Subject: Re: [PATCH v2 0/2] scsi: target: iscsi: fix stalled aborted WRITE
- commands
-From: Laurence Oberman <loberman@redhat.com>
-To: mkp@kernel.org
-Cc: linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, 
-	mlombard@redhat.com, michael.christie@oracle.com,
- linux-kernel@vger.kernel.org
-Date: Sun, 25 Oct 2026 10:43:35 -0400
-References: <20261016175351.126373-1-loberman@redhat.com>
-In-Reply-To: <20261016175351.126373-1-loberman@redhat.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.60.2 (3.60.2-2.fc44) 
+	dkim=pass (2048-bit key, unprotected) header.d=acm.org header.i=@acm.org header.a=rsa-sha256 header.s=mr01 header.b=RFQh4fhu
+Received: from localhost (localhost [127.0.0.1])
+	by 013.lax.mailroute.net (Postfix) with ESMTP id 4jCMtb0MgWzlfvps;
+	Sun, 25 Oct 2026 16:40:07 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=acm.org; h=
+	in-reply-to:from:from:content-language:references:subject
+	:subject:user-agent:mime-version:date:date:message-id
+	:content-type:content-type:received:received; s=mr01; t=
+	1792946402; x=1795538403; bh=Uh/jV+RKdu40i5W3iEKoOk51H35K6TRUWCc
+	2sdumjMw=; b=RFQh4fhuq4AoaRVGEDY8S6S9/iSNXg1uPbaStbtRKzLK62rvU/5
+	kZEPMYs+Lt/mVqRVhKtSZp1haNTDQol4mGc+z5jmEt/DVDZKO7GAmeajsTZtqlEh
+	RlcUmoZ0k62jJGWgqP/C+r+5ILKhpYXaemk0vEa+d7pW365W59vannmG59SnETNy
+	IltqgGl3ppF0HZYmsqaOCxD0S9a6NbvwditXceYhxdHmU/kS9/eJIZfFdbt5Amoc
+	G/27sDNcJPveruy0QnGCr4IMs3ncUr7r3Q9VvmEAadgjBUvgUasQe+M8xSFBvr02
+	Pu62PmliHdA2TNfqhPMlCnb5c6g4hXpSP7Q==
+X-Virus-Scanned: by MailRoute
+Received: from 013.lax.mailroute.net ([127.0.0.1])
+ by localhost (013.lax [127.0.0.1]) (mroute_mailscanner, port 10029) with LMTP
+ id OvQEV815hSJE; Sun, 25 Oct 2026 16:40:02 +0000 (UTC)
+Received: from [192.168.51.14] (c-24-6-239-25.hsd1.ca.comcast.net [24.6.239.25])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	(Authenticated sender: bvanassche@acm.org)
+	by 013.lax.mailroute.net (Postfix) with ESMTPSA id 4jCMtV1NRszlfvpN;
+	Sun, 25 Oct 2026 16:40:01 +0000 (UTC)
+Content-Type: multipart/mixed; boundary="------------s8Ey6hFPBGWnSQfWbkDzsdy9"
+Message-ID: <8a702a89-ad21-425e-9850-d9771fcf7c31@acm.org>
+Date: Sun, 25 Oct 2026 09:40:00 -0700
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Post: <mailto:target-devel@vger.kernel.org>
@@ -123,155 +70,119 @@ List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:target-devel+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 0/2] scsi: target: iscsi: fix stalled aborted WRITE
+ commands
+To: Laurence Oberman <loberman@redhat.com>, mkp@kernel.org
+Cc: linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
+ mlombard@redhat.com, michael.christie@oracle.com,
+ linux-kernel@vger.kernel.org
+References: <20261016175351.126373-1-loberman@redhat.com>
+ <60cf407142a0663a811a2ccd64cf387cb71808ab.camel@redhat.com>
+Content-Language: en-US
+From: Bart Van Assche <bvanassche@acm.org>
+In-Reply-To: <60cf407142a0663a811a2ccd64cf387cb71808ab.camel@redhat.com>
 
-On Fri, 2026-10-16 at 13:53 -0400, Laurence Oberman wrote:
-> > These two patches apply on top of=20
-> > commit d5869dae5080 ("scsi: target: iscsi: Fix hang for aborted
-> > WRITE_PENDING commands").
-> >=20
-> > A WRITE command that is still in TRANSPORT_WRITE_PENDING has never
-> > been
-> > passed to the backend, so when a TMR aborts it the iSCSI fabric is
-> > the one
-> > that has to complete it. That commit fixed the case where the final
-> > DataOut PDU for an already-issued R2T arrives after the abort. Two
-> > more
-> > paths can leave such a command with nothing to complete it:
-> >=20
-> > =C2=A0- Patch 1 is the hang this work started from. A WRITE that arrive=
-s
-> > with
-> > =C2=A0=C2=A0 immediate data, aborted after that data has been received =
-but
-> > before
-> > =C2=A0=C2=A0 the first R2T is built, is never completed by anything: no=
- R2T
-> has
-> > been
-> > =C2=A0=C2=A0 sent so the initiator cannot send more data, and no DataOu=
-t
-> timer
-> > is
-> > =C2=A0=C2=A0 armed so the ERL=3D0 timeout cannot fire either.
-> > core_tmr_lun_reset()
-> > =C2=A0=C2=A0 then blocks for as long as the connection stays up.
-> >=20
-> > =C2=A0- Patch 2 closes the equivalent window where a new R2T would have
-> > been
-> > =C2=A0=C2=A0 sent for an already-aborted command.
-> >=20
-> > Patch 1 also adds a one-shot completion claim. Completing the
-> command
-> > in
-> > iscsit_execute_cmd() introduces a second site which
-> > iscsit_release_commands_from_conn() would also complete during
-> > connection
-> > teardown, because t_state is still TRANSPORT_WRITE_PENDING there
-> and
-> > target_complete_cmd() on an aborted command records nothing that
-> > would say
-> > otherwise. The claim makes sure only one of them does it.
-> >=20
-> > Changes since v1:
-> > =C2=A0- Patch 2: route the DATAOUT_SEND_R2T completion through
-> > =C2=A0=C2=A0 iscsit_complete_aborted_cmd() rather than calling
-> > target_complete_cmd()
-> > =C2=A0=C2=A0 directly, so the completion is claimed and cannot be repea=
-ted by
-> > =C2=A0=C2=A0 iscsit_release_commands_from_conn() during connection tear=
-down.
-> > =C2=A0- Patch 1 unchanged.
-> >=20
-> > v1:=20
-> >
-> https://lore.kernel.org/linux-scsi/20261014143932.39453-1-loberman@redhat=
-.com/
-> >=20
-> > How this was found and tested:
-> >=20
-> > The hang was reported against an Oracle RAC cluster on two-session
-> > iSCSI
-> > LIO targets, where one node's LUN_RESET aborts WRITEs belonging to
-> > the
-> > other node's session. It was not reproducible in a lab, so the
-> > diagnosis
-> > came from instrumented kernels in the reporter's environment,
-> logging
-> > every
-> > site that completes or waits on an aborted command.
-> >=20
-> > Across two hosts every stall had the identical signature given in
-> > patch 1,
-> > and the stall only ever ended when the initiator gave up and
-> dropped
-> > the
-> > connection. 217 of 222 LUN_RESET drains completed in under a
-> second;
-> > the
-> > rest took 46 to 54 seconds, which is where the hung-task panics
-> came
-> > from.
-> > One 53.7 second stall recovered on its own and the host ran for a
-> > further
-> > 19 hours.
-> >=20
-> > Both patches, backported to a 5.14-based distro kernel, have since
-> > run 300
-> > reset cycles with no hang, in two independent runs: one
-> instrumented
-> > and
-> > one with the tracing removed. The same reproducer previously failed
-> > at 95
-> > and 196 cycles. The code here is equivalent to what was tested;
-> only
-> > comments differ.
-> >=20
-> > One thing to flag for review: patch 2's window was never observed.
-> > The
-> > instrumented kernels recorded no completions at that site in either
-> > run,
-> > and the reproducer never reached it. It is included because the
-> same
-> > reasoning applies there, but it has no field evidence behind it,
-> and
-> > I am
-> > happy to drop it or send it separately if you would prefer.
-> >=20
-> > An earlier attempt at this fix completed the command from
-> > core_tmr_drain_state_list() instead. That is not safe: at that
-> point
-> > the
-> > initiator may still be sending DataOut for the command, and the
-> > result was
-> > a double completion -- re-queued se_cmd->work, list_del corruption
-> > and a
-> > refcount underflow. Mentioning it in case the same idea comes up in
-> > review.
-> >=20
-> > Laurence Oberman (2):
-> > =C2=A0 scsi: target: iscsi: Complete an aborted WRITE stuck before the
-> > first
-> > =C2=A0=C2=A0=C2=A0 R2T
-> > =C2=A0 scsi: target: iscsi: Complete an aborted WRITE when a new R2T
-> would
-> > be
-> > =C2=A0=C2=A0=C2=A0 sent
-> >=20
-> > =C2=A0drivers/target/iscsi/iscsi_target.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
- | 28 +++++++++++++--
-> > =C2=A0drivers/target/iscsi/iscsi_target_erl1.c | 10 +++++-
-> > =C2=A0drivers/target/iscsi/iscsi_target_util.c | 46
-> > ++++++++++++++++++++++++
-> > =C2=A0drivers/target/iscsi/iscsi_target_util.h |=C2=A0 2 ++
-> > =C2=A0include/target/iscsi/iscsi_target_core.h |=C2=A0 5 +++
-> > =C2=A05 files changed, 88 insertions(+), 3 deletions(-)
+This is a multi-part message in MIME format.
+--------------s8Ey6hFPBGWnSQfWbkDzsdy9
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
+On 10/25/26 7:43 AM, Laurence Oberman wrote:
+> Gentle ping:
+Please take a look at the attached review report. The report has been
+generated by an LLM. As known LLMs may make mistakes.
 
-Gentle ping:
-If anybody has bandwidth to review the v2 in this series which also
-handled the sashiko concerns.=C2=A0
-We have customers waiting on this series.=C2=A0
+Bart.
+--------------s8Ey6hFPBGWnSQfWbkDzsdy9
+Content-Type: text/markdown; charset=UTF-8; name="review.md"
+Content-Disposition: attachment; filename="review.md"
+Content-Transfer-Encoding: base64
 
-=C2=A0As always much appreciated=C2=A0
-=C2=A0Laurence Oberman
+UmV2aWV3IGh0dHBzOi8vbG9yZS5rZXJuZWwub3JnL2FsbC8yMDI2MTAxNjE3NTM1MS4xMjYz
+NzMtMS1sb2Jlcm1hbkByZWRoYXQuY29tLwoKSSd2ZSByZXZpZXdlZCB2MiBvZiBMYXVyZW5j
+ZSBPYmVybWFuJ3MgdHdvLXBhdGNoIHNlcmllcyB0aGF0IGZpeGVzIHN0YWxsZWQgYWJvcnRl
+ZCBpU0NTSSBXUklURSBjb21tYW5kcywgcGx1cyB0aGUgU2FzaGlrbyBib3QncyByZXZpZXcg
+YW5kIHRoZSBhdXRob3IncyByZXBseS4gSSBjaGVja2VkIGl0IGFnYWluc3QgdGhlIGxvY2Fs
+IHRyZWUsIHdoaWNoIGFscmVhZHkgY29udGFpbnMgdGhlIHByZXJlcXVpc2l0ZSBjb21taXQg
+ZDU4NjlkYWU1MDgwLgoKKipPdmVyYWxsOioqIHRoZSBkaWFnbm9zaXMgZm9yIHBhdGNoIDEg
+bG9va3MgcmlnaHQsIGFuZCB0aGUgImNsYWltIHRoZSBjb21wbGV0aW9uIG9uY2UiIGlkZWEg
+aXMgcmVhc29uYWJsZS4gQnV0IHRoZSBjbGFpbSBpcyBvbmx5IGFwcGxpZWQgaW4gc29tZSBv
+ZiB0aGUgcGxhY2VzIHRoYXQgY29tcGxldGUgYW4gYWJvcnRlZCBjb21tYW5kLiBTbyB0aGUg
+ZG91YmxlLWNvbXBsZXRpb24gcHJvYmxlbSB0aGUgc2VyaWVzIGRlc2NyaWJlcyBpcyBvbmx5
+IHBhcnRseSBmaXhlZCwgYW5kIHBhcnQgb2YgdGhhdCBwcm9ibGVtIHdhcyBpbnRyb2R1Y2Vk
+IGJ5IGQ1ODY5ZGFlNTA4MCBpdHNlbGYuCgojIyBNYWluIGlzc3VlcwoKKioxLiBOb3QgZXZl
+cnkgY29tcGxldGlvbiBzaXRlIHRha2VzIHRoZSBjbGFpbSwgYW5kIG9uZSBvZiB0aGUgZ2Fw
+cyBpcyBhIHJlY2VudCByZWdyZXNzaW9uLioqCi0gQWZ0ZXIgZDU4NjlkYWU1MDgwLCBgX19p
+c2NzaXRfY2hlY2tfZGF0YW91dF9oZHIoKWAgY2FsbHMgYHRhcmdldF9jb21wbGV0ZV9jbWQo
+KWAgb24gYW4gYWJvcnRlZCBgVFJBTlNQT1JUX1dSSVRFX1BFTkRJTkdgIGNvbW1hbmQgd2l0
+aG91dCB0YWtpbmcgdGhlIGNsYWltLgotIFdoZW4gdGhlIGFib3J0IGlzIHRoZSBhc3luY2hy
+b25vdXMga2luZCAoYHRhcmdldF9jbWRfaW50ZXJydXB0ZWQoKWAg4oaSIGB0YXJnZXRfYWJv
+cnRfd29ya2ApLCBgdF9zdGF0ZWAgaXMgbmV2ZXIgY2hhbmdlZC4gU28gaWYgdGhlIGNvbm5l
+Y3Rpb24gZHJvcHMgYmVmb3JlIHRoZSBjb21tYW5kIGlzIGZyZWVkLCBgaXNjc2l0X3JlbGVh
+c2VfY29tbWFuZHNfZnJvbV9jb25uKClgIGNvbXBsZXRlcyBpdCBhIHNlY29uZCB0aW1lLgot
+IFRoYXQgc2Vjb25kIGNvbXBsZXRpb24gaXMgdGhlIHNhbWUgYElOSVRfV09SSygpYC9gcXVl
+dWVfd29yaygpYCBvbiBhIHN0aWxsLXF1ZXVlZCBgc2VfY21kLT53b3JrYCB0aGF0IHRoZSBj
+b3ZlciBsZXR0ZXIgZGVzY3JpYmVzIGFzIHRoZSBmYWlsdXJlIG9mIHRoZSBlYXJsaWVyIGF0
+dGVtcHQuCi0gZDU4NjlkYWU1MDgwIGlzIG9ubHkgaW4gNy4zL3Njc2ktc3RhZ2luZyBzbyBm
+YXIuIFRoZSBmaXggYmVsb25ncyBpbiB0aGlzIHNlcmllcywgd2l0aCBgRml4ZXM6IGQ1ODY5
+ZGFlNTA4MGAsIG5vdCBpbiBhIGxhdGVyIGZvbGxvdy11cC4KLSBgaXNjc2l0X2NoZWNrX2Rh
+dGFvdXRfcGF5bG9hZCgpYCDihpIgYERBVEFPVVRfU0VORF9UT19UUkFOU1BPUlRgIOKGkiBg
+dGFyZ2V0X2V4ZWN1dGVfY21kKClgIGhhcyB0aGUgc2FtZSBwcm9ibGVtLiBJdCBpcyBvbGRl
+ciAoaXQgZGF0ZXMgZnJvbSBlYTg3OTgxYTBlZTgpLCBidXQgb25jZSB0aGUgY2xhaW0gaGVs
+cGVyIGV4aXN0cyBpdCBpcyBhIHR3by1saW5lIGNoYW5nZS4gUGxlYXNlIGluY2x1ZGUgaXQg
+dG9vLgoKKioyLiBUaGUgYXV0aG9yJ3MgYW5zd2VyIHRvIFNhc2hpa28ncyBzZWNvbmQgcG9p
+bnQgcmVsaWVzIG9uIHRoZSBnYXAgYWJvdmUuKioKLSBIZSBzYXlzIHRoYXQgaWYgYG91dHN0
+YW5kaW5nX3IydHNgIGlzIHJlYWQgbG93LCAidGhlIGxhdGVyIGNvbXBsZXRpb24gaW4gYF9f
+aXNjc2l0X2NoZWNrX2RhdGFvdXRfaGRyKClgIGJlY29tZXMgYSBuby1vcCIuIEluIHYyIHRo
+YXQgcGF0aCBkb2VzIG5vdCBjaGVjayB0aGUgY2xhaW0sIHNvIHRoZSBzdGF0ZW1lbnQgaXMg
+ZmFsc2UgYXMgcG9zdGVkLgotIFRoZSByYWNlIGl0c2VsZiBpcyB1bmxpa2VseTogYm90aCBh
+Y2Nlc3NlcyBoYXBwZW4gb24gdGhlIHNhbWUgY29ubmVjdGlvbidzIFJYIHRocmVhZC4gVGhl
+IG9ubHkgd3JpdGVycyBvbiBvdGhlciB0aHJlYWRzIGFyZSB0aGUgcXVldWUtZnVsbCByZXRy
+eSAoYHFmX3dvcmtgKSBhbmQgdGhlIEVSTDIgdGFzay1yZWFzc2lnbiBjb2RlLgotIE9uY2Ug
+aXNzdWUgMSBpcyBmaXhlZCwgdGhlIHJlYXNvbmluZyBob2xkcy4gVW50aWwgdGhlbiwgdGhl
+IHJlcGx5IHNob3VsZCBub3QgYmUgYWNjZXB0ZWQgYXMgYSBqdXN0aWZpY2F0aW9uLgoKKioz
+LiBDb25zaWRlciBhIGZpeCBpbiB0YXJnZXQgY29yZSBpbnN0ZWFkLioqCi0gVGhlIHJlYWwg
+Y2F1c2UgaXMgdGhhdCBgdGFyZ2V0X2NtZF9pbnRlcnJ1cHRlZCgpYCBxdWV1ZXMgYHRhcmdl
+dF9hYm9ydF93b3JrYCBidXQgcmVjb3JkcyBub3RoaW5nIHVuZGVyIGB0X3N0YXRlX2xvY2tg
+LgotIEEgdGVzdC1hbmQtc2V0IGZsYWcgaW4gYHRyYW5zcG9ydF9zdGF0ZWAgdGhlcmUgKHdp
+dGggYSBXQVJOIG9uIGEgc2Vjb25kIGNhbGwpIHdvdWxkIGNvdmVyIGV2ZXJ5IHNpdGUgaW4g
+ZXZlcnkgZmFicmljLCBpbmNsdWRpbmcgaVNFUiBhbmQgY3hnYml0LCB3aGljaCBhbHNvIHJl
+YWNoIGBpc2NzaXRfY2hlY2tfZGF0YW91dF9wYXlsb2FkKClgLgotIFRoYXQgd291bGQgYmUg
+YmV0dGVyIHRoYW4gYSBwcml2YXRlIGlTQ1NJIGZsYWcgdGhhdCBlYWNoIGNhbGwgc2l0ZSBo
+YXMgdG8gcmVtZW1iZXIgdG8gY2hlY2suIEF0IHRoZSB2ZXJ5IGxlYXN0LCB0aGUgYXV0aG9y
+IHNob3VsZCBzYXkgd2h5IGhlIGNob3NlIG5vdCB0byBkbyB0aGlzLgoKIyMgU21hbGxlciBw
+b2ludHMKCi0gKipNaXNzaW5nIGBGaXhlczpgIGFuZCBgQ2M6IHN0YWJsZWAgdGFncyoqIG9u
+IHBhdGNoIDEuIENhbmRpZGF0ZXMgYXJlIGVhODc5ODFhMGVlOCAoInNjc2k6IHRhcmdldDog
+aXNjc2k6IEhhbmRsZSBhYm9ydCBmb3IgV1JJVEVfUEVORElORyBjbWRzIikgYW5kIGFhYTAw
+Y2M5M2MxZCwgd2hpY2ggYWRkZWQgdGhlIGJhcmUgYHJldHVybiAwYCBpbiBgaXNjc2l0X2V4
+ZWN1dGVfY21kKClgLiBOb3RlIHRoYXQgYWFhMDBjYzkzYzFkIGlzIHlvdXIgb3duIDIwMTgg
+VEFTIGNoYW5nZS4KLSAqKkNvbW1pdCBtZXNzYWdlIGZvciBwYXRjaCAyOioqICJVbmxpa2Ug
+cGF0Y2ggMSBvZiB0aGlzIHNlcmllc+KApiIgYW5kIHRoZSBwYXJhZ3JhcGggYWJvdXQgd2hh
+dCB3YXMgc2VlbiBpbiB0aGUgZmllbGQgc2hvdWxkIG5vdCBlbmQgdXAgaW4gZ2l0IGhpc3Rv
+cnkuIE1vdmUgdGhlbSBiZWxvdyB0aGUgYC0tLWAgbGluZSBvciBpbnRvIHRoZSBjb3ZlciBs
+ZXR0ZXIuCi0gKipDb21tZW50IGluIGBpc2NzaV90YXJnZXRfY29yZS5oYDoqKiBpdCBzYXlz
+IGBjb21wbGV0aW9uX2NsYWltZWRgIGlzIHNldCAib25jZSB0aGUgZmFicmljIGhhcyBjYWxs
+ZWQgYHRhcmdldF9jb21wbGV0ZV9jbWQoKWAiLiBJdCBpcyBhY3R1YWxseSBzZXQgYmVmb3Jl
+IHRoZSBjYWxsLiBSZXdvcmQgaXQgdG8gImhhcyBjbGFpbWVkIHRoZSBjb21wbGV0aW9uIi4K
+LSAqKlBhdGNoIDIgaXMgdW50ZXN0ZWQgYnkgdGhlIGF1dGhvcidzIG93biBhY2NvdW50Lioq
+IEl0IGxvb2tzIGNvcnJlY3QgdG8gbWUsIGluY2x1ZGluZyB0aGUgYGlzY3NpdF9zdG9wX2Rh
+dGFvdXRfdGltZXIoKWAgY2FsbCwgd2hpY2ggbWF0dGVycyBvbiB0aGlzIHBhdGguIEFzayBm
+b3IgYXQgbGVhc3QgYSBmYXVsdC1pbmplY3Rpb24gdGVzdCwgb3IgYSB0ZXN0IHdpdGggYE1h
+eE91dHN0YW5kaW5nUjJUID4gMWAsIGJlZm9yZSB0YWtpbmcgaXQuCi0gKipUZXN0aW5nIHdh
+cyBvbiBhIDUuMTQtYmFzZWQgZGlzdHJvIGJhY2twb3J0LioqIEFzayBmb3IgYSBydW4gb24g
+dXBzdHJlYW0gKDcuMy1yYyBwbHVzIHNjc2ktc3RhZ2luZykgYXMgd2VsbC4KLSAqKk5pdDoq
+KiB0aGUgdW5sb2NrZWQgYHRyYW5zcG9ydF9zdGF0ZSAmIENNRF9UX0FCT1JURURgIHJlYWRz
+IGluIGBpc2NzaXRfZXhlY3V0ZV9jbWQoKWAgc2hvdWxkIHVzZSBgUkVBRF9PTkNFKClgLiBU
+aGlzIHByZWRhdGVzIHRoZSBzZXJpZXMuCgojIyBTdWdnZXN0ZWQgdmVyZGljdAoKQXNrIGZv
+ciBhIHYzIHRoYXQ6Ci0gc2VuZHMgZXZlcnkgY29tcGxldGlvbiBvZiBhbiBhYm9ydGVkIFdS
+SVRFX1BFTkRJTkcgY29tbWFuZCB0aHJvdWdoIGBpc2NzaXRfY29tcGxldGVfYWJvcnRlZF9j
+bWQoKWAsIGluY2x1ZGluZyB0aGUgZDU4NjlkYWU1MDgwIHNpdGUgYW5kIGBEQVRBT1VUX1NF
+TkRfVE9fVFJBTlNQT1JUYCwgb3IgZWxzZSBtb3ZlcyB0aGUgb25lLXNob3QgZ3VhcmQgaW50
+byB0YXJnZXQgY29yZTsKLSBhZGRzIHRoZSBgRml4ZXM6YC9zdGFibGUgdGFnczsKLSBjbGVh
+bnMgdXAgdGhlIGNvbW1pdCBtZXNzYWdlIGZvciBwYXRjaCAyLgoKUGF0Y2ggMSdzIGNvcmUg
+Y2hhbmdlIChjb21wbGV0aW5nIHRoZSBjb21tYW5kIGluc3RlYWQgb2YgcmV0dXJuaW5nIHdo
+ZW4gbm8gUjJUIGhhcyBiZWVuIHNlbnQgeWV0KSBpcyBmaW5lIG9uIGl0cyBvd24gbWVyaXRz
+Lgo=
 
+--------------s8Ey6hFPBGWnSQfWbkDzsdy9--
