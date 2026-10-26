@@ -1,119 +1,74 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=170.10.133.124
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=170.10.129.124
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793022128;
-	b=349Ml5GiHoXcmk0lTNPglXClWhq1PbwCyt9OTbg6G+xPHci8ZAnQpBlagUjtCcutW79J
-	 MuZh+QeZH4nuU2E7NllOUCNJ8ycWnoNl1Ag1AR7bkuVQ9vAHk/pEJQXGX3FRRp+Od6Va+
-	 wBQuRftVrefLmzVw751kPO9kMA926HsSPgQqbsehmUeWPZ2v70kbR5/ALow497PbK64kK
-	 Qz9jWA6qpsV7tGYPxz4INSu8dVdeic/FCFqtu/CUV/NXNHC4w8/5oUjQt12XWMxqmFIKv
-	 APo6mOWIgyO1xYETS/vHRnT13/QhLBvzZe9Vf7g1Y+EX+Sls4XjWnGV73hgZprkfFBg==
+	t=1793027241;
+	b=NLSlBWKiUORE9CVZPdpaftL9fZR2lYr7SYEyawW++jEQXPCR+xJ1d8WYeRP62uf4xMLD
+	 PgId0VrOF2JjuxAp5a9RlkRPPCa04N+i9y+Dd8XdIV1QnRchvaIQ6lSOGyenc/B1gv0NX
+	 10YLajcFlXhC50LBckA+V/g6poVZeKRzJ1p6b1RD3qesImLYZuRLEJDz53re2SPPlbvOx
+	 LobPi+WGBywpSuhDJeMKMoRUl8G5vDNx66F2wy0q3ZjDBNGh0MDxFoRtz4BSkzGfmfKXP
+	 DDGeEDWegop+lksYNnnRLvfx5YOPWyfYzGzIF9j5pr3YN6yQO80bATREYPEgrPiQPEg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793022128;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793027241;
 	h=DMARC-Filter:DKIM-Signature:Received:X-MC-Unique:
-	 X-Mimecast-MFC-AGG-ID:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:
-	 X-Received:Received:Message-ID:Subject:From:To:Cc:Date:In-Reply-To:
-	 References:Content-Type:Content-Transfer-Encoding:User-Agent:
-	 MIME-Version;
-	bh=ed+PX3IGkbk+mTJa3PsZsNtkAoyqu1J1xwHAA2Xtd+g=;
-	b=zuQgTRgur6ip3AeFq1vQ/CmmAnTZPYbFRRN5/OkQ37z25mkw/yvot9ef33mBaMTHTIPk
-	 6X6S+FjJ5D95Kh26ItMFg/B4B0aEd6jFNOJ6dNnntx9SDPCWdYPsW8v5TzC7wA1nEe7yY
-	 uWK1JQf3TlNIpauWHfIWfmXlfkyw7sC5p5u78D+Kw3tfanSITmMNBMtjABtvo0aG/NKJc
-	 tmbvpu4r0niVHrEt8AFAZB7/lUBc7ryhDO+MhjdIseIkGxiz7n78Ido6pxs3wRfxo4MSn
-	 5Ee6dzC9zVAfOTZeHXC/3fxkkQMaLSAn9c//kt7kU6MyV04LE0VR9WdqA7Ax5npq3og==
+	 X-Mimecast-MFC-AGG-ID:Received:Received:From:To:Cc:Subject:Date:
+	 Message-ID:MIME-Version:Content-Transfer-Encoding:X-Scanned-By;
+	bh=ErBXZ3qkp9rEhypSgiIPkrPyS3IBvbxgicF7GVZZyVE=;
+	b=G4zNvPOLyTUl09XaG98MQnxX3hq1SUq4B4BpCFurM/vvUHWt9Kkq+MepePcbCxkBNIT/
+	 HQvdwE02sFK543yT4hy/a4ZBAkXLMYakG9o0lIL9eohxyRkim18kr3BPyiZm5GBrsvZj3
+	 zfa8a7HU9khFA2k0MT/nZ7Nv9XF6Djr1/FYDEsGm8U/UsS7Gy3VT9EH5rUAV6ib5HpkW6
+	 T9D9mbWO+A82LM05+utNI6v/fNnIPslIGywrgrGWHkQx+3uotg79Xp60rwK0VpC7ibRI7
+	 slIpBRO5HjvtLDCUeLant5WM5n1YLUAXPHgHHTtvSTepeA0u+sxMX5AEKoR2bsiSprg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=redhat.com;
 	spf=pass smtp.mailfrom=redhat.com;
-	dkim=pass header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=DuCB7E9I;
-	dkim=pass header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=google header.b=G7ZTZeYQ;
-	arc=none smtp.remote-ip=170.10.133.124
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+	dkim=pass header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Nu29lUtL;
+	arc=none smtp.remote-ip=170.10.129.124
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 673BC606A31D
-	for <target-devel@vger.kernel.org>; Mon, 26 Oct 2026 13:42:07 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 673BC606A31D
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0D8DB606A328
+	for <target-devel@vger.kernel.org>; Mon, 26 Oct 2026 15:07:20 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 0D8DB606A328
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=DuCB7E9I;
-	dkim=pass (2048-bit key, unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=google header.b=G7ZTZeYQ
+	dkim=pass (1024-bit key, unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Nu29lUtL
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1793022126;
+	s=mimecast20190719; t=1793027240;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=ed+PX3IGkbk+mTJa3PsZsNtkAoyqu1J1xwHAA2Xtd+g=;
-	b=DuCB7E9IIlpWmNJhC2RX1Pb/+Queovc3QgbjBnG/i9m2yAq4OOy3RdrUDUYVZBLb2YlPtK
-	FEgRTGbjQ32c8EgFG6POCI6MTkROXIoV/pcSYSdIjKtjxMhrRniyRDQdi/fcL+fKItpqBy
-	c8UJ26bwyEVrLuN+fmiLdmMAz0wTyR8=
-Received: from mail-qt1-f197.google.com (mail-qt1-f197.google.com
- [209.85.160.197]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-358-jajuq2gxOj-ljypXJeVhdw-1; Mon, 26 Oct 2026 09:42:04 -0400
-X-MC-Unique: jajuq2gxOj-ljypXJeVhdw-1
-X-Mimecast-MFC-AGG-ID: jajuq2gxOj-ljypXJeVhdw_1793022124
-Received: by mail-qt1-f197.google.com with SMTP id d75a77b69052e-5365d95f4a1so55205181cf.1
-        for <target-devel@vger.kernel.org>; Mon, 26 Oct 2026 06:42:04 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=redhat.com; s=google; t=1793022124; x=1793626924; darn=vger.kernel.org;
-        h=mime-version:user-agent:content-transfer-encoding:content-type
-         :references:in-reply-to:date:cc:to:from:subject:message-id:from:to
-         :cc:subject:date:message-id:reply-to:content-type;
-        bh=ed+PX3IGkbk+mTJa3PsZsNtkAoyqu1J1xwHAA2Xtd+g=;
-        b=G7ZTZeYQJYorU01gUtWuu+yTEdSH3kcBwNtL8ucR/cmmnfyzWMQrm/efjcpAJEV0F0
-         rZUvLImHohR5jD4cvr76unwT8PKCslUhpqcYKMXPf/TKhGtox6nBr0M6m/053PzcTvnA
-         Dv4gB5XNeUW4WDB0Q7W1CMMPTBVKRZBVv80H08PsePwZn6voLNoBVH3Db1czWK4GFXeF
-         hsUtIzuYCXFYjBTvmhT+5ABjhRMZDlDUsC9535Bb5k5yhZC8wCPkO1HrnOYIYcvhagbt
-         hyYijZyTq4K6SQMCkHnG3+l2OpV7GsiyZ6SdTsIzj6Y+r6e41mx5JzKATcXC68smlWhQ
-         b7UA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793022124; x=1793626924;
-        h=mime-version:user-agent:content-transfer-encoding:content-type
-         :references:in-reply-to:date:cc:to:from:subject:message-id:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=ed+PX3IGkbk+mTJa3PsZsNtkAoyqu1J1xwHAA2Xtd+g=;
-        b=mupvB0cCJYOKivRH9TIB/jzlh2X/0FZKRr3y+yza32aLZMy5788WwmD3AXtAa9qbZp
-         xeGbAl2MfN/K/lZqTwkXrMoa0S9cb/tt7jdn2zGyso1Mm8aFXZGzqPwlgvpIo7FWLOtP
-         l4PM5H40KSZbHtlRgV7m4iKDOnNS7B8rwWOrDaRdOG5cYoV/UZs0s5i6Cq8hVsrWwZa+
-         e4apNMjVxM3WkEW7Gf4YAljftaCULTkdMMVk+ZkTKeS0kJXnQ+S6NgoSJjvI4A+2ttND
-         I/Aq/2/9kVD5JWmWoOy5bN4keDLk64IXDxr4CWFUZEmQD8Yz+sFpWiyBZM+rBZJun2Q3
-         cDgw==
-X-Forwarded-Encrypted: i=1; AKwUvBx4Tmud/LnNOXBReq0aK+FTLD+aJux+n7kHevOHQhyH3d9Q1PSRV2/BBL7xRJmssNvu6KptBoelutSIFQw=@vger.kernel.org
-X-Gm-Message-State: AFq9FYJG1BHWLrhGe41uM5CD2KAOEvAuQk+QurN6YetOYFyX4XMUSRKp
-	VtUKCHBlIeMK1vT66ke8FrFeJ3qwdFpxkFkNmMtoO8bq9bgvzkb+myIOmO9WCx8IL5qOE8FiCpW
-	sXoh+ag0AMpVHAzokzIuTCbF62v8Xudkg/lSmmcNAhggFSoH27K82+QpXq0d/ETuhNw==
-X-Gm-Gg: AYBFou0wLqg6zHCWjiRv1pHaGQtCI/BwiNW2cFSIWAtOnLNP/YiJPfTU2bmwB0oRFnm
-	MYIvdPyFOlX86gGmCGeNqr86TR3o9bZg043dv+0Z163FCoe8qk2xk6q1CDz600MbBx8gLUEXof7
-	4xXnbMJ/tW5InOn/JxmA9hSSqe1RSckHMsdZn/KVG5s0TUX6eEGL1UoMgqVQ9ZQqlxGbxItrcSi
-	gnF//n09dd2ICrYdaOtBXDGKnz8S8vOpTs+qxVlgsk42EgS0lspImgJQkSpZB/tNV/P2Y5CjXzp
-	JAuT4/8J3w7gc27Q7bDAWEi4w/VaJrW/CW+dBmZSaXgLjzg3KtGQz9Oi6TSk+wAvAyaDKausrvb
-	tVzIRft0/blqjcmqf32Mi3ufR0WGjGpeVLlMtHkluhOT8pGKzulZmh4zaN6WkP2i59tlHlFjtJp
-	aqZyQGNvTYlUzQofDe66h8gA==
-X-Received: by 2002:a05:622a:5b0d:b0:536:575b:8dd6 with SMTP id d75a77b69052e-5383af13431mr89884431cf.0.1793022124178;
-        Mon, 26 Oct 2026 06:42:04 -0700 (PDT)
-X-Received: by 2002:a05:622a:5b0d:b0:536:575b:8dd6 with SMTP id d75a77b69052e-5383af13431mr89883771cf.0.1793022123494;
-        Mon, 26 Oct 2026 06:42:03 -0700 (PDT)
-Received: from loberman-thinkpadp16gen3.rmtusma.csb ([2600:6c65:2440:d8c:aa2b:ddff:fe88:da74])
-        by smtp.gmail.com with ESMTPSA id 6a1803df08f44-91c47c53fdcsm72863586d6.27.2026.10.26.06.42.02
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 26 Oct 2026 06:42:02 -0700 (PDT)
-Message-ID: <3e2a63af147ce884e84cd3aee1e456051265d7bc.camel@redhat.com>
-Subject: Re: [PATCH v3 2/4] scsi: target: iscsi: Complete an aborted WRITE
- when a new R2T would be sent
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=ErBXZ3qkp9rEhypSgiIPkrPyS3IBvbxgicF7GVZZyVE=;
+	b=Nu29lUtLNlKd1NuJYIHCxaQgyBL8ozb2IvCcfMEI+6pYtjT3mOj/eO2ijlzKZ7xnPoJ9Mo
+	W7jtFMSyO7ZoLKzsAfv8NArtPCL3L4QI2yTr6O8+26ux1CPDos09730Hbhiq6mBvCuXSZP
+	mEnAw1WGmtDQz/WGBtnDRpbsUIOjk38=
+Received: from mx-prod-mc-06.mail-002.prod.us-west-2.aws.redhat.com
+ (ec2-35-165-154-97.us-west-2.compute.amazonaws.com [35.165.154.97]) by
+ relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
+ cipher=TLS_AES_256_GCM_SHA384) id us-mta-125-MLbv_7tYPS-1zBVVyJ9h5Q-1; Mon,
+ 26 Oct 2026 11:07:16 -0400
+X-MC-Unique: MLbv_7tYPS-1zBVVyJ9h5Q-1
+X-Mimecast-MFC-AGG-ID: MLbv_7tYPS-1zBVVyJ9h5Q_1793027235
+Received: from mx-prod-int-01.mail-002.prod.us-west-2.aws.redhat.com (mx-prod-int-01.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.4])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mx-prod-mc-06.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id 63A7818007FD;
+	Mon, 26 Oct 2026 15:07:15 +0000 (UTC)
+Received: from loberman-thinkpadp16gen3.redhat.corp (headnet04.pony-001.prod.iad2.dc.redhat.com [10.2.32.116])
+	by mx-prod-int-01.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id 31DD530000E3;
+	Mon, 26 Oct 2026 15:07:14 +0000 (UTC)
 From: Laurence Oberman <loberman@redhat.com>
-To: sashiko-reviews@lists.linux.dev
-Cc: linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
-Date: Mon, 26 Oct 2026 09:42:02 -0400
-In-Reply-To: <sashiko-outbox-185289@kernel.org>
-References: <20261026124344.745124-1-loberman@redhat.com>
-	 <20261026124344.745124-3-loberman@redhat.com>
-	 <sashiko-outbox-185289@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.60.2 (3.60.2-2.fc44) 
+To: mkp@kernel.org
+Cc: linux-scsi@vger.kernel.org,
+	target-devel@vger.kernel.org,
+	mlombard@redhat.com,
+	michael.christie@oracle.com,
+	bvanassche@acm.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH v4 0/3] scsi: target: iscsi: fix stalled and doubly completed aborted WRITEs
+Date: Mon, 26 Oct 2026 11:07:07 -0400
+Message-ID: <20261026150710.1063511-1-loberman@redhat.com>
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Post: <mailto:target-devel@vger.kernel.org>
@@ -123,150 +78,147 @@ List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:target-devel+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-Scanned-By: MIMEDefang 3.4.1 on 10.30.177.4
 
-On Mon, 2026-10-26 at 13:13 +0000, sashiko-bot@kernel.org wrote:
-> Thank you for your contribution! Sashiko AI review found 1 potential
-> issue(s) to consider:
-> - [Critical] scsi: target: iscsi: UAF of OOO cmd in
-> iscsit_check_dataout_payload()
-> --
->=20
-> commit 93e4d74df05b6ac07e171f5586d09d2036dc2494
-> Author: Laurence Oberman <loberman@redhat.com>
->=20
-> scsi: target: iscsi: Complete an aborted WRITE when a new R2T would
-> be sent
->=20
-> This commit completes an aborted WRITE command via
-> iscsit_complete_aborted_cmd() in iscsit_check_dataout_payload() when
-> iscsit_check_post_dataout() returns DATAOUT_SEND_R2T and no
-> outstanding R2Ts
-> remain.
->=20
-> > diff --git a/drivers/target/iscsi/iscsi_target.c
-> > b/drivers/target/iscsi/iscsi_target.c
-> > index aab9237a67768..3dad7f69f3bae 100644
-> > --- a/drivers/target/iscsi/iscsi_target.c
-> > +++ b/drivers/target/iscsi/iscsi_target.c
-> > @@ -1669,6 +1669,22 @@ iscsit_check_dataout_payload(struct
-> > iscsit_cmd *cmd, struct iscsi_data *hdr,
-> > =C2=A0	if ((rc =3D=3D DATAOUT_NORMAL) || (rc =3D=3D
-> > DATAOUT_WITHIN_COMMAND_RECOVERY))
-> > =C2=A0		return 0;
-> > =C2=A0	else if (rc =3D=3D DATAOUT_SEND_R2T) {
-> > +		/*
-> > +		 * A new R2T would never be answered for an
-> > aborted command.
-> > +		 * The CMD_T_ABORTED handling in
-> > __iscsit_check_dataout_hdr()
-> > +		 * does not cover this: it only runs for DataOut
-> > PDUs
-> > +		 * belonging to R2Ts that were already issued, and
-> > +		 * iscsit_dataout_update_r2t() has already
-> > decremented
-> > +		 * outstanding_r2ts for the burst that just
-> > finished.=C2=A0 Guard
-> > +		 * on outstanding_r2ts so that with
-> > MaxOutstandingR2T > 1 the
-> > +		 * completion is still left to the last R2T to
-> > drain.
-> > +		 */
-> > +		if (cmd->se_cmd.transport_state & CMD_T_ABORTED) {
-> > +			if (cmd->outstanding_r2ts < 1)
-> > +				iscsit_complete_aborted_cmd(cmd);
-> > +			return 0;
-> > +		}
->=20
-> [Severity: Critical]
-> Can completing the command here cause a use-after-free of cmd if
-> ICF_OOO_CMDSN is set?
->=20
-> When ImmediateData=3DYes and InitialR2T=3DNo, a WRITE command can arrive
-> with
-> immediate data and expect additional unsolicited DataOut PDUs in the
-> first
-> burst followed by R2T-solicited data (payload_length <
-> FirstBurstLength <
-> se_cmd.data_length, so cmd->unsolicited_data =3D=3D 1 and
-> ICF_NON_IMMEDIATE_UNSOLICITED_DATA is set).
->=20
-> In drivers/target/iscsi/iscsi_target.c:iscsit_process_scsi_cmd(),
-> transport_generic_new_cmd(&cmd->se_cmd) is called before CmdSN
-> sequencing:
->=20
-> 	cmd->sense_reason =3D transport_generic_new_cmd(&cmd->se_cmd);
-> 	if (cmd->sense_reason)
-> 		return 1;
->=20
-> This places cmd->se_cmd on dev->queues[cpuid].state_list in
-> TRANSPORT_WRITE_PENDING. When iscsit_get_immediate_data()
-> subsequently calls
-> iscsit_sequence_cmd() and cmd->cmd_sn > sess->exp_cmd_sn,
-> drivers/target/iscsi/iscsi_target_erl1.c:iscsit_handle_ooo_cmdsn()
-> queues
-> an entry on sess->sess_ooo_cmdsn_list holding a raw pointer to cmd:
->=20
-> 	cmd->cmd_flags			|=3D ICF_OOO_CMDSN;
-> 	...
-> 	ooo_cmdsn->cmd			=3D cmd;
->=20
-> Because cmd->unsolicited_data is set, iscsit_get_immediate_data()
-> then calls
-> iscsit_set_unsolicited_dataout(cmd).
->=20
-> If a concurrent TMR aborts cmd while it is still waiting on
-> sess->sess_ooo_cmdsn_list, __target_check_io_state() sets
-> CMD_T_ABORTED on
-> cmd->se_cmd. When the final unsolicited DataOut PDU of the first
-> burst
-> arrives, __iscsit_check_dataout_hdr() takes the cmd->unsolicited_data
-> =3D=3D 1
-> path, and iscsit_dataout_post_crc_passed() clears cmd-
-> >unsolicited_data =3D 0
-> and returns DATAOUT_SEND_R2T.
->=20
-> In this new DATAOUT_SEND_R2T branch in
-> iscsit_check_dataout_payload(),
-> cmd->outstanding_r2ts is 0, so iscsit_complete_aborted_cmd(cmd) is
-> called
-> without checking ICF_OOO_CMDSN or removing cmd from
-> sess->sess_ooo_cmdsn_list (unlike the adjacent
-> DATAOUT_SEND_TO_TRANSPORT
-> branch, which checks cmd->cmd_flags & ICF_OOO_CMDSN).
->=20
-> Once target_complete_cmd() schedules target_abort_work ->
-> target_handle_abort(), cmd is completed and freed via
-> iscsit_release_cmd().
-> When the missing ExpCmdSN PDU later arrives,
-> drivers/target/iscsi/iscsi_target_erl1.c:iscsit_execute_ooo_cmdsns()
-> will
-> dereference the dangling ooo_cmdsn->cmd pointer:
->=20
-> 		cmd =3D ooo_cmdsn->cmd;
-> 		cmd->i_state =3D cmd->deferred_i_state;
-> 		ooo_count++;
-> 		sess->exp_cmd_sn++;
-> 		...
-> 		iscsit_remove_ooo_cmdsn(sess, ooo_cmdsn);
->=20
-> 		if (iscsit_execute_cmd(cmd, 1) < 0)
-> 			return -1;
->=20
-> Should the DATAOUT_SEND_R2T abort path also account for commands with
-> ICF_OOO_CMDSN set before completing cmd?
+These three patches apply on top of commit d5869dae5080 ("scsi: target: iscsi: Fix hang for aborted WRITE_PENDING commands").
 
-I will drop patch 2 for this series as this turns out out be a real
-issue and follow up with a v4 for the series. Dropping patch 2 will not
-affect the validity of the fix with the over 300 reset loop tests we
-ran which resolved the original customer issue.
+A WRITE command that is still in TRANSPORT_WRITE_PENDING has never been
+passed to the backend, so when a TMR aborts it the iSCSI fabric is the one
+that has to complete it. That commit fixed the case where the final
+DataOut PDU for an already-issued R2T arrives after the abort. Two more
+paths can leave such a command with nothing to complete it, or let it be
+completed twice:
 
-Sashiko complaints for patches 1 and 4 are pre-existing and wont be
-handled in this series.
+ - Patch 1 is the hang this work started from. A WRITE that arrives with
+   immediate data, aborted after that data has been received but before
+   the first R2T is built, is never completed by anything: no R2T has been
+   sent so the initiator cannot send more data, and no DataOut timer is
+   armed so the ERL=0 timeout cannot fire either. core_tmr_lun_reset()
+   then blocks for as long as the connection stays up.
 
-It has taken many weeks to get to stable outcome for a customer that
-included multiple long vmcore analysis tasks and instrumentation.
+ - Patches 2 and 3 fix two existing sites that complete an aborted
+   WRITE_PENDING command without recording that they have done so, and
+   which connection teardown can therefore complete a second time.
 
+Patch 1 also adds a one-shot completion claim. target_complete_cmd() on a
+command that already has CMD_T_ABORTED set goes into
+target_cmd_interrupted(), which queues target_abort_work and returns
+without setting CMD_T_COMPLETE and without changing t_state, so target
+core records nothing that would stop a second completion. The command
+stays in TRANSPORT_WRITE_PENDING and on conn_cmd_list until
+target_abort_work reaches iscsit_aborted_task(), and
+iscsit_release_commands_from_conn() completes anything it finds in
+TRANSPORT_WRITE_PENDING. The claim is what makes exactly one site
+complete the command.
 
-Thanks
-Laurence
+Changes since v3:
+ - Dropped the patch that completed an aborted WRITE in the
+   DATAOUT_SEND_R2T branch of iscsit_check_dataout_payload(). The review
+   of v3 pointed out that the adjacent DATAOUT_SEND_TO_TRANSPORT branch
+   deliberately checks ICF_OOO_CMDSN and defers, and the dropped patch did
+   not: it could complete and free a command still reachable by raw
+   pointer from sess_ooo_cmdsn_list, which iscsit_execute_ooo_cmdsns()
+   dereferences later. Simply mirroring the neighbour is not enough
+   either, because a command with ICF_NON_IMMEDIATE_UNSOLICITED_DATA set
+   falls through iscsit_execute_cmd() without being completed when the
+   CmdSN gap is filled. That window needs more thought than this series
+   should carry, and it was never observed in the field, so it will come
+   back on its own.
+ - Patches 1 to 3 are unchanged from v3 patches 1, 3 and 4 respectively.
+
+v3: https://lore.kernel.org/linux-scsi/20261026124344.745124-1-loberman@redhat.com/
+v2: https://lore.kernel.org/linux-scsi/20261016175351.126373-1-loberman@redhat.com/
+v1: https://lore.kernel.org/linux-scsi/20261014143932.39453-1-loberman@redhat.com/
+
+Two other findings against v3 are pre-existing rather than introduced
+here, and I am reporting them separately rather than widening this series
+again:
+
+iscsit_get_immediate_data() reads cmd->sense_reason and
+cmd->unsolicited_data after iscsit_sequence_cmd() returns, holding no
+reference, and target_handle_abort() drops the final reference for an
+aborted command. Patch 1 adds a path where that can happen, but so does
+the branch directly above it: iscsit_handle_immediate_data() sets
+ICF_GOT_LAST_DATAOUT when all of the command's data arrives as immediate
+data, and iscsit_execute_cmd() then calls target_execute_cmd() from the
+same caller with the same abort states. Patch 1 adds a third path with a
+property two existing paths already have.
+
+In patch 3, CMD_T_ABORTED can be set between the check and
+target_cmd_interrupted() inside target_execute_cmd(), leaving the
+completion unclaimed. That is also what happens today for every aborted
+command on that path; the patch narrows the window rather than closing it.
+
+A correction to something I said during the v2 review, in case it is
+relied on: I wrote that if the outstanding_r2ts read in the dropped patch
+was stale low, "the later completion in __iscsit_check_dataout_hdr()
+becomes a no-op". That was wrong -- before patch 2 of this series that
+site called target_complete_cmd() directly and never consulted the claim.
+
+On moving the one-shot guard into target core:
+
+This will be explored later on but is not in scope for this series; it
+changes the path every fabric completes through and I have no way to test
+easily in iSER, FC or SRP right now.
+
+How this was found and tested:
+
+The hang was reported against an Oracle RAC cluster on two-session iSCSI
+LIO targets, where one node's LUN_RESET aborts WRITEs belonging to the
+other node's session. It was not reproducible in a lab, so the diagnosis
+came from instrumented kernels in the reporter's environment, logging
+every site that completes or waits on an aborted command.
+
+Across two hosts every stall had the identical signature given in patch 1,
+and the stall only ever ended when the initiator gave up and dropped the
+connection. 217 of 222 LUN_RESET drains completed in under a second; the
+rest took 46 to 54 seconds, which is where the hung-task panics came from.
+One 53.7 second stall recovered on its own and the host ran for a further
+19 hours.
+
+An earlier attempt at this fix completed the command from
+core_tmr_drain_state_list() instead. That is not safe: at that point the
+initiator may still be sending DataOut for the command, and the result was
+a double completion -- re-queued se_cmd->work, list_del corruption and a
+refcount underflow. Mentioning it in case the same idea comes up in
+review.
+
+What is and is not tested:
+
+Patch 1, backported to a 5.14-based distro kernel, has run 300 LUN_RESET
+cycles with no hang, in two independent runs: one instrumented and one
+with the tracing removed. The same reproducer previously failed at 95 and
+196 cycles. The instrumented kernels also carried the dropped
+DATAOUT_SEND_R2T patch, and recorded that its site fired zero times in
+either run, so removing it does not change anything those runs exercised.
+
+Patches 2 and 3 are closed by inspection. Patch 2's site did run during
+those tests, but by way of the unclaimed target_complete_cmd() it
+replaces; when the claim succeeds the two are the same two calls in the
+same order, so the tested behaviour is preserved. Patch 3 leaves the
+non-aborted path through target_execute_cmd() untouched.
+
+The reporter's environment is a production cluster and is the only place
+this has ever reproduced, so I cannot offer an upstream -rc run from
+there. A build of this series is going to them for a further 300-cycle run
+and I will report back. If that is a blocker for patches 2 and 3, I would
+rather you took patch 1 on its own than held the series.
+
+Laurence Oberman (3):
+  scsi: target: iscsi: Complete an aborted WRITE stuck before the first
+    R2T
+  scsi: target: iscsi: Claim the completion in
+    __iscsit_check_dataout_hdr()
+  scsi: target: iscsi: Claim the completion on the DataOut submit path
+
+ drivers/target/iscsi/iscsi_target.c      | 28 +++++++++++----
+ drivers/target/iscsi/iscsi_target_erl1.c | 10 +++++-
+ drivers/target/iscsi/iscsi_target_util.c | 46 ++++++++++++++++++++++++
+ drivers/target/iscsi/iscsi_target_util.h |  2 ++
+ include/target/iscsi/iscsi_target_core.h |  6 ++++
+ 5 files changed, 85 insertions(+), 7 deletions(-)
+
+-- 
+2.43.0
 
