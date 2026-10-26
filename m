@@ -1,65 +1,65 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=170.10.133.124
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=170.10.129.124
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793027245;
-	b=kuYaDYSftIkelVar+1L1Ox1Wqlfjv3IGhNIwK9+DRFwAg/Zf7dBm0M6XejEdmVaGHUyr
-	 AaRanPtwXPFkDai1T06wa9qATwe/vF235iiBY3y5XiOY041xKS5vUz3B9O8VhsSwZu/hJ
-	 JDNxhpDnkG7ZGFW73kppasLE+B7CWv6/ZIMrGdDVbFL18uu9i8EWauP54VM0fx+NpkME8
-	 2213mUHEJWOBxTwmTwc/PwLkxJn0z8VRnQix3TjPgCCY4GNtVHMfjp03tK+K9iiqs7UkS
-	 x9Sze8by7U4/EQdhr9aX37aQscWJoeohKDXLthPJkBAXoFAJ3K8mkCBh2qdReJnEhlw==
+	t=1793027246;
+	b=G1bjtvDIKMg5tW7/7qeyRkWFi4dHQfuor6gY1USTBFuU1mhMUFM4/pvgfsP/dFApVA3O
+	 n7kzxarMieR2raZZ+ecJ2VP9Mpeoyrnlfm7NJUEvoHDwgfIy46TLBjpkR+0xAQw5goBR6
+	 dufu9H44SF/CGXyB8ZhJ+IAS3FxH2l7P5q7vhkvYyeNT03+of16ogXN2nfQdTmJioEV8a
+	 HxeaTJfJUgYpInwd5RjSRRkwc/cc1avCZu9XyFYaDu51eguVoh6E1NyJA7aMgCL8Lxuta
+	 uT5Ei9qyCyY0N3zNSc1FyAPgNOsXVjnGiw3Cg/z1hTUw6UZaHSuNomEEogfyRv/2S7w==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793027245;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793027246;
 	h=DMARC-Filter:DKIM-Signature:Received:X-MC-Unique:
 	 X-Mimecast-MFC-AGG-ID:Received:Received:From:To:Cc:Subject:Date:
 	 Message-ID:In-Reply-To:References:MIME-Version:
 	 Content-Transfer-Encoding:X-Scanned-By;
-	bh=knXRq142e85M+kupUkJy646qboEKARTEaWQ97s0UgTA=;
-	b=o23+gMflICi1F7ytI+gZcei2OxaCnVfRH1mc/4tzZUnpUWj6XpO7Y9HYWIR/dcE1zclE
-	 YXnQzlNYClSkypOFHpe0UVZ5lf5Ug8e89vR90SaxkhjeOdfIpypd0PYZPhuxCx1HbDQLW
-	 mUsLg40jrX5oKQ9KVvttn2yRViWZto65L91R9Da1KVTahxIbiGl6QvPkNlfWGrnOefKku
-	 kkhxmzPgPexKRmsnYXZMbj3Y+bycZ9eEmmmZmTEoAffiaFTMI3JEPVrDsGmUnggR0WqUJ
-	 Tu0UWmaZrqpKLkjzuQTf3PNpUvqudNm7ePXv9MSw4ukSFgtQv0iD9O6DZZBHSiHG4ww==
+	bh=REua7KH6IzqESw+dc1GH0ozo9MSXSLf0MZPuygQgD+o=;
+	b=Zj7vjGdXoc62lDIOqsF3swX1dRBstrpmI8tk5tXQSuRTSxjKMhd7jDv/d898ckgVYhrU
+	 4BUeu8M01M2JCBKE1X5OulLrp2pMxDqlLKTrQ0pLIZsNISTmWwFGfwuDx/RwH73LtDSHL
+	 cweWnMGvHzCXeNNDODlzqlIne4KfJe2dfNz3WI6YnyDAg3G2xIkBhVF0Pcyp8LxtseRSr
+	 M/PrtTSE2g0bO4dQQAoHxzge0Z83+u6xT/ccrVw3MJsFR4cAJJRWingI5KWm4idxSYeKo
+	 ZJDrsAMiIa5/ioR9ZWDJclcVuuqaaL9gWCkwlkW/urKZysiL/XPo43NKu8TSXXv6VGA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=redhat.com;
 	spf=pass smtp.mailfrom=redhat.com;
-	dkim=pass header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=eromITRV;
-	arc=none smtp.remote-ip=170.10.133.124
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+	dkim=pass header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=UrJZR7na;
+	arc=none smtp.remote-ip=170.10.129.124
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A7EDE606A339
-	for <target-devel@vger.kernel.org>; Mon, 26 Oct 2026 15:07:24 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org A7EDE606A339
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BC2D060A2612
+	for <target-devel@vger.kernel.org>; Mon, 26 Oct 2026 15:07:25 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org BC2D060A2612
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=eromITRV
+	dkim=pass (1024-bit key, unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=UrJZR7na
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1793027243;
+	s=mimecast20190719; t=1793027244;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=knXRq142e85M+kupUkJy646qboEKARTEaWQ97s0UgTA=;
-	b=eromITRVVJEEaTXHKvDy4XU5ZR3sx6laDgMqrf028/Qkh5YKA9Koh3c/6iX38dV44xqFRo
-	H4ecNNiwpK107NPM98EaShiRwjm0KAdlLqw0xeDe/AvAll5riraZgESvo3p1h3OhuqDJi2
-	dnhFTAPf+77hG4oKBZVxIp8hqy67Bgk=
-Received: from mx-prod-mc-05.mail-002.prod.us-west-2.aws.redhat.com
- (ec2-54-186-198-63.us-west-2.compute.amazonaws.com [54.186.198.63]) by
+	bh=REua7KH6IzqESw+dc1GH0ozo9MSXSLf0MZPuygQgD+o=;
+	b=UrJZR7nahZp102h3wgr7s08tT9AaB+McTyvirG0dbm0q8hhFZUwNlI1gSKqQHcK2haMyeg
+	wxeVjCyguMiwKQx2X3/OKiafhgVn/UFx9nwcigcTOGe1E9PEx8YJ+lg4ezxUOkiVf1cDM4
+	U83kGuOJVpGi29GlLt04XN30ozhrMcc=
+Received: from mx-prod-mc-06.mail-002.prod.us-west-2.aws.redhat.com
+ (ec2-35-165-154-97.us-west-2.compute.amazonaws.com [35.165.154.97]) by
  relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
- cipher=TLS_AES_256_GCM_SHA384) id us-mta-226-xkKoX4nDOE6tI3u5x_u0EQ-1; Mon,
- 26 Oct 2026 11:07:19 -0400
-X-MC-Unique: xkKoX4nDOE6tI3u5x_u0EQ-1
-X-Mimecast-MFC-AGG-ID: xkKoX4nDOE6tI3u5x_u0EQ_1793027237
+ cipher=TLS_AES_256_GCM_SHA384) id us-mta-177-rEc73xqDM2mbStcMOOazzg-1; Mon,
+ 26 Oct 2026 11:07:23 -0400
+X-MC-Unique: rEc73xqDM2mbStcMOOazzg-1
+X-Mimecast-MFC-AGG-ID: rEc73xqDM2mbStcMOOazzg_1793027242
 Received: from mx-prod-int-01.mail-002.prod.us-west-2.aws.redhat.com (mx-prod-int-01.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.4])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mx-prod-mc-05.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id C085F1953966;
-	Mon, 26 Oct 2026 15:07:17 +0000 (UTC)
+	by mx-prod-mc-06.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id 218501801329;
+	Mon, 26 Oct 2026 15:07:22 +0000 (UTC)
 Received: from loberman-thinkpadp16gen3.redhat.corp (headnet04.pony-001.prod.iad2.dc.redhat.com [10.2.32.116])
-	by mx-prod-int-01.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id 8310D30000E3;
-	Mon, 26 Oct 2026 15:07:16 +0000 (UTC)
+	by mx-prod-int-01.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id 0D7EA30000E7;
+	Mon, 26 Oct 2026 15:07:20 +0000 (UTC)
 From: Laurence Oberman <loberman@redhat.com>
 To: mkp@kernel.org
 Cc: linux-scsi@vger.kernel.org,
@@ -67,11 +67,10 @@ Cc: linux-scsi@vger.kernel.org,
 	mlombard@redhat.com,
 	michael.christie@oracle.com,
 	bvanassche@acm.org,
-	linux-kernel@vger.kernel.org,
-	stable@vger.kernel.org
-Subject: [PATCH v4 1/3] scsi: target: iscsi: Complete an aborted WRITE stuck before the first R2T
-Date: Mon, 26 Oct 2026 11:07:08 -0400
-Message-ID: <20261026150710.1063511-2-loberman@redhat.com>
+	linux-kernel@vger.kernel.org
+Subject: [PATCH v4 3/3] scsi: target: iscsi: Claim the completion on the DataOut submit path
+Date: Mon, 26 Oct 2026 11:07:10 -0400
+Message-ID: <20261026150710.1063511-4-loberman@redhat.com>
 In-Reply-To: <20261026150710.1063511-1-loberman@redhat.com>
 References: <20261026150710.1063511-1-loberman@redhat.com>
 X-Mailing-List: target-devel@vger.kernel.org
@@ -86,219 +85,70 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Scanned-By: MIMEDefang 3.4.1 on 10.30.177.4
 
-A WRITE that arrives with immediate data, and whose data length exceeds
-FirstBurstLength, is left in TRANSPORT_WRITE_PENDING by
-iscsit_execute_cmd() until the first R2T is built. If a LUN_RESET or
-ABORT_TASK from another session sets CMD_T_ABORTED in that window,
-iscsit_execute_cmd() returns without sending the R2T.
+When the final DataOut PDU for a WRITE has been received,
+iscsit_check_dataout_payload() submits the command with
+target_execute_cmd(). For a command that has already been aborted,
+target_execute_cmd() calls target_cmd_interrupted() before it touches
+t_state, so it queues target_abort_work and returns with the command still
+in TRANSPORT_WRITE_PENDING and still on conn_cmd_list, recording nothing to
+say that a completion has been started.
 
-Nothing then completes the command. No R2T has been sent, so the
-initiator cannot legally send more data; no DataOut timer was armed, so
-the ERL=0 timeout cannot fire either. The command stays in
-TRANSPORT_WRITE_PENDING with CMD_T_ABORTED set, and
-core_tmr_drain_state_list() blocks in target_put_cmd_and_wait() on it for
-as long as the connection stays up:
+A connection drop before target_abort_work reaches iscsit_aborted_task()
+then lets iscsit_release_commands_from_conn() complete the command a second
+time.
 
-  INFO: task kworker/5:2 blocked for more than 46 seconds.
-   target_put_cmd_and_wait+0x6d/0xb0 [target_core_mod]
-   core_tmr_drain_state_list+0x2dc/0x380 [target_core_mod]
-   core_tmr_lun_reset+0x93/0x1a0 [target_core_mod]
+Complete aborted commands through iscsit_complete_aborted_cmd() rather than
+handing them to target_execute_cmd(). Both reach target_cmd_interrupted()
+and queue target_abort_work; the work target_execute_cmd() does after that
+test is not reached for an aborted command either way. The dataout timer
+has already been stopped a few lines above, so the helper's call to
+iscsit_stop_dataout_timer() is a no-op here.
 
-Commit aaa00cc93c1d ("scsi: target/core: Fix TAS handling for
-aborted commands") is what left it that way. Before it, this site
-called transport_check_aborted_status(), which sent the delayed
-TASK_ABORTED status for the command; that commit replaced the call
-with a bare CMD_T_ABORTED test and a return, on the basis that the
-target core would send TASK_ABORTED from the ABORT TMF context
-instead. That holds only for commands the core can finish on its
-own. A WRITE still in TRANSPORT_WRITE_PENDING has never been passed
-to the backend, so the core's abort path is itself waiting in
-target_put_cmd_and_wait() for the fabric to complete it, and since
-that commit the fabric no longer does.
-
-Complete it in iscsit_execute_cmd() instead. No DataOut path can race
-with this: without an R2T the initiator cannot send further data for the
-command, and the branch is only reached when no unsolicited DataOut is
-expected either.
-
-That introduces a second site which can complete a command that
-iscsit_release_commands_from_conn() would also complete during connection
-teardown, because t_state is still TRANSPORT_WRITE_PENDING there.
-target_complete_cmd() on a command that already has CMD_T_ABORTED set
-goes straight into target_cmd_interrupted(), which queues
-target_abort_work and returns without setting CMD_T_COMPLETE and without
-changing t_state, so nothing in target core records that a completion has
-happened. A second target_complete_cmd() re-initialises and re-queues
-se_cmd->work while it is still queued and drops a command reference that
-was never taken. Add a one-shot claim, taken under se_cmd->t_state_lock,
-so that only one of the two sites completes the command.
-
-This was reported against an Oracle RAC cluster on two-session iSCSI LIO
-targets, where one node's LUN_RESET aborts WRITEs belonging to the other
-node's session. It was not reproducible in a lab, so the diagnosis came
-from instrumented kernels in the reporter's environment. Across two
-hosts, every stalled command had the same signature: DMA_TO_DEVICE,
-TRANSPORT_WRITE_PENDING, CMD_T_ABORTED | CMD_T_TAS, outstanding_r2ts == 0,
-write_data_done == first_burst_len, and an empty cmd_r2t_list. 217 of 222
-LUN_RESET drains completed in under a second; the rest took 46 to 54
-seconds, which is where the hung-task panics came from. One 53.7 second
-stall recovered on its own and the host ran for a further 19 hours. The
-stall only ever ended when the initiator gave up and dropped the
-connection, which let iscsit_release_commands_from_conn() complete the
-command.
-
-Fixes: aaa00cc93c1d ("scsi: target/core: Fix TAS handling for aborted commands")
-Cc: stable@vger.kernel.org
+Fixes: ea87981a0ee8 ("scsi: target: iscsi: Handle abort for WRITE_PENDING cmds")
 Signed-off-by: Laurence Oberman <loberman@redhat.com>
 ---
- drivers/target/iscsi/iscsi_target.c      | 12 +++++--
- drivers/target/iscsi/iscsi_target_erl1.c | 10 +++++-
- drivers/target/iscsi/iscsi_target_util.c | 46 ++++++++++++++++++++++++
- drivers/target/iscsi/iscsi_target_util.h |  2 ++
- include/target/iscsi/iscsi_target_core.h |  6 ++++
- 5 files changed, 73 insertions(+), 3 deletions(-)
+
+Notes:
+    Not observed in the field; closed by inspection after the review of v2
+    pointed out that this site has the same shape as the one in
+    __iscsit_check_dataout_hdr().  I have deliberately left Cc: stable off,
+    since the window predates d5869dae5080 and has never been seen -- I would
+    rather it sat in mainline for a cycle first.
+    
+    The review of v3 noted that CMD_T_ABORTED can still be set between this
+    check and target_cmd_interrupted() inside target_execute_cmd(), leaving the
+    completion unclaimed.  That is true, and it is the pre-existing behaviour
+    for every aborted command on this path today; this patch narrows the window
+    rather than closing it.  Closing it properly needs the one-shot guard to
+    live in target_cmd_interrupted() under t_state_lock, which is the same lock
+    __target_check_io_state() sets CMD_T_ABORTED under.  See the cover letter.
+    
+    Happy to drop this patch if you would prefer the series to stop at patch 2.
+
+ drivers/target/iscsi/iscsi_target.c | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
 diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/iscsi_target.c
-index 124ff26..aab9237 100644
+index 1db6051..9341565 100644
 --- a/drivers/target/iscsi/iscsi_target.c
 +++ b/drivers/target/iscsi/iscsi_target.c
-@@ -4198,10 +4198,18 @@ static void iscsit_release_commands_from_conn(struct iscsit_conn *conn)
- 		if (cmd->se_cmd.t_state == TRANSPORT_WRITE_PENDING) {
- 			/*
- 			 * We never submitted the cmd to LIO core, so we have
--			 * to tell LIO to perform the completion process.
-+			 * to tell LIO to perform the completion process --
-+			 * unless iscsit_execute_cmd() already did.  t_state
-+			 * stays TRANSPORT_WRITE_PENDING across that
-+			 * completion, so the claim is the only thing that can
-+			 * tell us.
- 			 */
-+			bool claimed = iscsit_claim_completion_locked(cmd);
-+
- 			spin_unlock_irq(&se_cmd->t_state_lock);
--			target_complete_cmd(&cmd->se_cmd, SAM_STAT_TASK_ABORTED);
-+			if (claimed)
-+				target_complete_cmd(&cmd->se_cmd,
-+						    SAM_STAT_TASK_ABORTED);
- 			continue;
- 		}
- 		spin_unlock_irq(&se_cmd->t_state_lock);
-diff --git a/drivers/target/iscsi/iscsi_target_erl1.c b/drivers/target/iscsi/iscsi_target_erl1.c
-index d8ca06e..cf72c79 100644
---- a/drivers/target/iscsi/iscsi_target_erl1.c
-+++ b/drivers/target/iscsi/iscsi_target_erl1.c
-@@ -927,8 +927,16 @@ int iscsit_execute_cmd(struct iscsit_cmd *cmd, int ooo)
- 
- 			if (!(cmd->cmd_flags &
- 					ICF_NON_IMMEDIATE_UNSOLICITED_DATA)) {
--				if (cmd->se_cmd.transport_state & CMD_T_ABORTED)
-+				/*
-+				 * No R2T has been sent for this command yet,
-+				 * so returning here leaves the initiator with
-+				 * nothing to send and no DataOut timer armed.
-+				 * Complete it, or nothing ever will.
-+				 */
-+				if (cmd->se_cmd.transport_state & CMD_T_ABORTED) {
-+					iscsit_complete_aborted_cmd(cmd);
- 					return 0;
-+				}
- 
- 				iscsit_set_dataout_sequence_values(cmd);
- 				conn->conn_transport->iscsit_get_dataout(conn, cmd, false);
-diff --git a/drivers/target/iscsi/iscsi_target_util.c b/drivers/target/iscsi/iscsi_target_util.c
-index c1888c4..31248cb 100644
---- a/drivers/target/iscsi/iscsi_target_util.c
-+++ b/drivers/target/iscsi/iscsi_target_util.c
-@@ -14,6 +14,7 @@
- #include <scsi/scsi_tcq.h>
- #include <scsi/iscsi_proto.h>
- #include <target/target_core_base.h>
-+#include <target/target_core_backend.h>
- #include <target/target_core_fabric.h>
- #include <target/iscsi/iscsi_transport.h>
- 
-@@ -186,6 +187,51 @@ struct iscsit_cmd *iscsit_allocate_cmd(struct iscsit_conn *conn, int state)
- }
- EXPORT_SYMBOL(iscsit_allocate_cmd);
- 
-+/*
-+ * A WRITE command still in TRANSPORT_WRITE_PENDING has never been passed to
-+ * the backend, so when a TMR aborts it the fabric has to complete it.  More
-+ * than one site can reach that conclusion for the same command, and
-+ * target_complete_cmd() on a command that already has CMD_T_ABORTED set
-+ * neither sets CMD_T_COMPLETE nor changes t_state, so target core keeps no
-+ * state that would stop a second completion.  Serialise them here: whichever
-+ * site claims the completion performs it and every other site leaves the
-+ * command alone.
-+ *
-+ * Caller must hold cmd->se_cmd.t_state_lock.
-+ */
-+bool iscsit_claim_completion_locked(struct iscsit_cmd *cmd)
-+{
-+	lockdep_assert_held(&cmd->se_cmd.t_state_lock);
-+
-+	if (cmd->completion_claimed)
-+		return false;
-+
-+	cmd->completion_claimed = true;
-+	return true;
-+}
-+
-+/* Complete an aborted command at most once.  Must not hold t_state_lock. */
-+void iscsit_complete_aborted_cmd(struct iscsit_cmd *cmd)
-+{
-+	struct se_cmd *se_cmd = &cmd->se_cmd;
-+	unsigned long flags;
-+	bool claimed;
-+
-+	spin_lock_irqsave(&se_cmd->t_state_lock, flags);
-+	claimed = iscsit_claim_completion_locked(cmd);
-+	spin_unlock_irqrestore(&se_cmd->t_state_lock, flags);
-+
-+	if (!claimed)
-+		return;
-+
-+	/*
-+	 * No-op unless a DataOut timer was armed for this command; callers
-+	 * that complete before the first R2T have none.
-+	 */
-+	iscsit_stop_dataout_timer(cmd);
-+	target_complete_cmd(se_cmd, SAM_STAT_TASK_ABORTED);
-+}
-+
- struct iscsi_seq *iscsit_get_seq_holder_for_datain(
- 	struct iscsit_cmd *cmd,
- 	u32 seq_send_order)
-diff --git a/drivers/target/iscsi/iscsi_target_util.h b/drivers/target/iscsi/iscsi_target_util.h
-index 7ae48a8..8f3fe74 100644
---- a/drivers/target/iscsi/iscsi_target_util.h
-+++ b/drivers/target/iscsi/iscsi_target_util.h
-@@ -18,6 +18,8 @@ extern struct iscsi_r2t *iscsit_get_r2t_from_list(struct iscsit_cmd *);
- extern void iscsit_free_r2t(struct iscsi_r2t *, struct iscsit_cmd *);
- extern void iscsit_free_r2ts_from_list(struct iscsit_cmd *);
- extern struct iscsit_cmd *iscsit_allocate_cmd(struct iscsit_conn *, int);
-+extern bool iscsit_claim_completion_locked(struct iscsit_cmd *cmd);
-+extern void iscsit_complete_aborted_cmd(struct iscsit_cmd *cmd);
- extern struct iscsi_seq *iscsit_get_seq_holder_for_datain(struct iscsit_cmd *, u32);
- extern struct iscsi_seq *iscsit_get_seq_holder_for_r2t(struct iscsit_cmd *);
- extern struct iscsi_r2t *iscsit_get_holder_for_r2tsn(struct iscsit_cmd *, u32);
-diff --git a/include/target/iscsi/iscsi_target_core.h b/include/target/iscsi/iscsi_target_core.h
-index 51ca80a..5eb3cf2 100644
---- a/include/target/iscsi/iscsi_target_core.h
-+++ b/include/target/iscsi/iscsi_target_core.h
-@@ -496,6 +496,12 @@ struct iscsit_cmd {
- 	u32			first_data_sg_off;
- 	u32			kmapped_nents;
- 	sense_reason_t		sense_reason;
-+	/*
-+	 * Set once one site has claimed the completion of this command.
-+	 * The claim is taken before target_complete_cmd() is called.
-+	 * Protected by se_cmd.t_state_lock.
-+	 */
-+	bool			completion_claimed;
- }  ____cacheline_aligned;
- 
- struct iscsi_tmr_req {
+@@ -1683,6 +1683,16 @@ iscsit_check_dataout_payload(struct iscsit_cmd *cmd, struct iscsi_data *hdr,
+ 		iscsit_stop_dataout_timer(cmd);
+ 		if (ooo_cmdsn)
+ 			return 0;
++		/*
++		 * target_execute_cmd() tests CMD_T_ABORTED before it touches
++		 * t_state, so for an aborted command it would queue
++		 * target_abort_work and return with the command still in
++		 * TRANSPORT_WRITE_PENDING and the completion unclaimed.
++		 */
++		if (cmd->se_cmd.transport_state & CMD_T_ABORTED) {
++			iscsit_complete_aborted_cmd(cmd);
++			return 0;
++		}
+ 		target_execute_cmd(&cmd->se_cmd);
+ 		return 0;
+ 	} else /* DATAOUT_CANNOT_RECOVER */
 -- 
 2.43.0
 
