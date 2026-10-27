@@ -1,118 +1,86 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=170.10.129.124
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=195.3.219.148
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793131695;
-	b=zIcYq1g04IAhzgkkiAzvMI13naO1H7L6qMFSEx2xnSsoSaatIGlUfjNeGNrKSHiO+02Z
-	 acHLTcK/hBx3V7/2dRsggU4FhUZrcCoVSfVw/J+40EFFCy+w0y5CKXfYjYjGx3WjoHKdY
-	 ggadBJABuRik/B4Ar5tMquCCYmm7Qio0F/gsAURotvHE8Kk1CNUeozbiHnxwaru6piaWl
-	 5nNNWyPteR14acxepj0sLSblSqmfvdVGGAzqUc5dBxvWUf24BXiPmsXOdNX+DwNHAf9J4
-	 VmAkm4UF5Pz53rTmSs+DlntvmfKJnT3r2k2peu5067o70GnfbOMS++bgvk+/WNaSDMA==
+	t=1793141751;
+	b=knTP0pW0VvaYtGZE3N4ceFRBG+ttNqeIXpG20xI6156z5XAyQBzjHv+90cU+8K3RxpPA
+	 V6dJuEV7kQRbGSbdo66kAP9NADej0yX9YkZtOJEhso9rTtlOIkBwVAec1r+JgEZO0+jSJ
+	 kIe6KggIhLCKLefn6DnnFHG+feq6e2nfd7MQiaQnaxW/I5JnVXXJBQCcF4vznVS1GpsZz
+	 JB/gVsGJ7UxJrttb2pcu1iPBtk2Y8ZotDBloDIXOuF8/MGlM5OvjaQ6KK9vp+z2G6eN8+
+	 bfqDx0qLM4lwt1cIedudG3ZG6fW+CTqiDAJbeDhIUo5mB+nBQeg3eld6anrmGgQSTcQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793131695;
-	h=DMARC-Filter:DKIM-Signature:Received:X-MC-Unique:
-	 X-Mimecast-MFC-AGG-ID:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:
-	 X-Received:Received:Message-ID:Subject:From:To:Cc:Date:In-Reply-To:
-	 References:Content-Type:Content-Transfer-Encoding:User-Agent:
-	 MIME-Version;
-	bh=1YJHX2FJISPkStTvYFWPCn9XZ+gAuo9LLswhwwgRlLw=;
-	b=eZi9OAJRPjAy0aIephx7UqjyN4yt1o8WuLkYMDxdXa/71aR4LkowPe4moRZsjB9g9vgR
-	 RCPoh13cCq0pas+zQ6NnuJMOWdunk969qToEZ9JW5kynoupWuo7TWrNKzpTIZ4p+yRumO
-	 uFP6d1Vfj/bSpCK+l76q1KOxHoMtcENl791nLTfSst5KsEl5vP65zdLa1mJuA8YjccuL8
-	 slGWOxDD1sRCRxFsEc4W3mfiGXtoYb8kvt4Yvf3rByzn9pUjkwmdyR+0F2YKmcW3gU7Bp
-	 10Q/qTIClBPSC4cSY+foN76NwgvB73fuqOpc1+BOTYVOo/zwyz2r2CZBVRKayfhheew==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793141751;
+	h=DMARC-Filter:Received:DKIM-Filter:DKIM-Signature:DKIM-Signature:
+	 Received:Received:Date:From:To:CC:Subject:Message-ID:References:
+	 MIME-Version:Content-Type:Content-Disposition:
+	 Content-Transfer-Encoding:In-Reply-To:X-Originating-IP:
+	 X-ClientProxiedBy:X-KSMG-AntiPhishing:
+	 X-KSMG-AntiSpam-Interceptor-Info:X-KSMG-AntiSpam-Status:
+	 X-KSMG-AntiVirus:X-KSMG-AntiVirus-Status:X-KSMG-KATA-Status:
+	 X-KSMG-LinksScanning:X-KSMG-Message-Action:X-KSMG-Rule-ID;
+	bh=ywhaCbnTX+qTpWHanCXUPC4b96UVNtT+R99Ydrulnr8=;
+	b=C3JImntZ75ji2LHtASC39WHcczybLnFsKfbik8vt49CI6oCnwGfrkPUL78yq/aeJUPqA
+	 K0MaSH58OBWn3UErh3GPuHEhMz9jDYA+mI1QLvE1C+wqui2etiVloqqeOsPOP8QDftMdZ
+	 /wr6RF57v/Dr6UBsjmtWadMYk9zSWWUOFQI1olp25+RqN6tuSFkucWVQ+DC5Ugmko3lFY
+	 cwpeVylnp/0PSw2gm9yDWywnutHIXpkO6rdcG0Pt4IPk0Pw87S/2GWtpct7pjMMIkHOUh
+	 Q4VsxNIwFTieKKFsABMDIGD14LtkD9HmmMU1AaWEzAfHBLhZH5yH1fjHdcZ6FWAZIxw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=redhat.com;
-	spf=pass smtp.mailfrom=redhat.com;
-	dkim=pass header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Yv1z3r4B;
-	dkim=pass header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=google header.b=q8+kAvfn;
-	arc=none smtp.remote-ip=170.10.129.124
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+	dmarc=pass header.from=yadro.com;
+	spf=pass smtp.mailfrom=yadro.com;
+	dkim=pass header.d=yadro.com header.i=@yadro.com header.a=rsa-sha256 header.s=mta-02 header.b=xJEuQSev;
+	dkim=pass header.d=yadro.com header.i=@yadro.com header.a=rsa-sha256 header.s=mta-03 header.b=GqERLg4l;
+	arc=none smtp.remote-ip=195.3.219.148
+Received: from mta-01.yadro.com (mta-01.yadro.com [195.3.219.148])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 73AFB606A31E
-	for <target-devel@vger.kernel.org>; Tue, 27 Oct 2026 20:08:14 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 73AFB606A31E
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 88C8C606A31A;
+	Tue, 27 Oct 2026 22:55:48 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 88C8C606A31A
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=yadro.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=yadro.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Yv1z3r4B;
-	dkim=pass (2048-bit key, unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=google header.b=q8+kAvfn
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1793131693;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=1YJHX2FJISPkStTvYFWPCn9XZ+gAuo9LLswhwwgRlLw=;
-	b=Yv1z3r4BY1h3578Kv1zKcT4hgSQ7kVudMjX/0LssIAygZQf7KKPW0Dt/QhkHp2s0SY/36U
-	KgMm0mkeqveTjxZ2/W4WNCkFsCZbAn8dkTocBYrCnsOeF31NS/tLU/AHRM2lRWxXBNj0T8
-	Ddi+5HPQQd2Wt/ptoHBf8FjQ4XZAsWw=
-Received: from mail-qt1-f198.google.com (mail-qt1-f198.google.com
- [209.85.160.198]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-627-NK2TWzlBM2KGx7wkM3DiFg-1; Tue, 27 Oct 2026 16:08:11 -0400
-X-MC-Unique: NK2TWzlBM2KGx7wkM3DiFg-1
-X-Mimecast-MFC-AGG-ID: NK2TWzlBM2KGx7wkM3DiFg_1793131691
-Received: by mail-qt1-f198.google.com with SMTP id d75a77b69052e-5383c05fb2fso7478121cf.1
-        for <target-devel@vger.kernel.org>; Tue, 27 Oct 2026 13:08:11 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=redhat.com; s=google; t=1793131691; x=1793736491; darn=vger.kernel.org;
-        h=mime-version:user-agent:content-transfer-encoding:content-type
-         :references:in-reply-to:date:cc:to:from:subject:message-id:from:to
-         :cc:subject:date:message-id:reply-to:content-type;
-        bh=1YJHX2FJISPkStTvYFWPCn9XZ+gAuo9LLswhwwgRlLw=;
-        b=q8+kAvfnx8sybzGir6W5dQI4xnjenBkEH9mhZZhY3vmDnaU25E9waAZMqgZ1gjaF7j
-         1tA4/kQq6I3ChmaFGydy9MzP4RW+WtSrp+sf48ex+Xbfq8cqnnDHfp1JdJDGSj6a+E30
-         04aU0DAQgafipdhLqT/9sr+BY5eWU/i435zBAcHeWZHV+Zc2HqrBYgknqdoePO1sAC6Q
-         GkFVr/Gc7Ma2SwDj5AbPYNX7qf/t3Fva3GKVkJ1abRwNengs9SvVMsSX71OeTt6p8Ws/
-         +G8mHI6GR/j4vnrABLDvF1uPXkbQmxyYv/MV0+BW8Jniz/s5OIu/jfh411639535HqIk
-         nkaA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793131691; x=1793736491;
-        h=mime-version:user-agent:content-transfer-encoding:content-type
-         :references:in-reply-to:date:cc:to:from:subject:message-id:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=1YJHX2FJISPkStTvYFWPCn9XZ+gAuo9LLswhwwgRlLw=;
-        b=msNZgFSEiWBjY5fmcyZ+eFfQFSl7dLpliDCzrT7y+se/bXBotpIeGHtPgqqwstc44z
-         l1RSqPeKK0KDSp3NK6tFmY+mphAsn06x9eJRGyXjrLIut32QtwQxCsy9CyDFCi883AqC
-         +YlbMY/wuhOpz1DQdGwuGcC3gf3XFI8QY2dCqQLSQ0QoSKb/EJ8z+iZo9/gfQpJkVr/l
-         vSf6c4IPRo0kiIGz2RI45yzMuHSNrs5FdXb7ktQ6u2vbsy+rMI2UuiyoinmWOHk4Tlnj
-         IvwVrrTdy7nLYFZa5QOrz2iWqAamZx8RMdZShfWzB7i4mbPf7PueDACQd7yFLWkMjatH
-         p6wA==
-X-Forwarded-Encrypted: i=1; AKwUvBwccpre5qFkQILMaRi4499MWev+dYgMUxkOD17Q7FfoU61Z9J3ct/zc1slQEIKMYjkfJtLr+tthZ5+rMww=@vger.kernel.org
-X-Gm-Message-State: AFq9FYKf70gO9qQZVnDq6hqj+2GQgHMDyu/wTARs01I9Sma0EhKUF4Mw
-	jUCPT9eET3+18Xaq0gW0IImMTVc5f47IErWKkMufC2kTMCel5oYD7xMJ09lkGKd5NGuceWdv2Uj
-	boR3EYl37b1TMog8FRPSmi7XnqAQAFdcHobuQXG/e/NMKK6yugSaDdOyWSmEniq57lw==
-X-Gm-Gg: AYBFou3E3W6KJg4ZYxB5Kpzw7teaoyU6eOKti8Dj9zKRynwtUVVn5mMe/EYutbbsJVo
-	66PhbgkGkkW6duNq7W3Br2oTZt5XCn2NUEel/rg1tcOQe2mSP+g5BOgvD4u2r5/DprglMeQEbki
-	oyo/HtEzZjIfynkCBwp9o/BvM8X2gONCABwobyB8qwH38Otp/18fISvXaA7Vki1EN6AMIlZooyV
-	2NenUVi3OUbXqwPgjWzzZXt/tTs28mpeL3PSpKDoQv4A2Bivhv9BXtnWPJbU3Ryn+nS/hS/2K6V
-	1n33WH2D5TqGFF6PReuUMzpfb/+I3vOc4zgh5JOwzLGQcO0AZejMoaGxAbLKh7crMl3bpNsoPBY
-	b6whrPoF+VTvopkv5tKfQBjNWoHxwvNWFsJDvSJZG6zMTZFnyp/uqKzOH15K7STow/Jvc8PzjiU
-	N0NztEgFpVRC7Yruo=
-X-Received: by 2002:a05:622a:1822:b0:533:983b:e53f with SMTP id d75a77b69052e-53fcd197865mr6547621cf.59.1793131691248;
-        Tue, 27 Oct 2026 13:08:11 -0700 (PDT)
-X-Received: by 2002:a05:622a:1822:b0:533:983b:e53f with SMTP id d75a77b69052e-53fcd197865mr6546721cf.59.1793131690641;
-        Tue, 27 Oct 2026 13:08:10 -0700 (PDT)
-Received: from loberman-thinkpadp1gen5.rmtusma.csb ([96.39.69.186])
-        by smtp.gmail.com with ESMTPSA id d75a77b69052e-53838cf49c9sm87523701cf.3.2026.10.27.13.08.09
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 27 Oct 2026 13:08:09 -0700 (PDT)
-Message-ID: <d7a1701ddc2e7c976ad8ff9ec071d9bfdc86a7e2.camel@redhat.com>
-Subject: Re: [PATCH 0/2] target: iscsi: fix hanged WRITE_PENDING commands
-From: Laurence Oberman <loberman@redhat.com>
-To: Dmitry Bogdanov <d.bogdanov@yadro.com>, Martin Petersen
-	 <martin.petersen@oracle.com>, Maurizio Lombardi <mlombard@redhat.com>, 
-	target-devel@vger.kernel.org
-Cc: michael.christie@oracle.com, linux-scsi@vger.kernel.org, linux@yadro.com
-Date: Tue, 27 Oct 2026 16:08:08 -0400
-In-Reply-To: <20261027180123.13163-1-d.bogdanov@yadro.com>
+	dkim=pass (2048-bit key, unprotected) header.d=yadro.com header.i=@yadro.com header.a=rsa-sha256 header.s=mta-02 header.b=xJEuQSev;
+	dkim=pass (2048-bit key, unprotected) header.d=yadro.com header.i=@yadro.com header.a=rsa-sha256 header.s=mta-03 header.b=GqERLg4l
+Received: from mta-01.yadro.com (localhost [127.0.0.1])
+	by mta-01.yadro.com (Postfix) with ESMTP id 2FF3E20003;
+	Wed, 28 Oct 2026 01:55:46 +0300 (MSK)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mta-01.yadro.com 2FF3E20003
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yadro.com; s=mta-02;
+	t=1793141746; bh=ywhaCbnTX+qTpWHanCXUPC4b96UVNtT+R99Ydrulnr8=;
+	h=Date:From:To:Subject:Message-ID:MIME-Version:Content-Type:From;
+	b=xJEuQSevRhbxKUhbXOgkgPSeOU9Q0uMdYWvVYUqvhUwLjBBdBAQyBSg4AAwh+dnBv
+	 BpGvEnVSKx/gN3M5ZQcWC/+TiKno6O3211wbkNJ7WGyXIp6gzJ2jOuzU3NElZH+lG7
+	 +Nx0KZ3Dfso4RbR72SRX9LejbmC7VijicfnAVizrbNxAeAmq6b/PBrvE5vhaaz8n48
+	 VNd/h54KMWO2lbi4GPoR7cgZMlZki+GXSSC1E6Zw00oKAobaXzB1cPC5PmXNQiSNLT
+	 w4AHhDnIvD3Uub+bCFgJVhpH1lcc7G5GBpV6KGctUZ95a3ROO+wGqCuuAm1SJ2U1td
+	 jAFSorb9rcw5g==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yadro.com; s=mta-03;
+	t=1793141746; bh=ywhaCbnTX+qTpWHanCXUPC4b96UVNtT+R99Ydrulnr8=;
+	h=Date:From:To:Subject:Message-ID:MIME-Version:Content-Type:From;
+	b=GqERLg4lmGEC4NNEuTury1CqBqvZlHE2OYvAr4ucgHozCsbq28mmT24hSBkq08QEf
+	 Y88lqxvqhyyWMayVfE765fMKGHF/2sVewxR5bA7KhLuKsLsjFOUMfO9SDsonJ//RP0
+	 GVv4jL/8EMLDaAebkjMn3YizF8n+rMIXsawkx9FJnkE/FUJEBlCBj8R6eRAyDkWxks
+	 JmWTZMnqut6KpbbFPelSycihe0VQRJHgMNpcv7/J/oxMZeMSMZM75Jrx1Iip8hyQo2
+	 8O6hxvStI1JYdxOB8xalfmjS9sFeKfaThad5+vLysnivT0WP0GGvX1i1ndzhyjSMVH
+	 R8zWw9GndgMkw==
+Received: from RTM-EXCH-06.corp.yadro.com (unknown [10.34.9.206])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by mta-01.yadro.com (Postfix) with ESMTPS;
+	Wed, 28 Oct 2026 01:55:45 +0300 (MSK)
+Received: from yadro.com (10.34.9.246) by RTM-EXCH-06.corp.yadro.com
+ (10.34.9.206) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.49; Wed, 28 Oct
+ 2026 01:55:45 +0300
+Date: Wed, 28 Oct 2026 01:55:45 +0300
+From: Dmitry Bogdanov <d.bogdanov@yadro.com>
+To: <sashiko-reviews@lists.linux.dev>
+CC: <target-devel@vger.kernel.org>, <linux-scsi@vger.kernel.org>
+Subject: Re: [PATCH 2/2] scsi: target: iscsi: fix hanging WRITE_PENDING
+ commands
+Message-ID: <20261027225545.GA32229@yadro.com>
 References: <20261027180123.13163-1-d.bogdanov@yadro.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.60.2 (3.60.2-2.fc44) 
+ <20261027180123.13163-3-d.bogdanov@yadro.com>
+ <sashiko-outbox-187009@kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Post: <mailto:target-devel@vger.kernel.org>
@@ -122,87 +90,181 @@ List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:target-devel+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <sashiko-outbox-187009@kernel.org>
+X-ClientProxiedBy: RTM-EXCH-01.corp.yadro.com (10.34.9.201) To
+ RTM-EXCH-06.corp.yadro.com (10.34.9.206)
+X-KSMG-AntiPhishing: NotDetected, bases: 2026/10/27 19:34:00
+X-KSMG-AntiSpam-Interceptor-Info: not scanned
+X-KSMG-AntiSpam-Status: not scanned, disabled by settings
+X-KSMG-AntiVirus: Kaspersky Secure Mail Gateway, version 2.1.1.8310, bases: 2026/10/27 19:28:00 #28750693
+X-KSMG-AntiVirus-Status: NotDetected, skipped
+X-KSMG-KATA-Status: Not Scanned
+X-KSMG-LinksScanning: NotDetected, bases: 2026/10/27 19:34:00
+X-KSMG-Message-Action: skipped
+X-KSMG-Rule-ID: 5
 
-On Tue, 2026-10-27 at 21:01 +0300, Dmitry Bogdanov wrote:
-> ISCSI has some old leftovers in the code that prevents passing the
-> aborted
-> command to the target core to make the actual abort. Such commands
-> hang
-> until connection is closed.
-> So remove those leftovers.
->=20
-> Dmitry Bogdanov (2):
-> =C2=A0 Revert "scsi: target: iscsi: Fix hang for aborted WRITE_PENDING
-> =C2=A0=C2=A0=C2=A0 commands"
-> =C2=A0 scsi: target: iscsi: fix hanging WRITE_PENDING commands
->=20
-> =C2=A0drivers/target/iscsi/iscsi_target.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 |=
- 19 -------------------
-> =C2=A0drivers/target/iscsi/iscsi_target_erl1.c |=C2=A0 8 --------
-> =C2=A02 files changed, 27 deletions(-)
+On Tue, Oct 27, 2026 at 06:18:12PM +0000, sashiko-bot@kernel.org wrote:
+> 
+> Thank you for your contribution! Sashiko AI review found 1 potential issue(s) to consider:
+> - [High] scsi: target: iscsi: double completion in iscsit_release_commands_from_conn()
+> --
+> 
+> commit 31a87057639fce26dc0f2f4bbcd6ddacf96b85a5
+> Author: Dmitry Bogdanov <d.bogdanov@yadro.com>
+> 
+> scsi: target: iscsi: fix hanging WRITE_PENDING commands
+> 
+> This commit removes early CMD_T_ABORTED checks in the iSCSI Data-Out and
+> command execution paths so that aborted WRITE commands in WRITE_PENDING state
+> are passed to the target core once all Data-Out PDUs have been received.
+> 
+> > diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/iscsi_target.c
+> > index 62ada3a52210e..03d618cd76721 100644
+> > --- a/drivers/target/iscsi/iscsi_target.c
+> > +++ b/drivers/target/iscsi/iscsi_target.c
+> > @@ -1518,23 +1518,6 @@ __iscsit_check_dataout_hdr(struct iscsit_conn *conn, void *buf,
+> >                       if (hdr->flags & ISCSI_FLAG_CMD_FINAL)
+> >                               iscsit_stop_dataout_timer(cmd);
+> >
+> > -                     return iscsit_dump_data_payload(conn, payload_length, 1);
+> > -             }
+> > -     } else {
+> > -             /*
+> > -              * For the normal solicited data path:
+> > -              *
+> > -              * Check for a delayed TASK_ABORTED status and dump any
+> > -              * incoming data out payload if one exists.  Also, when the
+> > -              * ISCSI_FLAG_CMD_FINAL is set to denote the end of the current
+> > -              * data out sequence, we decrement outstanding_r2ts.  Once
+> > -              * outstanding_r2ts reaches zero, go ahead and send the delayed
+> > -              * TASK_ABORTED status.
+> > -              */
+> > -             if (se_cmd->transport_state & CMD_T_ABORTED) {
+> > -                     if (hdr->flags & ISCSI_FLAG_CMD_FINAL &&
+> > -                         --cmd->outstanding_r2ts < 1)
+> > -                             iscsit_stop_dataout_timer(cmd);
+> 
+> [Severity: High]
+> Could passing an aborted WRITE_PENDING command to target_execute_cmd() cause
+> a double abort completion and use-after-free if the connection closes afterward
+> in iscsit_release_commands_from_conn()?
 
-Hello Dmitri
-Thanks for posting this. I have a series in flight for the same hang:
+Yes, it can cause. But my patch neither was intended to address that
+problem neither increases its probability. WRITE_PENDING always may be
+aborted, in parallel from other session, right
+before target_cmd_interrupted() in target_execute_cmd().
 
-https://lore.kernel.org/linux-scsi/20261027122837.2148074-1-loberman@redhat=
-.com/
+And that is easily fixed by changing cmd->t_state in
+target_execute_cmd() before target_cmd_interrupted() to take the
+cmd ownership by the target core:
 
-Is the revert maybe aimed at the wrong layer, and the sashiko review of
-your 2/2 makes the case better than I can: with the fabric check
-removed, an aborted command reaches target_execute_cmd(),
-target_cmd_interrupted() queues target_abort_work and returns without
-changing t_state, the command stays on conn_cmd_list in
-TRANSPORT_WRITE_PENDING, and iscsit_release_commands_from_conn()
-completes it a second time if the connection closes.
+-----------------
+diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
+index 2c9f4b58c024f..14ea1a9d7fa40 100644
+--- a/drivers/target/target_core_transport.c
++++ b/drivers/target/target_core_transport.c
+@@ -2561,6 +2561,10 @@ static bool target_handle_task_attr(struct se_cmd *cmd)
+ void target_execute_cmd(struct se_cmd *cmd)
+ {
+        trace_target_execute_cmd(cmd);
++
++       spin_lock_irq(&cmd->t_state_lock);
++       cmd->t_state = TRANSPORT_PROCESSING;
++       spin_unlock_irq(&cmd->t_state_lock);
+        /*
+         * Determine if frontend context caller is requesting the stopping of
+         * this command for frontend exceptions.
+@@ -2571,7 +2575,6 @@ void target_execute_cmd(struct se_cmd *cmd)
+                return;
 
-That is the same double completion you are reverting d5869dae5080 for.
-It
-is not a defect in Maurizio's patch and it will not be fixed by
-replacing
-it -- target_cmd_interrupted() records nothing when it queues an abort,
-so
-any site that completes an aborted WRITE_PENDING command can be
-followed
-by another one. I found this from vmcores on a customer system before
-either of us posted, so no argument from me that it is real.
+        spin_lock_irq(&cmd->t_state_lock);
+-       cmd->t_state = TRANSPORT_PROCESSING;
+        cmd->transport_state |= CMD_T_ACTIVE | CMD_T_SENT;
+        spin_unlock_irq(&cmd->t_state_lock);
 
-Patch 3 of my series fixes it there, under t_state_lock, for both
-queueing sites in target_core_transport.c and for every fabric. With
-that
-in place your 2/2 is safe and d5869dae5080 does not need reverting for
-this reason -- which matters, because the revert is not free: that
-commit
-carries CVE-2026-97951 and is in 5.10.y, 5.15.y, 6.1.y, 6.6.y, 6.12.y,
-6.18.y and 7.2.y.
+---------------
 
-Two questions on 2/2 independent of all that.
 
-Removing the sense_reason early return in iscsit_execute_cmd() means
-transport_send_check_condition_and_sense() now runs for an aborted
-command. It guards only on SCF_SENT_CHECK_CONDITION, never checks
-CMD_T_ABORTED, and ends in queue_status(); target_handle_abort() also
-calls queue_status() for a CMD_T_TAS command, and each drops a
-reference.
-Can an aborted command with a sense reason send both a CHECK CONDITION
-and a TASK ABORTED, and drop two references?
-
-And with the early return gone, a LUN_RESET aborting a large WRITE
-waits in target_put_cmd_and_wait() for the whole remaining data
-transfer. That is bounded where today it is not, but on a large
-transfer it may still trip the hung task timeout that made this
-visible.
-
-On the overlap: your 2/2 and patch 4 of my series touch the same lines,
-so only one can apply, and I have no attachment to mine if yours is the
-better shape. Patches 1 to 3 are core-side and conflict with nothing
-you have posted.=C2=A0
-
-Martin, would you prefer those three as their own series,
-given both candidate iSCSI fixes need patch 3 to be correct?
-
-I am happy to test either or both: I have a reporter's environment that
-reproduces this reliably and 300-cycle runs on it.
-
-Many Thanks
-Laurence
-
+> 
+> With this check removed in __iscsit_check_dataout_hdr(), an aborted WRITE
+> command in TRANSPORT_WRITE_PENDING state receives its remaining Data-Out PDUs
+> and calls target_execute_cmd() in iscsit_check_dataout_payload() (or in
+> iscsit_execute_cmd() for out-of-order CmdSNs):
+> 
+> drivers/target/iscsi/iscsi_target.c:iscsit_check_dataout_payload() {
+>         ...
+>                 iscsit_stop_dataout_timer(cmd);
+>                 if (ooo_cmdsn)
+>                         return 0;
+>                 target_execute_cmd(&cmd->se_cmd);
+>                 return 0;
+>         ...
+> }
+> 
+> In target_execute_cmd(), target_cmd_interrupted() is called before
+> cmd->t_state is updated to TRANSPORT_PROCESSING:
+> 
+> drivers/target/target_core_transport.c:target_execute_cmd() {
+>         if (target_cmd_interrupted(cmd))
+>                 return;
+> 
+>         spin_lock_irq(&cmd->t_state_lock);
+>         cmd->t_state = TRANSPORT_PROCESSING;
+>         cmd->transport_state |= CMD_T_ACTIVE | CMD_T_SENT;
+>         spin_unlock_irq(&cmd->t_state_lock);
+>         ...
+> }
+> 
+> Because CMD_T_ABORTED is set, target_cmd_interrupted() queues
+> target_abort_work on target_completion_wq and returns true without changing
+> cmd->t_state:
+> 
+> drivers/target/target_core_transport.c:target_cmd_interrupted() {
+>         ...
+>         if (cmd->transport_state & CMD_T_ABORTED) {
+>                 if (cmd->transport_complete_callback)
+>                         cmd->transport_complete_callback(cmd, false, &post_ret);
+>                 INIT_WORK(&cmd->work, target_abort_work);
+>                 queue_work(target_completion_wq, &cmd->work);
+>                 return true;
+>         }
+>         ...
+> }
+> 
+> As a result, cmd->se_cmd.t_state remains TRANSPORT_WRITE_PENDING. When
+> CMD_T_TAS is set (for example, when aborted by a LUN_RESET on another session
+> with emulate_tas enabled), target_handle_abort() queues SAM_STAT_TASK_ABORTED
+> status and drops one cmd_kref reference via
+> transport_cmd_check_stop_to_fabric(), leaving the command on
+> conn->conn_cmd_list in TRANSPORT_WRITE_PENDING state until ExpStatSN
+> acknowledges the status (or, when CMD_T_TAS is not set, until
+> target_abort_work runs iscsit_aborted_task()).
+> 
+> If the connection closes while the command is still on conn->conn_cmd_list,
+> iscsit_release_commands_from_conn() checks for TRANSPORT_WRITE_PENDING:
+> 
+> drivers/target/iscsi/iscsi_target.c:iscsit_release_commands_from_conn() {
+>         ...
+>                 if (cmd->se_cmd.t_state == TRANSPORT_WRITE_PENDING) {
+>                         /*
+>                          * We never submitted the cmd to LIO core, so we have
+>                          * to tell LIO to perform the completion process.
+>                          */
+>                         spin_unlock_irq(&se_cmd->t_state_lock);
+>                         target_complete_cmd(&cmd->se_cmd, SAM_STAT_TASK_ABORTED);
+>                         continue;
+>                 }
+>         ...
+> }
+> 
+> Wouldn't this call target_complete_cmd() -> target_cmd_interrupted() a second
+> time on the same command, re-initializing and re-queueing cmd->work for
+> target_abort_work while iscsit_release_commands_from_conn() also frees the
+> command via iscsit_free_cmd(), leading to workqueue corruption, cmd_kref
+> underflow, and use-after-free of struct iscsit_cmd?
+> 
+> --
+> Sashiko AI review · https://sashiko.dev/#/patchset/20261027180123.13163-1-d.bogdanov@yadro.com?part=2
