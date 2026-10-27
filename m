@@ -1,65 +1,65 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=170.10.133.124
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793104134;
-	b=MKwkHRu503aQl1Wfuy3YdmP/dA/yTIJuHC0mR8Ib6BR1jBzRX8ybpw818qLVS1nsyoy1
-	 ySCDXTrUCymhtOa5FMQHkbPjq8txwgi2dGfKRnKBWGyb6pT8n3RmJJFUGYzadyE4dgbPO
-	 tOCbwOLe8bEN4NzurbToaP55qG7u2ueUJeIk4vLSirWk0JJS+jt8nlTCM/NLP10A+aPyI
-	 2fQNt0yZuSJX0tw2wF5rIA37Lns8WwWafW7wbjlfeoBNuPlKmsIsH4/yq8fAmI3DPRz8Z
-	 3AFqYB/7KBiIdFVyIQ9v3oegYx4jDs6Gf4HI15WuKupaR+GPmRkWOfV3WtkaE+uk/Qg==
+	t=1793104137;
+	b=yy6ANbOzVMfYTJrq+loYMQN0CzdLy4TW0vhod4jfgTFtF6QjBib0aU5OoADkbGOwS+05
+	 r6/2Hv52PgU58vyeQV7XaAGNjZMDN7OHB1TRkgbirxE46ICcpNghxin1WQZEDXIfqD0JC
+	 tTNYn+ko2XGDmbcgw6nucRTBurIM0C5OgfYC5lm9up4ChFBJhQaEjo5UJ7VpRSWey+jhS
+	 qvioui7cjpRSQls5gTGGZOBk2PVrpAo5dBfcbxI6d2T4Qmsr7P94r/AVP2bGULtdHLKgr
+	 nuUsYpvKaMbzZKI2a6SD7gGdo9U9jRFeXHs5hMiWwcyTgdNAAV761DRb6On03eDdzjw==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793104134;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793104137;
 	h=DMARC-Filter:DKIM-Signature:Received:X-MC-Unique:
 	 X-Mimecast-MFC-AGG-ID:Received:Received:From:To:Cc:Subject:Date:
 	 Message-ID:In-Reply-To:References:MIME-Version:
 	 Content-Transfer-Encoding:X-Scanned-By;
-	bh=9bf+WSrJj08T2EnJTuDUiU9BXqBOTuz/X6gAw7vyxoI=;
-	b=oDv+kjGjBxavMDMu1qDI4JdjgS29vSrJXs3sJhUbOcHYe42eLqJphvoI3T8MTCi4nAqW
-	 Hhqn1JNmNve14uMmwIyU1v2aQS74SyHSyYABllFGliBaWqzMeBS//zAlWfcLO9seCV/8E
-	 24tdl4sWmPXNqYM97w4p0ed+KnpPa1TW/C/osh0mEjHkrzz1PJXfV0XyynSPZpUVcn5NO
-	 OB5SX9VbtrX0JvF9PQwiGiRPm2tV0TbR/jEu96bsNP0RKZHC+xkEjWBGQdgO9k6okWbCr
-	 8MIaL1ZUXk+e3mxuf3njG0L1hFabqmGPl8tRtj2a8okqNg727oLZ3qllSdkKO6hfvfA==
+	bh=WOyAdyJ3VwLj6BYWXKFaYpPKWtpHPNj/CyN5SfKZYo0=;
+	b=0yLmvH82s3fFAfpIWmnvi8camZmj4XCy4t7NL9siXdkFW9U2dSogrC4REE3W9PeVNO9C
+	 QflW8VcWzELTNvTqVuBQKffC6lDmLA5xZiBDIdJ0EnyihJ+4BqJtmFkwIEQWkuv/yk23e
+	 ZEQ/RPVkAqN4lJBPtRIUfRt+YNdI7g2+yKXXSQ7h67P3ERSUUfbdzNM+xrLpcawjwabZ/
+	 Svj5k6/wAZ0riW0CTBtKUTJG+eaGNV1k/ocjOUhQDkhMCnDixgDkFa+oCzwWnzurI1Ata
+	 9OW1jY7P0Pjv5q3ykYB9ElWlusCfPv1S7T9H+eOHCUG9U4gMY5Kcw5UwVfDifndcXtg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=redhat.com;
 	spf=pass smtp.mailfrom=redhat.com;
-	dkim=pass header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=E8Od8vIb;
+	dkim=pass header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Lu3mH0uE;
 	arc=none smtp.remote-ip=170.10.133.124
 Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 648E9606A33A
-	for <target-devel@vger.kernel.org>; Tue, 27 Oct 2026 12:28:54 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 648E9606A33A
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8A4BA606A33F
+	for <target-devel@vger.kernel.org>; Tue, 27 Oct 2026 12:28:56 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 8A4BA606A33F
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=E8Od8vIb
+	dkim=pass (1024-bit key, unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Lu3mH0uE
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1793104133;
+	s=mimecast20190719; t=1793104135;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=9bf+WSrJj08T2EnJTuDUiU9BXqBOTuz/X6gAw7vyxoI=;
-	b=E8Od8vIbalCaunp9stSOkiwSr9LJz7LgAIecN4YY7tx0tQBE1CQNlSfbUmJx1M3upge+m0
-	n1+/a3Zq13nhTSzP6UtxH1GlEeD2wEni9S7VYDMY2fl7Jgc4i9Rlq9dLiCcnF0SkOm7XUm
-	tsL5uo8oacY0Bje/CRJPbvzAIY3m5do=
-Received: from mx-prod-mc-05.mail-002.prod.us-west-2.aws.redhat.com
- (ec2-54-186-198-63.us-west-2.compute.amazonaws.com [54.186.198.63]) by
+	bh=WOyAdyJ3VwLj6BYWXKFaYpPKWtpHPNj/CyN5SfKZYo0=;
+	b=Lu3mH0uE2NXfv4aS5OhfPDZR1+of9pdtLnSI5OJYfkAEWAvOTjz6GGHJP6qN5eY4TSzg1Q
+	y9HLNNRxyHlz4VItGmJ2l1x6yRBHugCeyGaqH89qN/7ptgss10cO8iWb1n/x4tMYx7BeTj
+	VUXiuLdipv3eeq660kANephHoBSVgLE=
+Received: from mx-prod-mc-08.mail-002.prod.us-west-2.aws.redhat.com
+ (ec2-35-165-154-97.us-west-2.compute.amazonaws.com [35.165.154.97]) by
  relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
- cipher=TLS_AES_256_GCM_SHA384) id us-mta-88-xiYosnpXMSGuzjm38u4FUg-1; Tue,
- 27 Oct 2026 08:28:50 -0400
-X-MC-Unique: xiYosnpXMSGuzjm38u4FUg-1
-X-Mimecast-MFC-AGG-ID: xiYosnpXMSGuzjm38u4FUg_1793104128
+ cipher=TLS_AES_256_GCM_SHA384) id us-mta-668-8NxQxAqJM0-ZHjEXoNMkvQ-1; Tue,
+ 27 Oct 2026 08:28:46 -0400
+X-MC-Unique: 8NxQxAqJM0-ZHjEXoNMkvQ-1
+X-Mimecast-MFC-AGG-ID: 8NxQxAqJM0-ZHjEXoNMkvQ_1793104124
 Received: from mx-prod-int-01.mail-002.prod.us-west-2.aws.redhat.com (mx-prod-int-01.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.4])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mx-prod-mc-05.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id CFA911954225;
-	Tue, 27 Oct 2026 12:28:48 +0000 (UTC)
+	by mx-prod-mc-08.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id 911D51800864;
+	Tue, 27 Oct 2026 12:28:44 +0000 (UTC)
 Received: from loberman-thinkpadp16gen3.redhat.corp (headnet04.pony-001.prod.iad2.dc.redhat.com [10.2.32.116])
-	by mx-prod-int-01.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id 9889830002C9;
-	Tue, 27 Oct 2026 12:28:47 +0000 (UTC)
+	by mx-prod-int-01.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id 79BC930002CB;
+	Tue, 27 Oct 2026 12:28:43 +0000 (UTC)
 From: Laurence Oberman <loberman@redhat.com>
 To: mkp@kernel.org
 Cc: linux-scsi@vger.kernel.org,
@@ -67,11 +67,10 @@ Cc: linux-scsi@vger.kernel.org,
 	bvanassche@acm.org,
 	michael.christie@oracle.com,
 	mlombard@redhat.com,
-	linux-kernel@vger.kernel.org,
-	stable@vger.kernel.org
-Subject: [PATCH v6 3/4] scsi: target: Queue the abort of a command at most once
-Date: Tue, 27 Oct 2026 08:28:36 -0400
-Message-ID: <20261027122837.2148074-4-loberman@redhat.com>
+	linux-kernel@vger.kernel.org
+Subject: [PATCH v6 1/4] scsi: target: Do not re-enable interrupts in compare_and_write_post()
+Date: Tue, 27 Oct 2026 08:28:34 -0400
+Message-ID: <20261027122837.2148074-2-loberman@redhat.com>
 In-Reply-To: <20261027122837.2148074-1-loberman@redhat.com>
 References: <20261027122837.2148074-1-loberman@redhat.com>
 X-Mailing-List: target-devel@vger.kernel.org
@@ -86,195 +85,59 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Scanned-By: MIMEDefang 3.4.1 on 10.30.177.4
 
-target_cmd_interrupted() and transport_generic_request_failure() both
-queue target_abort_work for a command that has CMD_T_ABORTED set, and
-neither records that it has done so: CMD_T_COMPLETE is not set and t_state
-is not changed, so nothing stops a second site reaching the same
-conclusion for the same command. The second call re-initialises and
-re-queues cmd->work while the first is still queued or running.
+target_complete_cmd() may be called by a backend driver from interrupt
+context, as the comment above target_complete_cmd_with_sense() says. For a
+command that has been aborted it calls target_cmd_interrupted(), which
+invokes cmd->transport_complete_callback(). Once the WRITE phase of a
+COMPARE AND WRITE has been set up that callback is
+compare_and_write_post(), which takes t_state_lock with spin_lock_irq()
+and drops it with spin_unlock_irq(), unconditionally enabling interrupts
+in a caller that had them disabled.
 
-More than one site can reach that conclusion. A WRITE still in
-TRANSPORT_WRITE_PENDING has never been passed to the backend, so the
-fabric has to complete it when a TMR aborts it, and for iSCSI both the
-DataOut paths and iscsit_release_commands_from_conn() during connection
-teardown will do so. The two queueing sites can also reach each other: if
-CMD_T_ABORTED is set after target_cmd_interrupted() has returned false in
-target_execute_cmd() and execution then fails,
-transport_generic_request_failure() queues the work, and a later
-target_execute_cmd() -- from iscsit_task_reassign_complete_write(), for
-example -- queues it a second time.
+Use spin_lock_irqsave() / spin_unlock_irqrestore() instead.
 
-Add a CMD_T_ABORT_QUEUED flag, tested and set under t_state_lock by
-__target_claim_abort(), and use it at both sites. In
-target_cmd_interrupted() the CMD_T_ABORTED test moves under the same lock,
-which is the lock __target_check_io_state() sets CMD_T_ABORTED under, so
-there is no window between the test and the claim. Second and later calls
-are a no-op by design and target_cmd_interrupted() still returns true, so
-callers do not proceed with normal completion. A fabric that completes an
-aborted command exactly once never reaches the claim and is unaffected.
+compare_and_write_callback() has the same pattern, but its
+spin_lock_irq() is on the path taken after a successful compare, which is
+reached only from target_complete_ok_work() in process context; the
+success == false path returns long before it. It is left alone.
 
-target_cmd_interrupted() runs for every completion, so it keeps a lockless
-test of the two flags and only takes t_state_lock when one of them is set.
-A flag set immediately after that test is handled exactly as it was when
-the whole function was lockless.
-
-The CMD_T_STOP branch is deliberately left unguarded. complete_all() is
-idempotent and t_transport_stop_comp is initialised once in
-__target_init_cmd(), so a repeated call there is harmless. A guard shared
-between the two branches would also be wrong: a first call taking the
-CMD_T_STOP branch would then suppress the queueing of target_abort_work if
-CMD_T_ABORTED were set afterwards, which is the hang the next patch is
-about.
-
-transport_complete_callback() can still run more than once for a command,
-across the two branches here and from
-transport_generic_request_failure(). The only callback in the tree is
-COMPARE AND WRITE's, whose side effect -- releasing dev->caw_sem -- is
-made one-shot by the previous patch, so a repeated call now has nothing
-left to repeat.
-
-Cc: stable@vger.kernel.org
-Suggested-by: Bart Van Assche <bvanassche@acm.org>
 Signed-off-by: Laurence Oberman <loberman@redhat.com>
 ---
 
 Notes:
-    Prerequisite for patch 3, which relies on a second completion of an
-    aborted command being a no-op.  All three patches need to travel together
-    to stable.
+    Pre-existing, and not needed by the rest of the series, but
+    compare_and_write_post() is modified by patch 2 and the mismatch between
+    its spin_lock_irq() and the spin_lock_irqsave() a few lines below would be
+    confusing to leave in place.
     
-    No Fixes: tag: 2c9fa49e100f added the same abort-queueing pattern to both
-    functions, so it is arguably the right one, but the double queueing is
-    not what that commit set out to do.  Happy to add it if you would like.
+    No Fixes: tag -- the pattern predates target_cmd_interrupted().
 
- drivers/target/target_core_transport.c | 77 ++++++++++++++++++++++----
- include/target/target_core_base.h      |  1 +
- 2 files changed, 68 insertions(+), 10 deletions(-)
+ drivers/target/target_core_sbc.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
-index 927861c..9ef8e93 100644
---- a/drivers/target/target_core_transport.c
-+++ b/drivers/target/target_core_transport.c
-@@ -882,24 +882,72 @@ static void target_abort_work(struct work_struct *work)
- 	target_handle_abort(cmd);
- }
- 
-+/*
-+ * Claim the queueing of target_abort_work for an aborted command.  Returns
-+ * true for the one caller that must queue it; every later caller gets false.
-+ *
-+ * Caller must hold cmd->t_state_lock, which is the lock
-+ * __target_check_io_state() sets CMD_T_ABORTED under, so that the flag cannot
-+ * be set between a caller's CMD_T_ABORTED test and this claim.
-+ */
-+static bool __target_claim_abort(struct se_cmd *cmd)
-+	__must_hold(&cmd->t_state_lock)
-+{
-+	lockdep_assert_held(&cmd->t_state_lock);
-+
-+	if (cmd->transport_state & CMD_T_ABORT_QUEUED)
-+		return false;
-+
-+	cmd->transport_state |= CMD_T_ABORT_QUEUED;
-+	return true;
-+}
-+
-+/*
-+ * Returns true if the command has been aborted or stopped, in which case the
-+ * caller must not carry on with normal completion.  target_abort_work is
-+ * queued at most once per command; a later call for an already-claimed abort
-+ * is a no-op and still returns true.
-+ */
- static bool target_cmd_interrupted(struct se_cmd *cmd)
+diff --git a/drivers/target/target_core_sbc.c b/drivers/target/target_core_sbc.c
+index 21f5cb8..8c52e1e 100644
+--- a/drivers/target/target_core_sbc.c
++++ b/drivers/target/target_core_sbc.c
+@@ -352,15 +352,16 @@ static sense_reason_t compare_and_write_post(struct se_cmd *cmd, bool success,
  {
-+	bool queue_abort = false, stop = false;
+ 	struct se_device *dev = cmd->se_dev;
+ 	sense_reason_t ret = TCM_NO_SENSE;
 +	unsigned long flags;
- 	int post_ret;
  
-+	/*
-+	 * This runs for every completion, so stay out of t_state_lock unless
-+	 * one of the two flags is set.  A flag set just after this test is
-+	 * handled the same way it was before the lock was introduced here.
-+	 */
-+	if (!(cmd->transport_state & (CMD_T_ABORTED | CMD_T_STOP)))
-+		return false;
-+
+-	spin_lock_irq(&cmd->t_state_lock);
 +	spin_lock_irqsave(&cmd->t_state_lock, flags);
- 	if (cmd->transport_state & CMD_T_ABORTED) {
--		if (cmd->transport_complete_callback)
--			cmd->transport_complete_callback(cmd, false, &post_ret);
-+		queue_abort = __target_claim_abort(cmd);
-+		if (!queue_abort) {
-+			spin_unlock_irqrestore(&cmd->t_state_lock, flags);
-+			return true;
-+		}
-+	} else if (cmd->transport_state & CMD_T_STOP) {
-+		stop = true;
-+	}
+ 	if (success) {
+ 		*post_ret = 1;
+ 
+ 		if (cmd->scsi_status == SAM_STAT_CHECK_CONDITION)
+ 			ret = TCM_LOGICAL_UNIT_COMMUNICATION_FAILURE;
+ 	}
+-	spin_unlock_irq(&cmd->t_state_lock);
 +	spin_unlock_irqrestore(&cmd->t_state_lock, flags);
-+
-+	if (!queue_abort && !stop)
-+		return false;
-+
-+	if (cmd->transport_complete_callback)
-+		cmd->transport_complete_callback(cmd, false, &post_ret);
-+
-+	if (queue_abort) {
- 		INIT_WORK(&cmd->work, target_abort_work);
- 		queue_work(target_completion_wq, &cmd->work);
--		return true;
--	} else if (cmd->transport_state & CMD_T_STOP) {
--		if (cmd->transport_complete_callback)
--			cmd->transport_complete_callback(cmd, false, &post_ret);
-+	} else {
- 		complete_all(&cmd->t_transport_stop_comp);
--		return true;
- 	}
  
--	return false;
-+	return true;
- }
- 
- static void target_complete(struct se_cmd *cmd, int success)
-@@ -2084,6 +2132,7 @@ EXPORT_SYMBOL(target_submit_tmr);
- void transport_generic_request_failure(struct se_cmd *cmd,
- 		sense_reason_t sense_reason)
- {
-+	unsigned long flags;
- 	int ret = 0, post_ret;
- 
- 	pr_debug("-----[ Storage Engine Exception; sense_reason %d\n",
-@@ -2099,8 +2148,16 @@ void transport_generic_request_failure(struct se_cmd *cmd,
- 		cmd->transport_complete_callback(cmd, false, &post_ret);
- 
- 	if (cmd->transport_state & CMD_T_ABORTED) {
--		INIT_WORK(&cmd->work, target_abort_work);
--		queue_work(target_completion_wq, &cmd->work);
-+		bool queue_abort;
-+
-+		spin_lock_irqsave(&cmd->t_state_lock, flags);
-+		queue_abort = __target_claim_abort(cmd);
-+		spin_unlock_irqrestore(&cmd->t_state_lock, flags);
-+
-+		if (queue_abort) {
-+			INIT_WORK(&cmd->work, target_abort_work);
-+			queue_work(target_completion_wq, &cmd->work);
-+		}
- 		return;
- 	}
- 
-diff --git a/include/target/target_core_base.h b/include/target/target_core_base.h
-index bd846ab..0341844 100644
---- a/include/target/target_core_base.h
-+++ b/include/target/target_core_base.h
-@@ -538,6 +538,7 @@ struct se_cmd {
- #define CMD_T_STOP		(1 << 5)
- #define CMD_T_TAS		(1 << 10)
- #define CMD_T_FABRIC_STOP	(1 << 11)
-+#define CMD_T_ABORT_QUEUED	(1 << 12)
- 	spinlock_t		t_state_lock;
- 	struct kref		cmd_kref;
- 	struct completion	t_transport_stop_comp;
+ 	/*
+ 	 * Unlock ->caw_sem originally obtained during sbc_compare_and_write()
 -- 
 2.43.0
 
