@@ -1,69 +1,89 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=113.46.200.224
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.128.53
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793265506;
-	b=RgVc0fcX8HtH0BTF6cqnVeMT096FkyQWs39WjOrImXjEBMpFfw6aDlmaWWtAfa35TYO5
-	 Fmf/zdOCwtDaw1l/ntkrbyVeMN61CwLE++2esvWRE3huwz0Og2vkyIAH4vCqnnRNkipln
-	 dwtr856UIP6xkZidqH3yiuAUqk8Ep12DNYO99u53QTrZcsIvp18SR3F2TC5AWjx8zqEDx
-	 TTmpQl4ITXmfY1Pxs19eyHVSccdBh53MFdsUZHoKOlBoCwEsAnlNO8X6AcmVw3f0rSsgf
-	 mr5OnbBHVoeKHb3+SAECzRAuoRue0M9cOmRO/aizEsABiZarkIlniYqXxxfxjok8Iqg==
+	t=1793286946;
+	b=ghSDdOkdlJ+vy9MIgxuXQS9uGq1nr9O2MO303taGnnQBTv3zBtPP21k3rpBnRDFTsu7T
+	 SKEqXVWoyfMpCe2w31oGb5km5RujpeDyp2JypqQ8I+M2lbknY6ZtAHClhoqliz6aMxkLK
+	 rAwgGmbTf31NigGixE0avTZP3bSj2lz/yoQ7rlgvelAg9/dHgnHQdVYlXxB8XoQmgpzJr
+	 OOkUqlZrvn2/PvluwaXJ634LXCdkuS2ScwLi5neqLoXw92txGiHJLWWGt84CpT9qud/BY
+	 mqYGI9Dny2xvlBUF/T0aEHU71GCVI+/EvAAkkI6oCPnM5GDtHYyPtPe1pJz1XxQ7SzQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793265506;
-	h=DMARC-Filter:dkim-signature:Received:Received:Received:From:To:CC:
-	 Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:MIME-Version:
-	 Content-Transfer-Encoding:Content-Type:X-Originating-IP:
-	 X-ClientProxiedBy;
-	bh=WbpvsXKX9ms2sT+M7ciSC2XkOBju1VKOi1MohxOALLA=;
-	b=WMjzkpaVPxR7kTMMP7hawTfAz4KhhNAhDNPnRVGbFx+S7/tuPKdMfYqUJ25yWtMz1tr6
-	 u1Z8lx2jC3xp4hcekv+HrpVJRmu6S3TNPaR7a6gA4y5bJXaW2dQ/mlOl185DkaN34ti22
-	 MfYRmqLejCNEFPXF79OzCur+1n+5NGCsENBbsnyTC6ptjT1yPIij9MpE04Bw2W/j9ndCn
-	 HULHKX0XWbN9WSbfTPSCtfmR57keBp9R8aExaaex8WUASJr2y0cbTSqq75D/asLDS7qm1
-	 39d0E9zPa4W9sConfdZF7sJNXVGISNFwxg3KuabMzgf5YjF+uIlMFRKjvO6z937mJCg==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793286946;
+	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
+	 Message-ID:Date:MIME-Version:User-Agent:Subject:To:Cc:References:
+	 Content-Language:From:In-Reply-To:Content-Type:
+	 Content-Transfer-Encoding;
+	bh=IPw0/BwW5p18oDLi2WLGpDus6SNGg/LLfcJaEGzwHNY=;
+	b=Q76yd4E4LvDkemGfQvlEdQ1BdSpwkQBzGC/+lHzZCBfoX0cuKBpt2IcNb8o92T8VDc8W
+	 +CDT740x9zaixdTOSHxr04/e+200RTI3ucIHstylmu6XUj2ZaQtSpOWyeIMEjyb1VFwy9
+	 YA8rRGTI/IJXTU0wxeDgojnsBCbmHfy+3Z0Dm6RhMa8wYx5CahkW9j9WmmzgZRQuQh8dS
+	 RLEWR7x0WUOktNDzm+ayweoUX0SgtmZ4fGHqs6egm5nyRR2vi/sK9Ao5+GllhPFwslYSd
+	 jDv2kEilLB8ZQ/GGbdykFgIurdf1ZL746RVus/vzFw0EM7CvKErZjBoRJ0iAT/I9ZiA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=huawei.com;
-	spf=pass smtp.mailfrom=huawei.com;
-	dkim=pass header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=M2kWZvRZ;
-	arc=none smtp.remote-ip=113.46.200.224
-Received: from canpmsgout09.his.huawei.com (canpmsgout09.his.huawei.com [113.46.200.224])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	dmarc=pass header.from=gmail.com;
+	spf=pass smtp.mailfrom=gmail.com;
+	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b="YQyg/dT/";
+	arc=none smtp.remote-ip=209.85.128.53
+Received: from mail-wm1-f53.google.com (mail-wm1-f53.google.com [209.85.128.53])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 03E5A606A31A;
-	Thu, 29 Oct 2026 09:18:22 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 03E5A606A31A
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=huawei.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5A0F5606A31F
+	for <target-devel@vger.kernel.org>; Thu, 29 Oct 2026 15:15:46 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 5A0F5606A31F
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=M2kWZvRZ
-dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
-	c=relaxed/relaxed; q=dns/txt;
-	h=From;
-	bh=WbpvsXKX9ms2sT+M7ciSC2XkOBju1VKOi1MohxOALLA=;
-	b=M2kWZvRZGEw73IWLSODipFlx8eZFPOXiXaj366REFXsYD04K87D4R0lxfN0aL5NrQin4b1Cx7
-	FSqaz991cw+xwymDPUg1xM3DM61ltgmF8WmhfTFZ1N7EFAcIl9ycWJw1Ly3AvMeY5IVhdOvnPa+
-	HxrdSVSgtd+ur2DMAfne5IU=
-Received: from mail.maildlp.com (unknown [172.19.163.214])
-	by canpmsgout09.his.huawei.com (SkyGuard) with ESMTPS id 4jFdtg6ZCMz1cyQr;
-	Thu, 29 Oct 2026 17:18:03 +0800 (CST)
-Received: from dggpemr200001.china.huawei.com (unknown [7.185.36.96])
-	by mail.maildlp.com (Postfix) with ESMTPS id 521974057C;
-	Thu, 29 Oct 2026 17:18:11 +0800 (CST)
-Received: from huawei.com (10.50.85.155) by dggpemr200001.china.huawei.com
- (7.185.36.96) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.46; Thu, 29 Oct
- 2026 17:18:10 +0800
-From: Ran Hongyun <ranhongyun1@huawei.com>
-To: <sanan.hasanou@gmail.com>
-CC: <linux-kernel@vger.kernel.org>, <linux-scsi@vger.kernel.org>,
-	<mkp@kernel.org>, <sanan.hasanov@ucf.edu>,
-	<syzbot+fa495e1497c48a6ed885@syzkaller.appspotmail.com>,
-	<target-devel@vger.kernel.org>, <chengzhihao1@huawei.com>,
-	<yangerkun@huawei.com>, <yi.zhang@huawei.com>
-Subject: Re: [PATCH v4 1/4] scsi: target: rd: Fix oversized sg table array allocation
-Date: Thu, 29 Oct 2026 17:10:24 +0800
-Message-ID: <20261029091024.134838-1-ranhongyun1@huawei.com>
-X-Mailer: git-send-email 2.52.0
-In-Reply-To: <20261009003537.62265-2-sanan.hasanou@gmail.com>
-References: <20261009003537.62265-2-sanan.hasanou@gmail.com>
+	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=YQyg/dT/
+Received: by mail-wm1-f53.google.com with SMTP id 5b1f17b1804b1-4a2072b9832so4508445e9.1
+        for <target-devel@vger.kernel.org>; Thu, 29 Oct 2026 08:15:46 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20260707; t=1793286945; x=1793891745; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=IPw0/BwW5p18oDLi2WLGpDus6SNGg/LLfcJaEGzwHNY=;
+        b=YQyg/dT/ujL28wE43zB9C71dKTfJvrpo1KO7D/jy0jgZk57/H3YiRCfnPIdlEjtefB
+         cm9TH64FFLTV7C6TnCMnOyD69bLOmwueKLUc9AfG/hzzZqbDa49UOJllTF0SoFzz151M
+         robsLl7IiNBMSLdqR4zpZ6WtNnotbqIHkq8A78rrWjUChIlyzIAsrH5AWqD9i/bb5KrZ
+         puWCXXX+R5t56iuBpzEJqbITqy6+NolpzxgqagrHv9//AyxV8xI7MhWEOdrhukzfEDVh
+         asADL3kyxGxBlSuRdtn4HdxQ2oJR+jbVezVHz7O6CXgyBbRhjhFg4tPIioMJs5PuVTI8
+         UrwQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1793286945; x=1793891745;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=IPw0/BwW5p18oDLi2WLGpDus6SNGg/LLfcJaEGzwHNY=;
+        b=wEvZpRW1Ky4FSEAQNnFWx9vCKiN/Re0Yg40XeupSfoAk6HI7+TMBJXdg4D9yRKb+Gy
+         tl3YNL+vyCqFqVpQWCV5Xx5S3EVfWF0rC0bt4bMSFRSzSUy23/Iv2WyFUjKvSZvCnUye
+         SpLYo7NWCd+KEmcaLqKhCap9d7VhcDtJ/lx2g0RhbRvvLIEctvJrZyeoLcaSGmDCGDYE
+         iEywY1bWoasVgDuAJgdJw33T2dIJ+d06+sRoXxsPx7H79Nj90W4+oIVGYN8/MV1kyk16
+         4mGx/P9icy5N0pZfJEXUjmg4sCN17WIWZBHYu8mwTVv9iF/K8HUZJ0PK5p52JG6kqpDx
+         Fp1w==
+X-Forwarded-Encrypted: i=1; AKwUvByKsKYVjU0twnzIU12QQvwaQ7Hv+nJc+rEChq87QYdHBk8uCQ1j0JPGzyrJyywd/ziuBfEhBL3/0lxU3rQ=@vger.kernel.org
+X-Gm-Message-State: AFq9FYJULUMrZiEX5IgfVyHhnXU9HF0Gmbsed8/t2iUncovxrbdJFaNR
+	+Q9myWwZzKt12S8ePEhMr6V2ustiP0AuNwbnXlvkI4EGR36rcbN+5IER
+X-Gm-Gg: AYBFou1FIkaGNm2eVDc70mCBO39z4pqaoJb40y9jMrfwlX/+a05wESi2dyNdBCYhunv
+	nE2YGUu2v9K5nophJ0U9jqCswAc//L7pki4mcGTS+ssQAUNuP11xUBh3cNoBFmqTX5ZnahieXTz
+	ix/0+RH3aNvL8Wab6eFeS16oOnx859NwUk1SiVPN17Dz96iFPtc2G3GaG37VU5Z1zR2NGZviu4Z
+	ME72aLYf0zNXAOHW70Cu9hBZ9yRYwRVJDkwa1qAtla9XHkOwDG/bpUGCucrDU4eE+KilU2Uft0T
+	sta70BF8vub7pOhysJuCa8o9NYGXYS7wP9306nxzSzJZlE6/Mb1tRJf2/ZrL7436uLq9DlezpNt
+	swB1norR0aJ4HmT2fRHe1cMG6uhEjYtJa61/ZrR5KnyUD7jpaLsEK+r3XMxeYHQ1Ex6L8eRDIsD
+	YD7pOMl4dHzEKGUMUPxhOuYAtISobJ5nZPg5rYjIm37yJTBWQiyJOgX0MZNBqCNNtpKANFRGNYO
+	WaPg6A8wclAi2v1KufaBWa+3QrxqNtn40NFowc1ycMuWb3bn6mKx0/aMv8LY6f1dG5WkOCRaVtC
+	Nlgqp3JXdYvny9I/TZdghnVL+7Cijf7ZgBvCQjzmNU4HMCWHKt3yJuruJAqNx78/3tKqqG6oNnv
+	IuBoo
+X-Received: by 2002:a05:600c:3e15:b0:4a2:18c4:61a5 with SMTP id 5b1f17b1804b1-4aa871e8bc9mr81472915e9.6.1793286944585;
+        Thu, 29 Oct 2026 08:15:44 -0700 (PDT)
+Received: from ?IPV6:2a02:810d:7e03:5f00:f9b7:8364:5700:ca7c? ([2a02:810d:7e03:5f00:f9b7:8364:5700:ca7c])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4a966a56abesm88595065e9.0.2026.10.29.08.15.41
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 29 Oct 2026 08:15:41 -0700 (PDT)
+Message-ID: <57e4f2c2-d692-4130-835f-e507574c7252@gmail.com>
+Date: Thu, 29 Oct 2026 16:15:40 +0100
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Post: <mailto:target-devel@vger.kernel.org>
@@ -73,34 +93,61 @@ List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:target-devel+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ClientProxiedBy: kwepems500002.china.huawei.com (7.221.188.17) To
- dggpemr200001.china.huawei.com (7.185.36.96)
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] scsi: target: tcmu: Fix divide-by-zero in
+ data_pages_per_blk store
+To: shao.mingyin@zte.com.cn, mkp@kernel.org, linux-scsi@vger.kernel.org,
+ target-devel@vger.kernel.org
+Cc: michael.christie@oracle.com, bvanassche@acm.org,
+ linux-kernel@vger.kernel.org
+References: <20261026195245337ktSXy9G17VCcXyw760g9s@zte.com.cn>
+Content-Language: en-US, de-DE
+From: =?UTF-8?B?Qm9kbyBTdHLDtsOfZXI=?= <bostroesser@gmail.com>
+In-Reply-To: <20261026195245337ktSXy9G17VCcXyw760g9s@zte.com.cn>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Hi Sanan,
+On 26/10/2026 12:52, shao.mingyin@zte.com.cn wrote:
 
-Thanks for the patch. One question about rd_build_prot_space():
+> From: Shao Mingyin <shao.mingyin@zte.com.cn>
+>
+> tcmu_set_data_pages_per_blk() only validates the upper bound of the value
+> parsed from data_pages_per_blk=. Zero passes that check and is then used
+> as the divisor when computing udev->max_blocks:
+>
+>    divide error: 0000 [#1] SMP
+>    ...
+>    tcmu_set_data_pages_per_blk
+>    tcmu_configure_device
+>
+> Reject non-positive values, as the neighbouring max_data_area_mb and
+> cmd_ring_size setters already do.
+>
+> Fixes: 08976cb548d6 ("scsi: target: tcmu: Make data_pages_per_blk changeable via configfs")
+> Signed-off-by: Shao Mingyin <shao.mingyin@zte.com.cn>
+> Cc: stable@vger.kernel.org
+> ---
+> diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
+> index 425ad1246a75..07b514678176 100644
+> --- a/drivers/target/target_core_user.c
+> +++ b/drivers/target/target_core_user.c
+> @@ -2524,6 +2524,11 @@ static int tcmu_set_data_pages_per_blk(struct tcmu_dev *udev, substring_t *arg)
+>   		return ret;
+>   	}
+>
+> +	if (val <= 0) {
+> +		pr_err("Invalid data_pages_per_blk %d.\n", val);
+> +		return -EINVAL;
+> +	}
+> +
+>   	if (val > TCMU_MBS_TO_PAGES(udev->data_area_mb)) {
+>   		pr_err("Invalid data_pages_per_blk %d: greater than max_data_area_mb %d -> %zd pages).\n",
+>   		       val, udev->data_area_mb,
 
-The totalram_pages() check is only added in rd_build_device_space(), but
-rd_build_prot_space() is also reachable with an inflated rd_page_count
-that exceeds totalram_pages(), via:
+Reviewed-by: Bodo Stroesser <bostroesser@gmail.com>
 
-  1. echo "rd_pages=1024" > control   (valid value)
-  2. echo 1 > enable                   (rd_build_device_space succeeds,
-                                        DF_CONFIGURED set)
-  3. echo "rd_pages=-1" > control      (rd_page_count overwritten to
-                                        UINT_MAX, no configured check in
-                                        target_dev_control_store)
-  4. echo 1 > pi_prot_type             (triggers rd_build_prot_space with
-                                        the tampered rd_page_count)
+Thank you.
 
-In step 4, rd_build_prot_space() proceeds with the impossible page count
-and attempts alloc_pages(), failing mid-way with -ENOMEM.
-
-Should rd_build_prot_space() also get the totalram_pages() check to
-reject impossible values early?
-
-Thanks,
-Ran Hongyun
+Regards,
+Bodo Stroesser
 
