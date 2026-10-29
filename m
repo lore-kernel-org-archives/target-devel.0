@@ -1,58 +1,61 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793238146;
-	b=Uv6g49EYMSMIC78ZDo08PQIEn3fYLcrUuf4FZkgmK/0XeI1dLEM9yFVTEky+3ZJTHbrQ
-	 j+9RiD+nsG3mu+9jipNCB4DG6tDr/XQzVk8wLMqI1kOqgBfRctqKbFwVb5TLEawv2lN40
-	 9yc2HGTv4At+Wt44jchzBmKEt1DeAlhCinNClRjKQDMk0KvcasVPDtlQ5gwGQyUSTnnvF
-	 U5Npj/YHMEfBuMK37ACsTu5yss25OBBWtEPH6ASDHKPRgw3REuwRs3RLZmGhvXQ6rFxJb
-	 Ad82FY6FiymYNCw4sbx/WpHrWnoPbFJtzRhUXwASVG1XO2VZBBxCjtLS91TS8a8TXyw==
+	t=1793239406;
+	b=bB2yQ+GyqtBox6BAvn9kT422qFzjwxrzx1P5NP8FcTVhWLaEohZas9uDllvQQvyTz/Ve
+	 eBJf1dPVCSo914Bsz3WV6157Bjjprd/soly77vvf3nv7XWs5OOcjaSq9zdbhTOPmhdA8t
+	 DQMgjahgLBKololfBoRPjGTiO84ee589NGlJpjf+JGQ+r9liikfv2k40zHgCvepStfIX4
+	 MDlH7q0nMEobsJP1fDyyMXOukRmPwLFnlXV6rF9LFw2FXSNeCJE54wWvV9DND0WwLwG74
+	 TD83Opn949ou90urEA94fJG9hRSKxPsj1zPlRub+pqyFO2Ay1s5zyXm8pGdetkjuVTg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793238146;
-	h=Received:DKIM-Signature:To:Cc:Subject:From:In-Reply-To:Message-ID:
-	 References:Date:MIME-Version:Content-Type;
-	bh=cSGJzZiXCj798GkI10LTKETldsERRDK+xDXKBEXm4a0=;
-	b=yIQeNDwPS4m8uCvPxsBecnUrTgYjtn1BzhXBYyMfPeeyqgMh2Urmp7AliEn4cdGtCyF4
-	 m+KrrSW0KQSUnCJo9gdcvJw2Aqn9Au7IQwKjduO3ONAWHllwFXgEvHVSbrYirX+B08ZSv
-	 BHH4Bxgfg3PfwaUDw0yN1GSAW/EYQR8mzrzTzraUAZ3DFdqE41iaX2TwyFGH++J2PeU6n
-	 NMWFkbERNPWBoD/i9N4153ROlzzz4lNu2Bcx0VdPdYhGj7B84v9ytEi4GJFeM66eiuSfN
-	 80CFB6COVHto7FscjJ9aJU4WAYdmZSWeai2WdNJP/mG9db+0Sxr9LCodKfWQk/OIO2g==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793239406;
+	h=Received:DKIM-Signature:From:To:Cc:Subject:Date:Message-ID:X-Mailer:
+	 In-Reply-To:References:MIME-Version:Content-Type:
+	 Content-Transfer-Encoding;
+	bh=1izrTgIK5MkBirvotGd/I5vJGe3H9Lg+USaV2HU9hmY=;
+	b=sIIZ6qp+yknaAbQ9go50QacWFYLKCZZGuB2Zr48EdETWzQjxtDa3WCiAms+rQCPeSx/t
+	 ZYqaikKwgJw3lX1jnko3XaSDFDBanRetGdp9FeLpWDUvkOY82UmY6DRDAqtXpKT/Kz65k
+	 N/BvEGEwAC935/MgHQcR/OQ2laHXKDKnoUrI9VCoSLjC0tvEcTA1BXZd0pC8uzo1k4bsN
+	 5fpRfQGhJ24VcqqYkDdu0dUXntcyTAlHcawmCMGxSxq3FBdMCW6AtDJOC8raPhhFo0+hn
+	 xyuwpkDEPCCSZzzXDMOY/VH7ADBLwRGVvAtMAkI6XmFJCB2M8Q+5GjqT/CwEuko4lBA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ZY6ccAh3;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=MFu7oeCv;
 	arc=none smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1201D606A31E;
-	Thu, 29 Oct 2026 01:42:25 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CE67460A2610;
+	Thu, 29 Oct 2026 02:03:25 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ZY6ccAh3
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 61EC31F01825;
-	Thu, 29 Oct 2026 01:42:25 +0000 (UTC)
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=MFu7oeCv
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B53771F031E5;
+	Thu, 29 Oct 2026 02:03:24 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793238145;
-	bh=cSGJzZiXCj798GkI10LTKETldsERRDK+xDXKBEXm4a0=;
-	h=To:Cc:Subject:From:In-Reply-To:References:Date;
-	b=ZY6ccAh3ZhtgL7SqJxAlpVRWXzarAV9lXOZKzhhRP0Q+qeDkGKrdpJ1jfat6br3K3
-	 0RXk5s991sRoJN6RbinnCx+VdW5vHpir2s/YA+j5jXFw+5RjwRO8/e/FZ57bckxzoe
-	 80PGCN3gizm0YFfPyZC3y+Uv/vx+mxKOwKPJRTW8g4BW/D9qzE9ya6mJlEI35ebZKi
-	 N05ED56bPm/G9O092tSFEglYG5tj8sod3hTA/NawwZqRYfttnGw5OxdJgApocMg1cq
-	 A/Iq9aQakOesS+9HOuUeC9rN24RX6QVkE/0Q1lhObol5UpE6ZF0FypMJ8dOmFvNInX
-	 gDX+1cILmqZQw==
-To: Yu Zhang <yuz08559@gmail.com>
-Cc: "Martin K . Petersen" <martin.petersen@oracle.com>,
-  linux-scsi@vger.kernel.org,  target-devel@vger.kernel.org,
-  linux-kernel@vger.kernel.org,  Mike Christie
- <michael.christie@oracle.com>,  Dmitry Bogdanov <d.bogdanov@yadro.com>,
-  stable@vger.kernel.org
-Subject: Re: [PATCH v2] scsi: target: fix demo-mode dynamic ACL dev-entry
- UAF vs LUN teardown
-From: "Martin K. Petersen" <mkp@kernel.org>
-In-Reply-To: <20261014013746.46705-1-yuz08559@gmail.com>
-Message-ID: <yq1a4nx470r.fsf@mail.kernel.org>
-References: <20261013120528.37749-1-yuz08559@gmail.com>
-	<20261014013746.46705-1-yuz08559@gmail.com>
-Date: Wed, 28 Oct 2026 21:42:24 -0400
+	s=k20260515; t=1793239405;
+	bh=1izrTgIK5MkBirvotGd/I5vJGe3H9Lg+USaV2HU9hmY=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References;
+	b=MFu7oeCv7GH7oAIfENEWQH9q5sEJ6OAVnvGTqaZMEWO4dObtLXJG0/y5YmGVhGTU7
+	 pZXwTGhlr08aUdKse8kfMQnZm3zlV429C0cN1EeGjgDE1SbTrx+VIGh3QSIbwfGTQS
+	 tt4yPISswcLWcscZlytodOC4QC7c7nLXlogwXFW1x03o3F1bx8rYK5NQqZNr73Fgdf
+	 3YEsd5J85w2JZuQ57q8pYV6KGvzbmRa0d1iYjIE3X/aSmCEUHEye7QXvro2TjfqCsH
+	 UMwc+Yc+XL/FScXoFIZnVhFfmIOSZc1T5zHakw0iZNnrtHi9W1Gmd7DiHLC/6m2C/u
+	 ZFqxPpinVGUXw==
+From: "Martin K. Petersen (Oracle)" <mkp@kernel.org>
+To: Ram Vegesna <ram.vegesna@broadcom.com>,
+	"James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
+	James Smart <jsmart2021@gmail.com>,
+	Daniel Wagner <dwagner@suse.de>,
+	Haotian Zhang <vulab@iscas.ac.cn>
+Cc: "Martin K . Petersen" <mkp@kernel.org>,
+	linux-scsi@vger.kernel.org,
+	target-devel@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] scsi: elx: libefc: fix resources leak in efcport_init() error path
+Date: Wed, 28 Oct 2026 22:02:59 -0400
+Message-ID: <179323465363.491807.11508159821264700298.b4-ty@b4>
+X-Mailer: git-send-email 2.56.0
+In-Reply-To: <20261008185403.2791781-1-vulab@iscas.ac.cn>
+References: <20261008185403.2791781-1-vulab@iscas.ac.cn>
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Post: <mailto:target-devel@vger.kernel.org>
@@ -62,17 +65,24 @@ List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:target-devel+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 
+On Fri, 09 Oct 2026 02:54:03 +0800, Haotian Zhang wrote:
 
-Yu,
+> efcport_init() creates efc->node_pool and efc->node_dma_pool before
+> allocating efc->els_io_pool. When the latter allocation fails it returns
+> -ENOMEM without releasing the node dma pool or the node pool, leaking
+> both. The caller efct_efclib_config() only logs the error and
+> efct_device_attach() failure path never calls efcport_destroy(), so the
+> resources are never freed.
+> 
+> [...]
 
-> A demo-mode (generate_node_acls=1) login that allocates a dynamic
-> NodeACL populates that ACL's per-LUN dev entries in
-> core_tpg_add_node_to_devs() *before* the ACL is linked onto
-> tpg->acl_node_list by target_add_node_acl():
+Applied to 7.4/scsi-queue, thanks!
 
-Applied to 7.4/scsi-staging, thanks!
+[1/1] scsi: elx: libefc: fix resources leak in efcport_init() error path
+      https://git.kernel.org/mkp/scsi/c/b4bd078b78c2
 
 -- 
 Martin K. Petersen
