@@ -1,83 +1,84 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.210.177
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.210.174
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793600211;
-	b=K7lFNJEX6R+DucdPFWate7PNuDsVwQl+uT6LauWpRZ6v2M5vCPOsCLzuB4gS9ak2OoWq
-	 qtRQfwoIWu05SduXfZQ+LMUcIWFLzVvTo8zJWHWTgAPHHkZpB5Lh4j4diAtAxTtDHM8dg
-	 My+SNpyIyk7HxtaLAedeB7mHL9L3VseWEj/B2f+biB8zxMX6NNGBK/dpI2Pt+2lMiAtVe
-	 jDlseuCKACcS2ZPH6k+nlKrFj576N+UdahCnO7WepPLd8f0MTzVK//h0MHhRzafSf2aya
-	 ZZvIvrYZa1sB78X5cQYi29YjFxr1JYeMSTENgAXl4T8+6PHJxF0hNSGByeiE/xGxjhA==
+	t=1793600213;
+	b=UKLQuPsek9aA+u9cOO+s2AXiE30EjvscI01LXmof+gYDYH9z18xh/dPHmhpeo/s77E4q
+	 MQgYm3XGa0jpNG7OgbymW+/4zPJqm8WXGFxArRdr/FamI9n2Ki4kpTzO9EgavmR3WK8IP
+	 naCJRvxyOoCIB7KzCDfHGJY97iKVOQttH1AU0HdH6t5BLOvLzPTATpfc2Z3GKTbflU9Pg
+	 XwWl6NjP0EVpt8zGvkYpnZFUBPc0WZywF5Y9ZV6RPY+fqH+puoQ41+2PWMoce9moK5kJN
+	 BwjiGzrrLhENRJ+ic2uVQ3IRSc3RWI2aUJ772TDp214g75NB2cOXTRXwwwgrwkEMgQg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793600211;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793600213;
 	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
 	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:MIME-Version:
-	 Content-Transfer-Encoding;
-	bh=8sxqxZ/tFXcG65LJjLwgkRyGP3NtvdBgfC4fFF1s2qo=;
-	b=q9PlNrA5um00TgBlCWhFriNy57YFt0oExX4JvWmfqPIYle58IkYMplfLHUgFuy861/IU
-	 CHKTnQwqVmHqxTF31ipgjHGxIPW4pvKGEajqx6wsdw31BIpFXQypw7fKXe+OsZpX3PtYA
-	 2qEF7LmfsWgckYzmIQHJy9BmYPlBEqF1JfSZcz5fZOgWrsYulQcREmFem3pIxMqTe/LXS
-	 Ni099GD0US5gzAnHuhova1CXhHMAV2ct8QP1f2IeixdnzGKp7Rbl54apiXYX8PRadyyAQ
-	 fsclatP6hqRwZrMkyi5pqXQ0ZNyci63AkIBz/yU7lSqdeGROilflva0u50FVyEQB93A==
+	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:
+	 MIME-Version:Content-Transfer-Encoding;
+	bh=lb2kJheomVmYz2wSo6iR+pYm0QqTiB9gTDVpHHBWxiY=;
+	b=QvxTJQRtWnd21FF4lGwzxZKFoJxSyBiv1r9OoHDpAsMTcoTcZq5byHzaUYq7S7Gh00VM
+	 cqy6O+rEsd5WtLDnDkz6n94hBN88QkF/iP1GwcC5Vij8IR293f8g6Bf0ZSrOOrLbPx5Ly
+	 yxzCvCSdn3S1pdtKVKIhMt0tVZXcr6NqmCGcxcBOVr4xORJymc0xeKgemj5+WJ7UWzn6+
+	 9LCYOCDBPSLQUGHHYoDMH8H+yDWUolRbFZmiKGGckuBMWl+2sYXMoHJv5ret9BNNwqK5Z
+	 q/L9tUPd1iJYseHLDui0w8vyCqwZyO09Bf8vCySsT6IVyMw4aQEWvgm+EmWJq+d24iA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=fail header.from=isslab.korea.ac.kr;
 	spf=none smtp.mailfrom=isslab.korea.ac.kr;
-	dkim=pass header.d=isslab-korea-ac-kr.20260707.gappssmtp.com header.i=@isslab-korea-ac-kr.20260707.gappssmtp.com header.a=rsa-sha256 header.s=20260707 header.b=nC0e+Cq4;
-	arc=none smtp.remote-ip=209.85.210.177
-Received: from mail-pf1-f177.google.com (mail-pf1-f177.google.com [209.85.210.177])
+	dkim=pass header.d=isslab-korea-ac-kr.20260707.gappssmtp.com header.i=@isslab-korea-ac-kr.20260707.gappssmtp.com header.a=rsa-sha256 header.s=20260707 header.b=e7lHhy2p;
+	arc=none smtp.remote-ip=209.85.210.174
+Received: from mail-pf1-f174.google.com (mail-pf1-f174.google.com [209.85.210.174])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B8952606A324
-	for <target-devel@vger.kernel.org>; Mon,  2 Nov 2026 06:16:48 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org B8952606A324
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3E812606A335
+	for <target-devel@vger.kernel.org>; Mon,  2 Nov 2026 06:16:51 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 3E812606A335
 Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=isslab.korea.ac.kr
 Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=isslab.korea.ac.kr
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=isslab-korea-ac-kr.20260707.gappssmtp.com header.i=@isslab-korea-ac-kr.20260707.gappssmtp.com header.a=rsa-sha256 header.s=20260707 header.b=nC0e+Cq4
-Received: by mail-pf1-f177.google.com with SMTP id d2e1a72fcca58-88cfa501c5cso785550b3a.3
-        for <target-devel@vger.kernel.org>; Sun, 01 Nov 2026 22:16:48 -0800 (PST)
+	dkim=pass (2048-bit key, unprotected) header.d=isslab-korea-ac-kr.20260707.gappssmtp.com header.i=@isslab-korea-ac-kr.20260707.gappssmtp.com header.a=rsa-sha256 header.s=20260707 header.b=e7lHhy2p
+Received: by mail-pf1-f174.google.com with SMTP id d2e1a72fcca58-8a594d313a3so1480948b3a.1
+        for <target-devel@vger.kernel.org>; Sun, 01 Nov 2026 22:16:51 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=isslab-korea-ac-kr.20260707.gappssmtp.com; s=20260707; t=1793600208; x=1794205008; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=8sxqxZ/tFXcG65LJjLwgkRyGP3NtvdBgfC4fFF1s2qo=;
-        b=nC0e+Cq45eM+HVVdGpNmmpZS/oyYsZ9qFW2MtwXPsfRdNKHsSDsZiLackYQQRAUDSf
-         ML5QADHEVcWWGrvMsTEaKFP311norQwlD9GKA23Xzv85tGYAeN89IK6QTbC6tVqstn4o
-         yR5EGAZftrHLYT1VDsW4agAbXj1wK9R3Jh4aOZOm+f3jnIjdCu0OqPHwZFVYsXLRG+8N
-         GgZ/L+X3r7pDpZEXBQ+IixNJEC/f2iabWC/ZQhj23ultZEnFSUx2Ws5rbwoWdemRFoFS
-         IZvS6KR7T4h/yTa9FJ22p8Oioq1wIaKYXiI7DhuWTtpIohriIlXU8jUB/9c0VVp3rv0e
-         wItg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793600208; x=1794205008;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+        d=isslab-korea-ac-kr.20260707.gappssmtp.com; s=20260707; t=1793600211; x=1794205011; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=8sxqxZ/tFXcG65LJjLwgkRyGP3NtvdBgfC4fFF1s2qo=;
-        b=hl7dSXw1zzS1oiUL6DkH0K8oraQplaPM9mFvt5XRDTWKZ1YWKZns4LJNRS+JmYXXnE
-         7QZbpIPMfi9cmfYSol7QWLpRbu65hKwhkMyiVIpVKv6uxN012y4narLyq8wlSF/JnfHE
-         7INc9Qy3Ck8dyexvAyS0ENNqVatSSODrBwn0FE85lsbc2VPIVzHZiCqEuwDjeHUtFt+2
-         JfUn5n39vdUqP5UBJ2AoqRmlrESPH+nKuFAnDQZwyWG0n1C3/YtZw2mFyTgQg0HzoY6H
-         veQ0oX1qBcjRR0Udk0CFP4omLSCLfoebPK3c4P3iHxazlcb8lOOjGqcT6f5qA3pR2SiS
-         Y9Hw==
-X-Forwarded-Encrypted: i=1; AKwUvBzNe8C28GQgw/bk84NQe7SwddZZF2F/BoEJqhWJAvzO5npNQj4ezsYX50OsNWtaduosZ9TVpiG3fFxc6MA=@vger.kernel.org
-X-Gm-Message-State: AFq9FYLzge+tlsQ3ax37Hvg3Efqv/H9WGquQWOMntvHqZrKoBHjEbZSx
-	f46fPg9VaZ6yEnw/EKZ2VzflmxpWStjNLbnAb/L3RRG7wGo0lk4vIaUcT/mB/AMBwU4=
-X-Gm-Gg: AYBFou0HRAsZPixUnVX8E0WaXoORaAD31GlufwZTYO8Ddwzu1GcwUNsMZ+4HzDjaXxI
-	QLGp9y+go+cvAsXBoqOXfZ5yYesRLRxns2esSV6X+Rc+bjLtRFej2v4+Mmel3zhimNlG07boGs2
-	5kHGNh5GYM5VjNSa3WL2rbKDeLsqfTnrkWwJ3dYj6ysfvsBeLo+JocmhpyLfP2dwqbcMDJV1g14
-	f3InDv0WTiFktxRywVLKBVYf/F9RrXInGGtO5D19kC9UjE21VePxC8+eLqkn8He9d1tVPREUV0p
-	FyHyF5eKEdaq5FeAPdh8kGkdzYHxiKVApfg2uXsNR7BDIiCfKSr3pP2x9xGNrP6rtC0D+U5lwwb
-	P365lS4vuRtOS/lb+pO6a2KGD5eCR2kmwaiygB8AWZbf1O5PCePN+1KQQw/5TAxmMdruUtbsMkk
-	ngVau1w31bcMwtHv6M5OmHkTSEtzNcDwsrH44NAvYZoWZY3EBAl4qhpQMl5lih+pymPEByB2Pks
-	gS5oJBeUsHe64Hv107n4CVVynGAoasnpL7WB9icd5uxk3J2tXoFiIjS9UIo1Mq7Y1nIPsO4Hccu
-	5V5hKCsMc5zHQmEO5Dgj8kZIMeEIfY+vXSnKpDbBu9FHVaAmX8Xi1oMan2MjIn+zibtxFuYviFX
-	2+pUOms03reSqjLBr1lA7WZolfvg2uA9g8fhRWuy5sgGhf60Zu+blQD2TwNY=
-X-Received: by 2002:a05:6300:6301:b0:3eb:3b69:77d2 with SMTP id adf61e73a8af0-3eb3b699956mr2989335637.37.1793600207806;
-        Sun, 01 Nov 2026 22:16:47 -0800 (PST)
+        bh=lb2kJheomVmYz2wSo6iR+pYm0QqTiB9gTDVpHHBWxiY=;
+        b=e7lHhy2pwsV/suNqTsLmiGHI4aKK9XU10ChfG1g0+hlOPkSrMeba0Ix7ZrE8Idj7VY
+         xJLet9Ak1J7clKBfMJP0qe2aM0CGAzxMtv5DhiJExha0jbYvjYB668F3GRkKHXuPt67a
+         5JXxchhR9n8VbvDkqXA+abHtLdX9qhQkwnh6qKIjK8ZfEGPTjK5XVQdl5C3bOhFKla/t
+         cvzD2CYal3OMxuw8SFCI07gUr77cajZ9vsuw7wNPwkJ2aS+XP0JcmuBc1SF9KZozI4O2
+         1b7Ybst3AI7iNuTWngJ2+cNF0oADPs3VaCLhw/W/9QQpXwNN5GN3RYqMc6InCXPktXl0
+         RCgQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1793600211; x=1794205011;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to:content-type;
+        bh=lb2kJheomVmYz2wSo6iR+pYm0QqTiB9gTDVpHHBWxiY=;
+        b=mP1T3AF1lp8gPbhZEZuq9kVSS7YHJpcDou4Yh06DfinVBc24ezD3w/1GjMqGDEqUrs
+         wQo7CUYOai7t/HVpB1ZZJa0eXoXUSyAQTDL4NjRAtKR5d52jsy4Vi+w4JqVpRa22Yj9f
+         l4hXVZ1m3yFFiJQ9UZE41QZiYGGLQRMgLiFV5xsv4+/IkfKr4liEae/jEW+RcO61PD+m
+         hHrN2T5KS6UIUN3UB3w1BLP1YwnorL2oGrxFlgXUx4fCaZEXpuUHgFMQGzjaQeEZsuNb
+         vYr9kdJGNz5voIp5TGiTT3lRTqwmjbOJsEXQa+T0Obwl5dy0cn/73MUgH+5wa7jXiK75
+         oDPQ==
+X-Forwarded-Encrypted: i=1; AKwUvByWcYf2ta+CyC1gf3o5e/f9hup5FyMeRNkBnt+/t5YPajhsJqo0mPmrUUMLdSa27YjeSRdf6JLfMOOVp+Y=@vger.kernel.org
+X-Gm-Message-State: AFq9FYI0ev1knsVWDKIxJT9wx5KQSZrvNzWG8f9bP1j3TJtK0Tjvz46W
+	QuaVzsDOlMec6Jxl/fGmTymyHPM/1KHg67UJH5urBhI1X9N02o8PGyPZSm2P/Ekda/0=
+X-Gm-Gg: AYBFou2MXQR5LEMYQVKi8shIfCJUewahokELrx51LHkF0uVDhIRIfp46ioZh7PG+TRI
+	W7zFGN7lJhVBOK42i2Sa000kjoaRyBEKcb/47u2SsSibkO7pRruhNplK2k9KoZVTCu9IBjxM5ES
+	0EeEyQIfNuOgM2Eq0pXVSOXX+lyMDYgWkUqJy5uVuplS+iufUDo3w33bVANeYAV8CmgAdN2NBWL
+	f2aZhzmEExvCxCJkU7F5StDBtIUcspirz5CzzsIkrNqI3keiTHprr78e/DiCYYy8LRRaqltTgQ9
+	BQRFegGfRd7fVUJwuAys1Q49gkDbpjSzrfBevr/P/Q4hZ4KH3Gix9FG+m+3A9CCLXd3Qrz0lAKb
+	5fBQtAEI2lPD9Jpx/O79Xr8Rh5P5O3RPketCd5NTAw+8O2Zo8qfNKpdGEEHosYl1yGNNBDj9vu4
+	e8Ghuez0T6D4qPYMGmEPnG25td+/bQarrnj3J7qYu+2rbmE7CynGhTjZY0F03IaRmMjbp96xeD1
+	1iri88Wb3Yg9iZgLAjQIQxpf3kd1Y5FJf0fa76zlxBgii1pHGf0H4yqGoRoeqisUvrGBPrXMj7/
+	+TEf8p75rffJQiaLF1pMEH0e94PLkzf5UJYuS93f9NXWOcUEMo8BP83/yTzvYiKrW3Asn9NjqEW
+	L1cOMjWE+axvgAcNKsDGIq4I+4/DfnUgzQSL5gA==
+X-Received: by 2002:a05:6a00:7443:b0:89f:53b8:9751 with SMTP id d2e1a72fcca58-8a9bd2f072amr6725379b3a.16.1793600211453;
+        Sun, 01 Nov 2026 22:16:51 -0800 (PST)
 Received: from yhlee-960QFG.Davolink ([2406:5900:1044:110c:d115:e4f4:23fd:61df])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-8aad9d03be0sm1509071b3a.27.2026.11.01.22.16.44
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-8aad9d03be0sm1509071b3a.27.2026.11.01.22.16.48
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 01 Nov 2026 22:16:47 -0800 (PST)
+        Sun, 01 Nov 2026 22:16:51 -0800 (PST)
 From: Yehyeong Lee <yhlee@isslab.korea.ac.kr>
 To: Sagi Grimberg <sagi@grimberg.me>,
 	Max Gurtovoy <mgurtovoy@nvidia.com>,
@@ -88,11 +89,14 @@ Cc: "Martin K . Petersen" <martin.petersen@oracle.com>,
 	linux-rdma@vger.kernel.org,
 	target-devel@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
-	Yehyeong Lee <yhlee@isslab.korea.ac.kr>
-Subject: [PATCH v3 0/2] IB/isert: fix the device removal use-after-free
-Date: Mon,  2 Nov 2026 15:16:05 +0900
-Message-ID: <20261102061608.617186-1-yhlee@isslab.korea.ac.kr>
+	Yehyeong Lee <yhlee@isslab.korea.ac.kr>,
+	stable@vger.kernel.org
+Subject: [PATCH v3 1/2] IB/isert: do not publish connections being released on a second list
+Date: Mon,  2 Nov 2026 15:16:06 +0900
+Message-ID: <20261102061608.617186-2-yhlee@isslab.korea.ac.kr>
 X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20261102061608.617186-1-yhlee@isslab.korea.ac.kr>
+References: <20261102061608.617186-1-yhlee@isslab.korea.ac.kr>
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Post: <mailto:target-devel@vger.kernel.org>
@@ -104,90 +108,197 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-The RDMA_CM_EVENT_DEVICE_REMOVAL callback in ib_isert waits for the
-connection it was handed to reach ISER_CONN_DOWN and then frees it, which
-is a use-after-free against isert_connect_release(), and the wait itself
-deadlocks against the handler_mutex that rdma_destroy_id() needs.  2/2
-moves the teardown into an ib_client removal callback, the way nvmet-rdma
-did in commit f1d4ef7d8883.
+isert_free_np() moves the connections left on isert_np->pending and
+isert_np->accepted onto a stack-local list, drops isert_np->mutex and
+releases them from there.  isert_conn->node is then linked into that
+local list instead of being empty, which is the test
+isert_handle_unbound_conn() uses to decide whether a connection still
+needs cleaning up.  It runs from the RDMA CM handler, which is not
+serialised against isert_free_np(), so it unlinks the connection from a
+list it does not own and queues a second release for it.
 
-1/2 is a separate problem that the review of v2 found.  It predates the
-device removal work: isert_free_np() publishes the connections it is about
-to release on a stack-local list without emptying isert_conn->node, so
-isert_handle_unbound_conn() treats them as unclaimed, unlinks them from a
-list it does not own and queues a second release.  It needs to go first
-because 2/2 adds another caller of that path.
+Take the connections off isert_np one at a time, so that
+isert_conn->node is empty once isert_np->mutex is dropped.  The release
+keeps running with no mutex held, which commit 691b0480933f ("IB/isert:
+Fix dead lock in ib_isert") needs: releasing a connection destroys its
+cm_id, and rdma_destroy_id() waits for the handler_mutex that the CM
+handler holds while it waits for isert_np->mutex.
 
-v2 -> v3
+Reproduced with a test-only delay added inside isert_free_np()'s release
+loop: 36 reports in each of three unpatched runs, none in three patched
+runs.
 
-v2: https://lore.kernel.org/r/20261026060505.409476-1-yhlee@isslab.korea.ac.kr
+  BUG: KASAN: slab-use-after-free in isert_free_np+0x6a4/0xab0
+  Read of size 8 at addr ffff888109249040 by task rmdir/193
 
-The review of v2 raised four problems.  All four were real.
+  CPU: 1 UID: 0 PID: 193 Comm: rmdir Not tainted 7.3.0-BASET-13248-g103b309e2033 #15 PREEMPT(full)
+  Hardware name: QEMU Ubuntu 24.04 PC v2 (i440FX + PIIX, arch_caps fix, 1996), BIOS 1.16.3-debian-1.16.3-2 04/01/2014
+  Call Trace:
+   <TASK>
+   dump_stack_lvl+0x53/0x70
+   print_report+0xd0/0x630
+   ? __pfx__raw_spin_lock_irqsave+0x10/0x10
+   ? isert_free_np+0x6a4/0xab0
+   kasan_report+0xce/0x100
+   ? isert_free_np+0x6a4/0xab0
+   isert_free_np+0x6a4/0xab0
+   ? __pfx_isert_free_np+0x10/0x10
+   iscsit_del_np+0x163/0x340
+   iscsit_tpg_del_network_portal+0x3c3/0x530
+   ? mutex_unlock+0x7b/0xd0
+   lio_target_call_delnpfromtpg+0x40/0x60
+   config_item_cleanup+0x115/0x190
+   configfs_rmdir+0x7c7/0x9f0
+   ? __pfx_configfs_rmdir+0x10/0x10
+   vfs_rmdir+0x291/0x770
+   ? lookup_one_qstr_excl+0x1a/0x1d0
+   filename_rmdir+0x35d/0x4f0
+   ? __pfx_filename_rmdir+0x10/0x10
+   ? kasan_save_track+0x14/0x30
+   ? __kasan_slab_alloc+0x6e/0x70
+   ? strncpy_from_user+0x2b/0x1c0
+   __x64_sys_rmdir+0x41/0x60
+   do_syscall_64+0xdd/0x4a0
+   entry_SYSCALL_64_after_hwframe+0x77/0x7f
+   </TASK>
 
-The race between isert_remove_one() and isert_free_np() on unbound
-connections is 1/2.  Holding isert_np->mutex over the release loop would
-close it and would also bring back the deadlock that commit 691b0480933f
-("IB/isert: Fix dead lock in ib_isert") fixed, so 1/2 takes the
-connections off isert_np one at a time, which empties isert_conn->node
-before the mutex is dropped.
+  Allocated by task 10:
+   kasan_save_stack+0x33/0x60
+   kasan_save_track+0x14/0x30
+   __kasan_kmalloc+0x8f/0xa0
+   __kmalloc_cache_noprof+0x148/0x360
+   isert_cma_handler+0x1e3/0x2840
+   cma_cm_event_handler+0x3e/0x240
+   cma_ib_req_handler+0x17d9/0x4480
+   cm_process_work+0x41/0x330
+   cm_work_handler+0x5727/0xc160
+   process_one_work+0x697/0x1060
+   worker_thread+0x45b/0xd10
+   kthread+0x2c8/0x3b0
+   ret_from_fork+0x36e/0x5a0
+   ret_from_fork_asm+0x1a/0x30
 
-The race between isert_connected_handler() and isert_remove_one() was
-introduced by v2.  Both handlers used to be reached only from
-isert_cma_handler(), which the CM serialises per cm_id, so splitting the
-ISER_CONN_UP store and the move onto isert_np->pending was safe until
-isert_remove_one() started calling the teardown without that mutex.  2/2
-keeps isert_conn->mutex across both.
+  Freed by task 43:
+   kasan_save_stack+0x33/0x60
+   kasan_save_track+0x14/0x30
+   kasan_save_free_info+0x3b/0x60
+   __kasan_slab_free+0x43/0x70
+   kfree+0x121/0x390
+   process_one_work+0x697/0x1060
+   worker_thread+0x45b/0xd10
+   kthread+0x2c8/0x3b0
+   ret_from_fork+0x36e/0x5a0
+   ret_from_fork_asm+0x1a/0x30
 
-The hang on an ISER_CONN_INIT connection is closed by marking it in
-isert_teardown_conn() and having isert_connected_handler() release it
-rather than promote it.  A marked connection whose peer never answers
-holds the removal until the CM gives up on max_cm_retries.
+  Last potentially related work creation:
+   kasan_save_stack+0x33/0x60
+   kasan_record_aux_stack+0x8c/0xa0
+   __queue_work+0x7a1/0x15e0
+   queue_work_on+0x5d/0x70
+   isert_disconnected_handler.isra.0+0x20b/0x380
+   isert_cma_handler+0xd71/0x2840
+   cma_cm_event_handler+0x3e/0x240
+   cma_ib_handler+0x190/0x750
+   cm_process_work+0x41/0x330
+   cm_work_handler+0x582b/0xc160
+   process_one_work+0x697/0x1060
+   worker_thread+0x45b/0xd10
+   kthread+0x2c8/0x3b0
+   ret_from_fork+0x36e/0x5a0
+   ret_from_fork_asm+0x1a/0x30
 
-The hang on racing connects is closed for the half where a connection the
-walk has passed is promoted afterwards, which the previous item covers.
-For a connect request arriving during the removal I have no measurement,
-because no further RDMA_CM_EVENT_CONNECT_REQUEST arrived on soft-RoCE once
-rdma link delete had started.  While isert_remove_one() is still running,
-2/2 refuses such a request: isert_connect_request() fills isert_conn_list
-and isert_np->accepted in one isert_conn_mutex section and returns -ENODEV
-if the device is already being removed.
+  The buggy address belongs to the object at ffff888109248000
+   which belongs to the cache kmalloc-8k of size 8192
+  The buggy address is located 4160 bytes inside of
+   freed 8192-byte region [ffff888109248000, ffff88810924a000)
 
-One window is left open and 2/2 does not close it.  Once
-isert_remove_one() has returned, the isert_device for that ib_device is
-gone, so a CONNECT_REQUEST that arrives before cma_remove_one() tears the
-listener down makes isert_device_get() create a fresh isert_device, with
-removing clear, and the connection stays in ISER_CONN_INIT.
-cma_process_remove() then raises DEVICE_REMOVAL on that cm_id,
-isert_teardown_conn() only marks the connection, and no further rdma_cm
-event can reach it: cma_send_device_removal_put() has already set the id
-to RDMA_CM_DEVICE_REMOVAL, and cma_ib_handler() drops every non-timewait
-event for an id that is not in RDMA_CM_CONNECT.
-Nothing destroys the cm_id, so the wait_for_completion(&cma_dev->comp) at
-the end of cma_process_remove() does not return.  The unpatched code
-blocks in the same case, in wait_event_interruptible(), so this is not a
-regression, and it is not a memory-safety problem.  I have not reproduced
-it.  A follow-up patch can close it.
+Fixes: 691b0480933f ("IB/isert: Fix dead lock in ib_isert")
+Cc: stable@vger.kernel.org
+Signed-off-by: Yehyeong Lee <yhlee@isslab.korea.ac.kr>
+---
+ drivers/infiniband/ulp/isert/ib_isert.c | 54 ++++++++++++++-----------
+ 1 file changed, 31 insertions(+), 23 deletions(-)
 
-One thing changed beyond answering the review.  The branch in
-isert_connected_handler() that releases a connection it refuses to promote
-disconnects and drains the QP first, because the login receive buffer is
-still posted and isert_login_recv_done() dereferences isert_conn.
+diff --git a/drivers/infiniband/ulp/isert/ib_isert.c b/drivers/infiniband/ulp/isert/ib_isert.c
+index efa8d7b7844c97..5371bba71ba3cb 100644
+--- a/drivers/infiniband/ulp/isert/ib_isert.c
++++ b/drivers/infiniband/ulp/isert/ib_isert.c
+@@ -2479,12 +2479,29 @@ isert_accept_np(struct iscsi_np *np, struct iscsit_conn *conn)
+ 	return 0;
+ }
+ 
++static struct isert_conn *
++isert_np_take_conn(struct isert_np *isert_np)
++{
++	struct isert_conn *isert_conn;
++
++	lockdep_assert_held(&isert_np->mutex);
++
++	isert_conn = list_first_entry_or_null(&isert_np->pending,
++					      struct isert_conn, node);
++	if (!isert_conn)
++		isert_conn = list_first_entry_or_null(&isert_np->accepted,
++						      struct isert_conn, node);
++	if (isert_conn)
++		list_del_init(&isert_conn->node);
++
++	return isert_conn;
++}
++
+ static void
+ isert_free_np(struct iscsi_np *np)
+ {
+ 	struct isert_np *isert_np = np->np_context;
+-	struct isert_conn *isert_conn, *n;
+-	LIST_HEAD(drop_conn_list);
++	struct isert_conn *isert_conn;
+ 
+ 	if (isert_np->cm_id)
+ 		rdma_destroy_id(isert_np->cm_id);
+@@ -2497,31 +2514,22 @@ isert_free_np(struct iscsi_np *np)
+ 	 * up in accepted and pending lists.
+ 	 */
+ 	mutex_lock(&isert_np->mutex);
+-	if (!list_empty(&isert_np->pending)) {
++	if (!list_empty(&isert_np->pending))
+ 		isert_info("Still have isert pending connections\n");
+-		list_for_each_entry_safe(isert_conn, n,
+-					 &isert_np->pending,
+-					 node) {
+-			isert_info("cleaning isert_conn %p state (%d)\n",
+-				   isert_conn, isert_conn->state);
+-			list_move_tail(&isert_conn->node, &drop_conn_list);
+-		}
+-	}
+-
+-	if (!list_empty(&isert_np->accepted)) {
++	if (!list_empty(&isert_np->accepted))
+ 		isert_info("Still have isert accepted connections\n");
+-		list_for_each_entry_safe(isert_conn, n,
+-					 &isert_np->accepted,
+-					 node) {
+-			isert_info("cleaning isert_conn %p state (%d)\n",
+-				   isert_conn, isert_conn->state);
+-			list_move_tail(&isert_conn->node, &drop_conn_list);
+-		}
+-	}
+ 	mutex_unlock(&isert_np->mutex);
+ 
+-	list_for_each_entry_safe(isert_conn, n, &drop_conn_list, node) {
+-		list_del_init(&isert_conn->node);
++	for (;;) {
++		mutex_lock(&isert_np->mutex);
++		isert_conn = isert_np_take_conn(isert_np);
++		mutex_unlock(&isert_np->mutex);
++
++		if (!isert_conn)
++			break;
++
++		isert_info("cleaning isert_conn %p state (%d)\n",
++			   isert_conn, isert_conn->state);
+ 		isert_connect_release(isert_conn);
+ 	}
+ 
+-- 
+2.43.0
 
-Measured with soft-RoCE under KASAN, removing the device under 32
-connections: 4 of 12 unpatched runs hit the use-after-free, 76 reports in
-all, and no removal finished within the cutoff; with this patch none did
-and all 12 finished.  A connection held in ISER_CONN_INIT across the walk
-took the removal to 73 seconds, 59 of them waiting for
-RDMA_CM_EVENT_UNREACHABLE with status -110, against 14 seconds without
-that delay.  Login and I/O showed no regression over 12 runs, and a
-PROVE_LOCKING build reported nothing over 6 runs on each side.
-
-Yehyeong Lee (2):
-  IB/isert: do not publish connections being released on a second list
-  IB/isert: tear connections down from an ib_client on device removal
-
- drivers/infiniband/ulp/isert/ib_isert.c | 203 +++++++++++++++++++++++---------
- drivers/infiniband/ulp/isert/ib_isert.h |   5 +-
- 2 files changed, 151 insertions(+), 57 deletions(-)
-
-base-commit: 6628e7d4c6b25c8d18f1345e3a20d21829aae7e4
