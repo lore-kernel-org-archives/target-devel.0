@@ -1,101 +1,57 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.215.181
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793745600;
-	b=0MpXupf7dh5BOOT7M+9nI3MIl+shUaMdydwvIBi/oTtiAJW5IFw2cjsfDaXmbDoKosZ7
-	 t7iH6JOltTa5KNbIwYkkXUup+d9jIX2BzFsLsmqHcUX9Xop7Lw+dJxk412Q6i4hTSG1Pg
-	 hlAQwhvsBgtw+gHyjmpICCv+JEBEgtsjkTYCqdYdv8Kr09clmEUNUq8BTQgNPpecjexbB
-	 PVamjsCTu6QUtKKAUUfpRvqBwBy7A7dciEfUQKAmbVIOkWuPcN+es6AuMk3o0NTC0Pfvc
-	 94LnBQ4Hrav7n09vLVapG28trRA0830Xn65GsffaXQWbsydRmdDHj5dPY088cBZ4CNg==
+	t=1793747441;
+	b=F/c7/hP7+30it2JyMNneqD14kfijDBpRyfET7SvQz3nYOH9+hSZMtEbHnVvxSodJwuIE
+	 +KVUI7QHKjTmGN+E7KmDfAgKypr3IbJ8EcRL4TdnLYLifERdh8yV/qtPFlMJ1B5IFhibV
+	 jw9MSggAGd9dFDgSIs5jT5YI+ERYTbCrsSwVXTdJqj23HyxWIm9z4N79h6d+KRM893xCu
+	 PFXnu3vZnACKP/2vJYQQgQPtHk/FCnOUUrwRMxacQyB0C4fmj53lns3neQzwYeJdNw4Oy
+	 kvpqcQb7PV/IhOxyL+a2W+nBQmBgX9R7LkLsF2hOgJ5RXQbDwUSdC7OXtMHQ/gdFcxw==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793745600;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:
-	 MIME-Version:Content-Transfer-Encoding;
-	bh=hkasm7w43b+dUY5l9LtRYckjAHHkeZc9T5ParUJyZ88=;
-	b=ce7rvnri3sJVjvYxFUgiTEAkaXexIwJZcKn/6BXz2PYPDIa/Gsglk8FDYCQwtA/3sInY
-	 IGvqBK/5uWbvPHyTh8ZpbjaBEaoFcrTsOtXCTAVd5XAW20MrS66HNdoSiWUiNrYfPVdF+
-	 +hYSzaXL04CBfk6B/jXHLRz22hKIxHwlyR+31US52NpuLu9Kwg7TCLXLO7Q13xz8DGfGc
-	 5Atb2Iu6XKz/JrGrmZwcyXDIRXLDUz0GPdMb6psxozsFNGsc8JM6kCMlXP+on7+W+wRix
-	 UxWKes3hNSOYnju5orrluMNESoOBBbmKHJrD7CkXkv8/c1QWu9dvS/nlpr08R4RM7Sg==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793747441;
+	h=Received:DKIM-Signature:Message-ID:From:Subject:Reply-To:To:Cc:
+	 In-Reply-To:References:Content-Type:Content-Transfer-Encoding:Date;
+	bh=0eU/hjcUFjh++FC7iUcDAyhM/AjcJjm8YHkmHUel4QI=;
+	b=Jn37Dd17Hjs3ufzcLZwon4Efcil/obpicxS+2UG198BQvPdH/mVaVWW297KgeR8qI+d/
+	 YCfr9DJIuVH8vo1CnnRaauL1T/o1HLxm6S+3eZVnVXeU/IjVfCHIcjN3Y6jZCXgKM95GL
+	 24RXh8SmWEO5AhWSIsp5482JSveUlVD4ZLrBeSKW3ALlmDVwGvZilzXI9cutv7JaPtw8q
+	 qDZMXMdIoCbLwt907xbKeUtpK1MsERRXs/9JqjjkkSPtBVWsSOtdL8TUJ2K9I2tegsHhh
+	 EMS18m9kLcEV33HcCCwCQRjoSqePuWFdKY9xI6AHH09QiLPoThV1SNpVcW92qEwDh8Q==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=fail header.from=isslab.korea.ac.kr;
-	spf=none smtp.mailfrom=isslab.korea.ac.kr;
-	dkim=pass header.d=isslab-korea-ac-kr.20260707.gappssmtp.com header.i=@isslab-korea-ac-kr.20260707.gappssmtp.com header.a=rsa-sha256 header.s=20260707 header.b=t9+0qfDC;
-	arc=none smtp.remote-ip=209.85.215.181
-Received: from mail-pg1-f181.google.com (mail-pg1-f181.google.com [209.85.215.181])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=VEOO7Ihw;
+	arc=none smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 12A89606A332
-	for <target-devel@vger.kernel.org>; Tue,  3 Nov 2026 22:39:54 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 12A89606A332
-Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=isslab.korea.ac.kr
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=isslab.korea.ac.kr
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E4728606A336;
+	Tue,  3 Nov 2026 23:10:40 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=isslab-korea-ac-kr.20260707.gappssmtp.com header.i=@isslab-korea-ac-kr.20260707.gappssmtp.com header.a=rsa-sha256 header.s=20260707 header.b=t9+0qfDC
-Received: by mail-pg1-f181.google.com with SMTP id 41be03b00d2f7-cc4aa18f9afso49036a12.3
-        for <target-devel@vger.kernel.org>; Tue, 03 Nov 2026 14:39:54 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=isslab-korea-ac-kr.20260707.gappssmtp.com; s=20260707; t=1793745594; x=1794350394; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=hkasm7w43b+dUY5l9LtRYckjAHHkeZc9T5ParUJyZ88=;
-        b=t9+0qfDCYwLylSmVAKRemuYBtlBZtSEc+OwR8egCGuHW44FrD9qGXupxIVP2sK5RcK
-         gmHttwu2rBCZKtFtMJrm9PyA6fBRymv4FsKNKVc1zw+XE1ZUKC1PcXjm3fKuNeKOoVTr
-         t8HiFndykiCtgEK/lMZajxktnukuNLVgoXXVfg4jQFKtczvWw+/pOYmokImYksBc/ITd
-         x0k/nEIdiKco/iaIxoJ0jb2mZ8ry7s/ssMr9cql7NhE7XIaIsRq0H5la4a8ii+DwXAcK
-         WaytQ+JGfu5tiiZ8chSCPiCUMyp8RHuwuHwEn1Ww7Jrz8LGwFQMtspL29OMRaeuMMglF
-         m5Rw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793745594; x=1794350394;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=hkasm7w43b+dUY5l9LtRYckjAHHkeZc9T5ParUJyZ88=;
-        b=0SSlaYQMmWt/3hUbAFHhZDJF7lpFwXF1aRwqoH6BMPJ+Xgukrt1OIBl/asayS7y1kO
-         V8p0t6XWKccocjhox67+Kvy8tVO10906YbYqNl7RDaaKs3/PbvVHdE4JEVycCzBc+OnC
-         SXV/0jZxo68mCLMvdCwJkQTS52aqMlU2+3xGwJzegfahT9jxpcbuh5Se1QHqGN69lXY0
-         tJZozsxL1YMAIFJD+4L2wPmjq1zlNRKVMeB9xjMjof01KInh8tviPDjuDQk9Kyvm2Frc
-         ebUvMsNwKardBiFB9pkGypsDY+djvHqlfYkHQH7o8jr8SxQD52zOpGt/axfSP3z/ZZtB
-         Sf6Q==
-X-Forwarded-Encrypted: i=1; AKwUvBzmkn0/aT3zfYWRne+V2cmUPbz4X2rJ4CPTUkFvKZ0s5IvW6ISrK9cplX0a1dc8bhoeEFInYSlt8rSaCjg=@vger.kernel.org
-X-Gm-Message-State: APuU4Z8gIvnpfMHeDMvax+fnXNEDkmEuKVvWNgMYk9ayxaSFGK6Xus5g
-	6FlkITndRb/kZkz9fRwwdKxEzvvB86dE6IsLBAO+cSFZl2C5nXrUDindPaJrr+vqd54=
-X-Gm-Gg: AYBFou3v/NwwU+n4/ufc/p/Ec21RBgvqG+l0kXJaXnobMwegH9zlqg3IW1Irqd5AOQL
-	2rz9xg2+HKoaQ6mbSn4lcDFr5SNSX7xO1Ap/5+pUXTf1vmkDHrxPIinLZUOgdJYX4h/6k3RpkZW
-	tyO/lvwyftwpQ3mDb1kR564nmfrbWb+U4gyKBtP3LtwlKWLFJMcUZnqs0t1Y9vBvtWnvRa+ERqH
-	YfuWI7acgx1SOAyXsK+bLy2y+hgdg4ER7NhJQXLF26QBahQHE2lo90cfm7vyinSP9cQrRasnati
-	opBiRmXcZnjAruoSinrepZaUQhAmKD/hAWJkSmfDuWqtSpujo7goYuzpsfd6UIbaxYD4lfXxuel
-	giPk65siMW+BCNDCXAL8f5mC0BkfjuluiwdPxStUwA1kD9x56VcK/b/KoQHVKFVSPTuM1OcYgPb
-	3NUrLXGxjHa6IctTS8FJG4v8EbOaMXjuFRfASLhLlkNQ+atwWBdKWKktCrSH83N8HAWACUic93v
-	zfaNeddYxAGtCXAt/g549tRA78G5ZZR1Cf8RjLaXdCa1cUvOt3Gw2sLtjdrEwYsEm2WT1Fr2han
-	C0zq8U5R1LIkE+jBE02Mhk+HWyVmfp5MwVVKpN/GsDnzYBNDRLfdUcnDIoUU12DsuqFVDcOrJzd
-	C5I0AiqiEKhg1ZlUdtdWULzx4IL21aQPfAhSV
-X-Received: by 2002:a17:90b:1844:b0:3ac:9c37:9429 with SMTP id 98e67ed59e1d1-3ae89838746mr11403550a91.52.1793745594421;
-        Tue, 03 Nov 2026 14:39:54 -0800 (PST)
-Received: from yhlee-960QFG.Davolink ([2406:5900:1044:110c:744:cf40:a7b2:e78f])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3b0944a0ff7sm886691a91.10.2026.11.03.14.39.51
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 03 Nov 2026 14:39:53 -0800 (PST)
-From: Yehyeong Lee <yhlee@isslab.korea.ac.kr>
-To: Sagi Grimberg <sagi@grimberg.me>,
-	Max Gurtovoy <mgurtovoy@nvidia.com>,
-	Jason Gunthorpe <jgg@ziepe.ca>,
-	Leon Romanovsky <leon@kernel.org>
-Cc: "Martin K . Petersen" <martin.petersen@oracle.com>,
-	Mike Christie <michael.christie@oracle.com>,
-	linux-rdma@vger.kernel.org,
-	target-devel@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Yehyeong Lee <yhlee@isslab.korea.ac.kr>
-Subject: Re: [PATCH v5 0/5] IB/isert: fix the device removal use-after-free
-Date: Wed,  4 Nov 2026 07:39:45 +0900
-Message-ID: <20261103223945.1697775-1-yhlee@isslab.korea.ac.kr>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20261103125955.1530355-1-yhlee@isslab.korea.ac.kr>
-References: <20261103125955.1530355-1-yhlee@isslab.korea.ac.kr>
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=VEOO7Ihw
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 556CC1F00A02;
+	Tue,  3 Nov 2026 23:10:40 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1793747440;
+	bh=0eU/hjcUFjh++FC7iUcDAyhM/AjcJjm8YHkmHUel4QI=;
+	h=From:Subject:Reply-To:To:Cc:In-Reply-To:References:Date;
+	b=VEOO7IhwhgvQPV2d7jJ6X2Th7Q3ew3tOP1kzhSWjDBPha4keMD3FVuL6Tu3rU9EVO
+	 dpPfiuE3qV4lvvsusua1KLTgh+cn5FVnOX7n2njarBkAXFPIdTz9ibsYAlFtctR2Bd
+	 WmbJ/7YvvYjxLK3sWXKEdy0O1P5kWVWpT8YBN6tOR46yX+2jwR6cIbW3mdFMkNZO48
+	 +eO2trWPSNJzCbOoQ+KcGl/odyqpKaA4v1KICxfZ5AbhoeZQLG+lJblaT7sXZww6dO
+	 PNbbn3a01MrxhrTVqabaPTt5ZnRQ8LKefs11OMl5iwUYuptbudbvNMyfUartCOyXeF
+	 a44OkiMPqty3g==
+Message-ID: <sashiko-outbox-196182@kernel.org>
+From: sashiko-bot@kernel.org
+Subject: Re: [PATCH v6 5/6] IB/isert: do not build a new isert_device for a
+ device being removed
+Reply-To: sashiko-reviews@lists.linux.dev
+To: "Yehyeong Lee" <yhlee@isslab.korea.ac.kr>
+Cc: linux-rdma@vger.kernel.org, target-devel@vger.kernel.org
+In-Reply-To: <20261103223802.1697607-6-yhlee@isslab.korea.ac.kr>
+References: <20261103223802.1697607-1-yhlee@isslab.korea.ac.kr>
+ <20261103223802.1697607-6-yhlee@isslab.korea.ac.kr>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+Date: Tue, 03 Nov 2026 23:10:39 +0000
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Post: <mailto:target-devel@vger.kernel.org>
@@ -104,9 +60,150 @@ List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:target-devel+owner@vger.kernel.org>
 Precedence: list
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
 
-This series is superseded by v6:
+Thank you for your contribution! Sashiko AI review found 1 potential issue(=
+s) to consider:
+- [Medium] IB/isert: race window in isert_remove_one() before setting found=
+->removing
+--
 
-  https://lore.kernel.org/r/20261103223802.1697607-1-yhlee@isslab.korea.ac.kr
+commit 5f9189f7b427c87e967cf5a96e3a777eb552f8e4
+Author: Yehyeong Lee <yhlee@isslab.korea.ac.kr>
+
+IB/isert: do not build a new isert_device for a device being removed
+
+This commit prevents isert_device_get() from creating or returning an
+isert_device for an ib_device that is being removed by tracking device state
+via ib_client data and skipping devices marked as removing.
+
+> diff --git a/drivers/infiniband/ulp/isert/ib_isert.c b/drivers/infiniband=
+/ulp/isert/ib_isert.c
+> index 712d6165150e3..2057bb35af4ca 100644
+> --- a/drivers/infiniband/ulp/isert/ib_isert.c
+> +++ b/drivers/infiniband/ulp/isert/ib_isert.c
+
+[ ... ]
+
+> @@ -275,14 +280,19 @@ isert_device_get(struct rdma_cm_id *cma_id)
+>  	int ret;
+> =20
+>  	mutex_lock(&device_list_mutex);
+> +	if (!ib_get_client_data(cma_id->device, &isert_ib_client)) {
+> +		mutex_unlock(&device_list_mutex);
+> +		return ERR_PTR(-ENODEV);
+> +	}
+>  	list_for_each_entry(device, &device_list, dev_node) {
+> -		if (device->ib_device->node_guid =3D=3D cma_id->device->node_guid) {
+> -			device->refcount++;
+> -			isert_info("Found iser device %p refcount %d\n",
+> -				   device, device->refcount);
+> -			mutex_unlock(&device_list_mutex);
+> -			return device;
+> -		}
+> +		if (device->removing ||
+> +		    device->ib_device->node_guid !=3D cma_id->device->node_guid)
+> +			continue;
+> +		device->refcount++;
+> +		isert_info("Found iser device %p refcount %d\n",
+> +			   device, device->refcount);
+> +		mutex_unlock(&device_list_mutex);
+> +		return device;
+>  	}
+> =20
+>  	device =3D kzalloc_obj(struct isert_device);
+> @@ -2791,6 +2801,7 @@ isert_remove_one(struct ib_device *ib_device, void =
+*client_data)
+>  	LIST_HEAD(removal_list);
+> =20
+>  	mutex_lock(&device_list_mutex);
+> +	ib_set_client_data(ib_device, &isert_ib_client, NULL);
+>  	list_for_each_entry(device, &device_list, dev_node) {
+>  		if (device->ib_device !=3D ib_device)
+>  			continue;
+> @@ -2805,7 +2816,9 @@ isert_remove_one(struct ib_device *ib_device, void =
+*client_data)
+>  		return;
+> =20
+>  	mutex_lock(&isert_conn_mutex);
+> +	mutex_lock(&device_list_mutex);
+>  	found->removing =3D true;
+> +	mutex_unlock(&device_list_mutex);
+>  	list_for_each_entry(isert_conn, &isert_conn_list, conn_list) {
+>  		if (isert_conn->device !=3D found)
+>  			continue;
+
+[Severity: Medium]
+In isert_remove_one(), device_list_mutex is unlocked after clearing the
+client data and finding the device, before acquiring isert_conn_mutex and
+re-locking device_list_mutex to set found->removing =3D true:
+
+	mutex_lock(&device_list_mutex);
+	ib_set_client_data(ib_device, &isert_ib_client, NULL);
+	list_for_each_entry(device, &device_list, dev_node) {
+		if (device->ib_device !=3D ib_device)
+			continue;
+		device->refcount++;
+		device->removal_comp =3D &removal_comp;
+		found =3D device;
+		break;
+	}
+	mutex_unlock(&device_list_mutex);
+
+	if (!found)
+		return;
+
+	mutex_lock(&isert_conn_mutex);
+	mutex_lock(&device_list_mutex);
+	found->removing =3D true;
+	mutex_unlock(&device_list_mutex);
+
+The commit message notes that the lookup skips an isert_device being removed
+so a device with the same node_guid cannot raise its reference count again.
+However, because ib_get_client_data(cma_id->device, &isert_ib_client) alrea=
+dy
+rejects the same ib_device once client data is cleared, the device->removing
+check in isert_device_get() is only reached when cma_id->device is a
+different ib_device sharing the same node_guid.
+
+If a connection request on another ib_device with the same node_guid calls
+isert_device_get() during that unlocked window (for instance while
+isert_remove_one() waits on isert_conn_mutex), won't it observe
+device->removing =3D=3D false and increment found->refcount on the removing
+isert_device?
+
+When that happens in isert_connect_request(), isert_alloc_login_buf() DMA-m=
+aps
+buffers using cma_id->device, isert_create_qp() allocates a CQ on
+found->ib_device and fails in rdma_create_qp() with -EINVAL because
+id->device !=3D pd->device, and the error path in isert_free_login_buf() th=
+en
+unmaps those DMA buffers using isert_conn->device->ib_device (found->ib_dev=
+ice)
+instead of cma_id->device:
+
+	ret =3D isert_alloc_login_buf(isert_conn, cma_id->device);
+	if (ret)
+		goto out_conn_dev;
+
+	isert_set_nego_params(isert_conn, &event->param.conn);
+
+	isert_conn->qp =3D isert_create_qp(isert_conn, cma_id);
+	if (IS_ERR(isert_conn->qp)) {
+		ret =3D PTR_ERR(isert_conn->qp);
+		goto out_rsp_dma_map;
+	}
+	...
+out_rsp_dma_map:
+	isert_free_login_buf(isert_conn);
+
+Additionally, if an in-flight isert_connect_request() on the removing device
+already called isert_device_get() before isert_remove_one() started, and it
+acquires isert_conn_mutex before isert_remove_one() does, it will also see
+device->removing =3D=3D false and accept the connection.
+
+Should found->removing =3D true be set inside the first device_list_mutex
+critical section in isert_remove_one() when found is located?
+
+--=20
+Sashiko AI review =C2=B7 https://sashiko.dev/#/patchset/20261103223802.1697=
+607-1-yhlee@isslab.korea.ac.kr?part=3D5
