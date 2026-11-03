@@ -1,57 +1,102 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.216.52
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793713166;
-	b=RDD57DvpsGoHS8GhaDWWQG0e5KSoYdWcXROax+Kamy8R59emqh3ySXrVqDZVBVdLge/U
-	 +b/o2e4r8B2+epQUMp8NctqO0XKpJHBbaTxZpSNamEeF3VgxPD5OASxpykTf53P8xvEY+
-	 mr4oZ6bdvbKvbG6tguZV6bKjK7ZFd7siFlRGDJXPNnRaX0P4ctCoC6fK98Q9Ru6K07LdU
-	 uHrV3pLvgAxK0yf8xwX8TUQyi+h1nwsUw+/yubxIIbWwREDyUwPsJa3tjCMeloGEbD4oz
-	 U1QEXn5IRj5yugiMta5ccmWrm38/ofoqUjEXWpdBh9aTp8y4LK08uznvY1hi3qErFNg==
+	t=1793745500;
+	b=rJokbwlv/fKRTUXvI4D1ugid2nWagfqirwgnKZVz4H9toH3+SUUe8zDJrXxAimUaCnZr
+	 ekFfDJPl12b29hX+2GFc0kghsfuKdGpKwo7E9EK+P+OPwOkKNenhtafZ2q6D/j3Od4cap
+	 MxIxEzsftBvnozLSzufMPfa1X71y4U61I3gy5CPGku5NFD460eqZsVNn9NYDXTIGp7CqD
+	 mt3G+hRs3Nf6uAIXL1APrzOrGWgwwDYv7BBUF92RrqVWJ4ehy8s92ptxNqzvTN1PeeMZL
+	 mQPhZBlGBTnfJSxFiy/UarQeNhs22F0twCnUcycbfTSL5EiRrftkKIYNJ1WpXAt2Thg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793713166;
-	h=Received:DKIM-Signature:Message-ID:From:Subject:Reply-To:To:Cc:
-	 In-Reply-To:References:Content-Type:Content-Transfer-Encoding:Date;
-	bh=hCSNrY6Dw3KNDEqgv/IZHslYqKdk0LvrNJV2LCDQSLU=;
-	b=QQUm6xw/kApNXpye14pQWgbvRqJY96yaKiWfrknJv93Tt5Fbr0PBhfYygkCL63F9KPwy
-	 47c4MKa670xmTiJaIUzoXKe2ZK3+pFjX5IAjQz+n4Z1P6996wopky0D0boBVNxNzl3cRc
-	 xglJCnKTFX/bk4Coa1lB+MmrxTbhykFoDYV7OgmFOqGcfPdXkG5LaV9X2o3sSrD8xqhCX
-	 GSsAGHrtp2tRkxlPs1UBOfedxW/M6af4v8hq0aQ6BzDNSG9dvqVCc9JBDK6BseVd0RF29
-	 pBcIbpdnwmjCb58KpdR6w3bPoIKqUfsrOp7MFOc1CPg5NapWYZKUahvBXhj89RBygkw==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793745500;
+	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
+	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:
+	 MIME-Version:Content-Transfer-Encoding;
+	bh=9TbVYvpSeD3EGVYLSVcnsamFqScX3vaSw3kvz6iivhs=;
+	b=jS+myNVdTgAu0H3AG70opaoP9CKk737sM0kjMBrzFSoIBMMJw2VVsrQSs0bBr7+64XMp
+	 fzsajgkT0rcg0GToJZ4W9JmyIRNDR4xdueLdHBn9IzsoWGwfJj+EkCNIKmOvliSi38I3p
+	 P9AsPHWLmxwzjBRHGUVhV24difj7/udr60VZ83oyyWdCDHCAIM4uNS0fArRHbuY+zbdLS
+	 b5+HpaVnlyGTgjxMcTNqqTa8Swd+fBvM4HM9ukMWg8NL7mVFIPM2UdUChmKnBrViBjGNb
+	 oaAw9ACwG8As7hvqNbkAhw7Gm6uDiFJVMSbBT7wOfX4fFxBz1M00J6oRdCFIa5f6r1A==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=MQuQS4nR;
-	arc=none smtp.remote-ip=100.103.45.18
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	dmarc=fail header.from=isslab.korea.ac.kr;
+	spf=none smtp.mailfrom=isslab.korea.ac.kr;
+	dkim=pass header.d=isslab-korea-ac-kr.20260707.gappssmtp.com header.i=@isslab-korea-ac-kr.20260707.gappssmtp.com header.a=rsa-sha256 header.s=20260707 header.b=fnTrAVT8;
+	arc=none smtp.remote-ip=209.85.216.52
+Received: from mail-pj1-f52.google.com (mail-pj1-f52.google.com [209.85.216.52])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9F4F4606A326;
-	Tue,  3 Nov 2026 13:39:25 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6D966606A334
+	for <target-devel@vger.kernel.org>; Tue,  3 Nov 2026 22:38:18 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 6D966606A334
+Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=isslab.korea.ac.kr
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=isslab.korea.ac.kr
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=MQuQS4nR
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4DBE81F000C1;
-	Tue,  3 Nov 2026 13:39:25 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793713165;
-	bh=hCSNrY6Dw3KNDEqgv/IZHslYqKdk0LvrNJV2LCDQSLU=;
-	h=From:Subject:Reply-To:To:Cc:In-Reply-To:References:Date;
-	b=MQuQS4nRLeXKrFL/rP87T0TNWk7JPVrnmg+o17OIZ1rxwJk73f+E8tECk1NGJapVL
-	 GaJ1RDMOhbwjK4V6WxPq8jqq8xKsHMJRDgTXF8+IJ/9yLHltsrRAbcQqX7iDde3hhH
-	 ZLSkxCFgDCo862rxiTfKcn0rSQx2Im8D5QmYgvSqlt2PLqol/q7ekBRB/T0z0WfAqD
-	 heQBcyhU9vzYZKH2DAPUqMttvAx//2GtvWOxL8gzVdmaTNsRnNRc0Zh4P2/ZCB5xA1
-	 fryf6BShZrmN0ey9RKkmbNlpdOang7EXc+NbgYu5i2gKE+ZT6xlpwwdgw6CBSjsKgH
-	 HWrBWlx2N8fpA==
-Message-ID: <sashiko-outbox-195380@kernel.org>
-From: sashiko-bot@kernel.org
-Subject: Re: [PATCH v5 5/5] IB/isert: do not build a new isert_device for a
- device being removed
-Reply-To: sashiko-reviews@lists.linux.dev
-To: "Yehyeong Lee" <yhlee@isslab.korea.ac.kr>
-Cc: linux-rdma@vger.kernel.org, target-devel@vger.kernel.org
-In-Reply-To: <20261103125955.1530355-6-yhlee@isslab.korea.ac.kr>
-References: <20261103125955.1530355-1-yhlee@isslab.korea.ac.kr>
- <20261103125955.1530355-6-yhlee@isslab.korea.ac.kr>
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
-Date: Tue, 03 Nov 2026 13:39:24 +0000
+	dkim=pass (2048-bit key, unprotected) header.d=isslab-korea-ac-kr.20260707.gappssmtp.com header.i=@isslab-korea-ac-kr.20260707.gappssmtp.com header.a=rsa-sha256 header.s=20260707 header.b=fnTrAVT8
+Received: by mail-pj1-f52.google.com with SMTP id 98e67ed59e1d1-3adac5c10e3so105048a91.0
+        for <target-devel@vger.kernel.org>; Tue, 03 Nov 2026 14:38:18 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=isslab-korea-ac-kr.20260707.gappssmtp.com; s=20260707; t=1793745498; x=1794350298; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=9TbVYvpSeD3EGVYLSVcnsamFqScX3vaSw3kvz6iivhs=;
+        b=fnTrAVT8QfAbg7omcsCzzb4GUnbKCu2nF7EmKq9xmtFY/RMAWktsmYPFTwFdjV9JQT
+         Oznw3/iYEM8tWWHknLc9kCDqE0oC5ED9F7+fCYAHg5ppLN9A+onYKDCA8Nz8nJvp57Yo
+         MWKmGBnm8pMHCgw5oFCoBfHEjxIkh6FtME5nenaprtmIbjZ7VKlWWGCDCIN0qtEYZwkv
+         YYst5mWuTjCJV3hbXtHdY0FV1YthgLvVvo4PE4XqtaStJ5ipIZoRQvyMbE1dqAPTw4gk
+         wYOXzAEDiwgQXGgZz6U/ouvW2cR21xia/bmzlp4yPWgUjbZkiMa8qxXfQ+itdmIbEy3t
+         EnPg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1793745498; x=1794350298;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to:content-type;
+        bh=9TbVYvpSeD3EGVYLSVcnsamFqScX3vaSw3kvz6iivhs=;
+        b=Y41RtNA56USMXY6OkJoGRLND5YUbLzz0RqHvKt71IfJ1A1yE618CFm3BgnXBILsOs3
+         Np8eZas3X4Yy4qepuKbAlviR9kfBPkw/lOLfbg6zfr8MjNlIVNwdCKRSHfWBKG/sHoLd
+         Cy4+tM/q2LxK1zz33mETNl8RNnHHDY/Pb7LWkhj3veIVr3eqb8hDaPOf2Q7HhnWUSEsj
+         0/JqtBLVM8t3XQWjtHQfrV+W9MoYRG2vNclkGzC3gsapRhGNFTmA800NnacJC4ppyGzL
+         BQwqBAUucJf5ijdp+BSDfYRO4rTL8a7BueJk7ntntDOR0AMVfGet6bP4PpF8+hVuhvFm
+         0cpg==
+X-Forwarded-Encrypted: i=1; AKwUvBwWrpLtu/mm07FtaqVJeKEJsqo996z2+yQhbghdWqzh8X8q06DcmMI9ETEKinKw8tuhokDhxW0B3B8dVLM=@vger.kernel.org
+X-Gm-Message-State: APuU4Z8uXyMJlfL4pEqtGFNMRsxz/zGDTJfAClb8/dLanIQqZqOZ2H97
+	pEXgOPH7fh+eevu2hwcs65xFLF82tQLPPCPxhnfVC9Hf1C7IlnJqcCObuV2z3syuMT0=
+X-Gm-Gg: AYBFou3SasCt+Dw3gAuQrpDwx8cZZgCYSNKxobhPxQASvUfyvne8A3PIT7o4LRX0DAC
+	SImSG0iEmPz0XIcT8MJ2vw4dmCR2NSjp9MRbjbnrA4dAyoVUmxu2NouexXPrm0gcURijB5QADwc
+	iKD9bD3SIusY+LJ2GB5sSte07r8cXX6iRn38MoZq4qt8LbO2BIhkXMqSKk2ZSWnG4cTK+uJtxfG
+	dVxiRBu9WbnmmWp7lqPwaIFsf6JGyHgFUrPcxw1lRNo9bd+4reKJgdoYgKhheHhtGJnGm8IpsFf
+	2Xn+I0iejCfBe3959iFerkqRFZfuCl0pPj5h0v3UU9BN5vThVHCJrk8PAa4fc1kPjFMMU5K3y2r
+	xIzns/l0RmHWCXoK+HOMY0Qr/DAAc3jM80IHTE+I/LsHVC3+gSjV5ZK7NEozDDFZPAxuheGXJ0T
+	faADUvTAjyApxL6CVEWB/xLyOa/KRhGeMCPkUrECn8ztUZlFbvJT3YfK16gOwh7JrY/eRnjixlp
+	8EpaQucK9rSlTk7MK+/iAMXsiExUDaslFI4hrbcZizNDlbOg1Qs4lBqHK2EYcwrJJS+/ZOrM/q4
+	1nvnvvgrXLthFvQ6FSazpxcldsGTDcr14zeb5vgILCx0y89fRomGrudE2mCia6D9SRdbQbioeDi
+	A7aqULhyGBEeOhwL//HJ7FehptB8OFekpuec3
+X-Received: by 2002:a17:90b:570c:b0:3ab:e588:c288 with SMTP id 98e67ed59e1d1-3ae897ccb52mr12652566a91.11.1793745497619;
+        Tue, 03 Nov 2026 14:38:17 -0800 (PST)
+Received: from yhlee-960QFG.Davolink ([2406:5900:1044:110c:744:cf40:a7b2:e78f])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3b096b6116bsm223711a91.4.2026.11.03.14.38.14
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 03 Nov 2026 14:38:17 -0800 (PST)
+From: Yehyeong Lee <yhlee@isslab.korea.ac.kr>
+To: Sagi Grimberg <sagi@grimberg.me>,
+	Max Gurtovoy <mgurtovoy@nvidia.com>,
+	Jason Gunthorpe <jgg@ziepe.ca>,
+	Leon Romanovsky <leon@kernel.org>
+Cc: "Martin K . Petersen" <martin.petersen@oracle.com>,
+	Mike Christie <michael.christie@oracle.com>,
+	linux-rdma@vger.kernel.org,
+	target-devel@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Yehyeong Lee <yhlee@isslab.korea.ac.kr>,
+	stable@vger.kernel.org
+Subject: [PATCH v6 1/6] IB/isert: do not publish connections being released on a second list
+Date: Wed,  4 Nov 2026 07:37:57 +0900
+Message-ID: <20261103223802.1697607-2-yhlee@isslab.korea.ac.kr>
+X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20261103223802.1697607-1-yhlee@isslab.korea.ac.kr>
+References: <20261103223802.1697607-1-yhlee@isslab.korea.ac.kr>
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Post: <mailto:target-devel@vger.kernel.org>
@@ -60,249 +105,245 @@ List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:target-devel+owner@vger.kernel.org>
 Precedence: list
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 
-Thank you for your contribution! Sashiko AI review found 3 potential issue(=
-s) to consider:
-- [High] IB/isert: stale removal marker in isert_device_get() before isert_=
-add_one()
-- [Medium] IB/isert: unbounded leak of isert_device markers in device_list
-- [Medium] IB/isert: memory leak of removal markers in isert_init() on error
---
+isert_connect_error() and isert_disconnected_handler() take a connection
+off isert_np->accepted or isert_np->pending and release it, but they do not
+check whether the other one got there first, and the connection also stays
+reachable from the list that isert_free_np() walks.  Two callers can
+therefore release the same connection, and isert_free_np() can release one
+a CM handler has already freed.
 
-commit 812d1184eb1546b67f3290f713769f5e49331bb1
-Author: Yehyeong Lee <yhlee@isslab.korea.ac.kr>
+Make the list the single owner token.  A caller that empties
+isert_conn->node under isert_np->mutex owns the drain and the release; one
+that finds it already empty stands back and returns zero, so cma keeps the
+id and the owner destroys it.  isert_connect_error() drains before it takes
+the connection, which is the order mainline already uses, so no drain can
+run on a QP whose id another handler is tearing down.
 
-IB/isert: do not build a new isert_device for a device being removed
+A test-only delay in isert_free_np(), right after it has taken a
+connection, opens the window; it does not open on its own in this setup.
+With it, two runs of 7.4-rc1 reported 22 use-after-frees each and then an
+oops at a NULL instruction pointer in the rmdir task, which was killed.
+Two runs with this patch reported neither, and the rmdir returned in seven
+seconds.
 
-This patch retains or allocates a removing struct isert_device marker on
-device_list during isert_remove_one() so that concurrent isert_device_get()
-calls reject devices being removed with -ENODEV. The markers are then freed
-when a matching ib_device pointer is seen in isert_add_one() or when the
-module unloads in isert_exit().
+  BUG: KASAN: slab-use-after-free in isert_connect_release+0x5c1/0x620
+  Read of size 8 at addr ffff888109c5d160 by task rmdir/191
 
-> diff --git a/drivers/infiniband/ulp/isert/ib_isert.c b/drivers/infiniband=
-/ulp/isert/ib_isert.c
-> index 712d6165150e3..4bcd14f5045ac 100644
-> --- a/drivers/infiniband/ulp/isert/ib_isert.c
-> +++ b/drivers/infiniband/ulp/isert/ib_isert.c
-> @@ -260,10 +260,12 @@ isert_device_put(struct isert_device *device)
->  	isert_info("device %p refcount %d\n", device, device->refcount);
->  	if (!device->refcount) {
->  		isert_free_device_ib_res(device);
-> -		list_del(&device->dev_node);
-> -		if (device->removal_comp)
-> +		if (device->removing) {
->  			complete(device->removal_comp);
-> -		kfree(device);
-> +		} else {
-> +			list_del(&device->dev_node);
-> +			kfree(device);
-> +		}
->  	}
->  	mutex_unlock(&device_list_mutex);
->  }
-> @@ -276,14 +278,21 @@ isert_device_get(struct rdma_cm_id *cma_id)
-> =20
->  	mutex_lock(&device_list_mutex);
->  	list_for_each_entry(device, &device_list, dev_node) {
-> -		if (device->ib_device->node_guid =3D=3D cma_id->device->node_guid) {
-> -			device->refcount++;
-> -			isert_info("Found iser device %p refcount %d\n",
-> -				   device, device->refcount);
-> +		if (device->removing && device->ib_device =3D=3D cma_id->device) {
->  			mutex_unlock(&device_list_mutex);
-> -			return device;
-> +			return ERR_PTR(-ENODEV);
->  		}
->  	}
+  CPU: 1 UID: 0 PID: 191 Comm: rmdir Not tainted 7.4.0-rc1-NSR-00001-gffec6cbc0e7e #129 PREEMPT(full)
+  Hardware name: QEMU Ubuntu 24.04 PC v2 (i440FX + PIIX, arch_caps fix, 1996), BIOS 1.16.3-debian-1.16.3-2 04/01/2014
+  Call Trace:
+   <TASK>
+   dump_stack_lvl+0x53/0x70
+   print_report+0xd0/0x630
+   ? __pfx__raw_spin_lock_irqsave+0x10/0x10
+   ? isert_connect_release
+   ? isert_connect_release+0x5c1/0x620
+   kasan_report+0xce/0x100
+   ? isert_connect_release+0x5c1/0x620
+   isert_connect_release+0x5c1/0x620
+   isert_free_np+0x4cf/0xb20
+   ? __pfx_isert_free_np+0x10/0x10
+   iscsit_del_np+0x163/0x340
+   iscsit_tpg_del_network_portal+0x3c3/0x530
+   ? mutex_unlock+0x7b/0xd0
+   lio_target_call_delnpfromtpg+0x40/0x60
+   config_item_cleanup+0x115/0x190
+   configfs_rmdir+0x7c7/0x9f0
+   ? __pfx_configfs_rmdir+0x10/0x10
+   vfs_rmdir+0x291/0x7b0
+   ? lookup_one_qstr_excl+0x1a/0x1d0
+   filename_rmdir+0x390/0x560
+   ? __pfx_filename_rmdir+0x10/0x10
+   ? kasan_save_track+0x14/0x30
+   ? __kasan_slab_alloc+0x6e/0x70
+   ? strncpy_from_user+0x2b/0x1c0
+   __x64_sys_rmdir+0x41/0x60
+   do_syscall_64+0xdd/0x4a0
+   entry_SYSCALL_64_after_hwframe+0x77/0x7f
+  RIP: 0033:0x463b6b
+  Code: 77 05 c3 0f 1f 40 00 48 c7 c2 e0 ff ff ff f7 d8 64 89 02 48 c7 c0 ff ff ff ff c3 0f 1f 40 00 f3 0f 1e fa b8 54 00 00 00 0f 05 <48> 3d 00 f0 ff ff 77 05 c3 0f 1f 40 00 48 c7 c2 e0 ff ff ff f7 d8
+  RSP: 002b:00007ffcc34f26c8 EFLAGS: 00000246 ORIG_RAX: 0000000000000054
+  RAX: ffffffffffffffda RBX: 000000003b607218 RCX: 0000000000463b6b
+  RDX: 0000000000000000 RSI: 000000003b5ea9e0 RDI: 000000003b607218
+  RBP: 00007ffcc34f2700 R08: 0000000000000000 R09: 0000000000000000
+  R10: 00007ffcc34f2040 R11: 0000000000000246 R12: 000000003b607288
+  R13: 0000000000000000 R14: 0000000000000000 R15: 00000000005e6245
+   </TASK>
 
-[Severity: High]
-Can a stale removal marker in device_list cause isert_device_get() to reject
-valid connection requests on a newly enabled or namespace-moved RDMA device
-before isert_add_one() has a chance to clear it?
+  Allocated by task 72:
+   kasan_save_stack+0x33/0x60
+   kasan_save_track+0x14/0x30
+   __kasan_kmalloc+0x8f/0xa0
+   __kmalloc_cache_noprof+0x148/0x360
+   isert_cma_handler+0x1e3/0x28a0
+   cma_cm_event_handler+0x3e/0x240
+   cma_ib_req_handler+0x17d9/0x4480
+   cm_process_work+0x41/0x330
+   cm_work_handler+0x5727/0xc160
+   process_one_work+0x697/0x1060
+   worker_thread+0x45b/0xd10
+   kthread+0x2c8/0x3b0
+   ret_from_fork+0x36e/0x5a0
+   ret_from_fork_asm+0x1a/0x30
 
-Because ib_isert depends on rdma_cm, cma_client is registered before
-isert_ib_client. In enable_device_and_get(), client add callbacks run in
-registration order:
+  Freed by task 10:
+   kasan_save_stack+0x33/0x60
+   kasan_save_track+0x14/0x30
+   kasan_save_free_info+0x3b/0x60
+   __kasan_slab_free+0x43/0x70
+   kfree+0x121/0x390
+   isert_cma_handler+0x1148/0x28a0
+   cma_cm_event_handler+0x3e/0x240
+   cma_ib_handler+0x190/0x750
+   cm_process_work+0x41/0x330
+   cm_work_handler+0x1de2/0xc160
+   process_one_work+0x697/0x1060
+   worker_thread+0x45b/0xd10
+   kthread+0x2c8/0x3b0
+   ret_from_fork+0x36e/0x5a0
+   ret_from_fork_asm+0x1a/0x30
 
-drivers/infiniband/core/device.c:enable_device_and_get()
-  xa_for_each_marked (&clients, index, client, CLIENT_REGISTERED)
-    add_client_context(device, client)
+Fixes: 691b0480933f ("IB/isert: Fix dead lock in ib_isert")
+Cc: stable@vger.kernel.org
+Signed-off-by: Yehyeong Lee <yhlee@isslab.korea.ac.kr>
+---
+ drivers/infiniband/ulp/isert/ib_isert.c | 81 ++++++++++++++++---------
+ 1 file changed, 54 insertions(+), 27 deletions(-)
 
-When cma_add_one() runs first, it immediately activates wildcard listeners
-(such as an isert_np bound to INADDR_ANY) via cma_listen_on_dev() before
-returning:
+diff --git a/drivers/infiniband/ulp/isert/ib_isert.c b/drivers/infiniband/ulp/isert/ib_isert.c
+index efa8d7b7844c97..ef2edaa3218fee 100644
+--- a/drivers/infiniband/ulp/isert/ib_isert.c
++++ b/drivers/infiniband/ulp/isert/ib_isert.c
+@@ -521,13 +521,18 @@ isert_connected_handler(struct rdma_cm_id *cma_id)
+ 	isert_info("conn %p\n", isert_conn);
+ 
+ 	mutex_lock(&isert_conn->mutex);
++	mutex_lock(&isert_np->mutex);
++	if (list_empty(&isert_conn->node)) {
++		mutex_unlock(&isert_np->mutex);
++		mutex_unlock(&isert_conn->mutex);
++		isert_info("conn %p is being released already\n", isert_conn);
++		return;
++	}
+ 	isert_conn->state = ISER_CONN_UP;
+ 	kref_get(&isert_conn->kref);
+-	mutex_unlock(&isert_conn->mutex);
+-
+-	mutex_lock(&isert_np->mutex);
+ 	list_move_tail(&isert_conn->node, &isert_np->pending);
+ 	mutex_unlock(&isert_np->mutex);
++	mutex_unlock(&isert_conn->mutex);
+ 
+ 	isert_info("np %p: Allow accept_np to continue\n", isert_np);
+ 	up(&isert_np->sem);
+@@ -658,12 +663,20 @@ isert_connect_error(struct rdma_cm_id *cma_id)
+ {
+ 	struct isert_conn *isert_conn = cma_id->qp->qp_context;
+ 	struct isert_np *isert_np = cma_id->context;
++	bool owned;
+ 
+ 	ib_drain_qp(isert_conn->qp);
+ 
+ 	mutex_lock(&isert_np->mutex);
++	owned = !list_empty(&isert_conn->node);
+ 	list_del_init(&isert_conn->node);
+ 	mutex_unlock(&isert_np->mutex);
++
++	if (!owned) {
++		isert_info("conn %p is being released already\n", isert_conn);
++		return 0;
++	}
++
+ 	isert_conn->cm_id = NULL;
+ 	isert_put_conn(isert_conn);
+ 
+@@ -2479,12 +2492,33 @@ isert_accept_np(struct iscsi_np *np, struct iscsit_conn *conn)
+ 	return 0;
+ }
+ 
++static struct isert_conn *
++isert_np_take_conn(struct isert_np *isert_np, bool *promoted)
++{
++	struct isert_conn *isert_conn;
++
++	lockdep_assert_held(&isert_np->mutex);
++
++	*promoted = true;
++	isert_conn = list_first_entry_or_null(&isert_np->pending,
++					      struct isert_conn, node);
++	if (!isert_conn) {
++		*promoted = false;
++		isert_conn = list_first_entry_or_null(&isert_np->accepted,
++						      struct isert_conn, node);
++	}
++	if (isert_conn)
++		list_del_init(&isert_conn->node);
++
++	return isert_conn;
++}
++
+ static void
+ isert_free_np(struct iscsi_np *np)
+ {
+ 	struct isert_np *isert_np = np->np_context;
+-	struct isert_conn *isert_conn, *n;
+-	LIST_HEAD(drop_conn_list);
++	struct isert_conn *isert_conn;
++	bool promoted;
+ 
+ 	if (isert_np->cm_id)
+ 		rdma_destroy_id(isert_np->cm_id);
+@@ -2497,32 +2531,25 @@ isert_free_np(struct iscsi_np *np)
+ 	 * up in accepted and pending lists.
+ 	 */
+ 	mutex_lock(&isert_np->mutex);
+-	if (!list_empty(&isert_np->pending)) {
++	if (!list_empty(&isert_np->pending))
+ 		isert_info("Still have isert pending connections\n");
+-		list_for_each_entry_safe(isert_conn, n,
+-					 &isert_np->pending,
+-					 node) {
+-			isert_info("cleaning isert_conn %p state (%d)\n",
+-				   isert_conn, isert_conn->state);
+-			list_move_tail(&isert_conn->node, &drop_conn_list);
+-		}
+-	}
+-
+-	if (!list_empty(&isert_np->accepted)) {
++	if (!list_empty(&isert_np->accepted))
+ 		isert_info("Still have isert accepted connections\n");
+-		list_for_each_entry_safe(isert_conn, n,
+-					 &isert_np->accepted,
+-					 node) {
+-			isert_info("cleaning isert_conn %p state (%d)\n",
+-				   isert_conn, isert_conn->state);
+-			list_move_tail(&isert_conn->node, &drop_conn_list);
+-		}
+-	}
+ 	mutex_unlock(&isert_np->mutex);
+ 
+-	list_for_each_entry_safe(isert_conn, n, &drop_conn_list, node) {
+-		list_del_init(&isert_conn->node);
+-		isert_connect_release(isert_conn);
++	for (;;) {
++		mutex_lock(&isert_np->mutex);
++		isert_conn = isert_np_take_conn(isert_np, &promoted);
++		mutex_unlock(&isert_np->mutex);
++
++		if (!isert_conn)
++			break;
++
++		isert_info("cleaning isert_conn %p state (%d)\n",
++			   isert_conn, isert_conn->state);
++		if (promoted)
++			isert_put_conn(isert_conn);
++		isert_put_conn(isert_conn);
+ 	}
+ 
+ 	np->np_context = NULL;
+-- 
+2.43.0
 
-drivers/infiniband/core/cma.c:cma_add_one()
-  list_for_each_entry(id_priv, &listen_any_list, listen_any_item)
-    cma_listen_on_dev(id_priv, cma_dev, &to_destroy)
-
-When the same struct ib_device pointer is re-enabled by
-rdma_dev_change_netns() (which calls disable_device() followed by
-enable_device_and_get() on the same struct ib_device) or when a freed
-struct ib_device address is reused by the slab allocator, the marker left by
-isert_remove_one() is still on device_list in the window after cma_add_one()
-starts listening and before isert_add_one() runs. Any incoming
-RDMA_CM_EVENT_CONNECT_REQUEST during that window will match
-device->removing && device->ib_device =3D=3D cma_id->device in the first pa=
-ss of
-isert_device_get() and fail with -ENODEV.
-
-Additionally, if a connection request arrives on a new ib_device after
-cma_add_one() starts listening and add_client_context() subsequently fails
-before setting CLIENT_DATA_REGISTERED for isert_ib_client, isert_device_get=
-()
-will have built a live isert_device, but the error unwind in
-disable_device() will skip isert_remove_one(), leaving its IB resources
-unreleased.
-
-> +	list_for_each_entry(device, &device_list, dev_node) {
-> +		if (device->removing ||
-> +		    device->ib_device->node_guid !=3D cma_id->device->node_guid)
-> +			continue;
-> +		device->refcount++;
-> +		isert_info("Found iser device %p refcount %d\n",
-> +			   device, device->refcount);
-> +		mutex_unlock(&device_list_mutex);
-> +		return device;
-> +	}
-> =20
->  	device =3D kzalloc_obj(struct isert_device);
->  	if (!device) {
-> @@ -2792,20 +2801,29 @@ isert_remove_one(struct ib_device *ib_device, voi=
-d *client_data)
-> =20
->  	mutex_lock(&device_list_mutex);
->  	list_for_each_entry(device, &device_list, dev_node) {
-> -		if (device->ib_device !=3D ib_device)
-> +		if (device->ib_device !=3D ib_device || device->removing)
->  			continue;
->  		device->refcount++;
->  		device->removal_comp =3D &removal_comp;
->  		found =3D device;
->  		break;
->  	}
-> -	mutex_unlock(&device_list_mutex);
-> -
-> -	if (!found)
-> +	if (!found) {
-> +		device =3D kzalloc_obj(struct isert_device,
-> +				     GFP_KERNEL | __GFP_NOFAIL);
-> +		INIT_LIST_HEAD(&device->dev_node);
-> +		device->ib_device =3D ib_device;
-> +		device->removing =3D true;
-> +		list_add_tail(&device->dev_node, &device_list);
-> +		mutex_unlock(&device_list_mutex);
->  		return;
-> +	}
-> +	mutex_unlock(&device_list_mutex);
-> =20
->  	mutex_lock(&isert_conn_mutex);
-> +	mutex_lock(&device_list_mutex);
->  	found->removing =3D true;
-> +	mutex_unlock(&device_list_mutex);
->  	list_for_each_entry(isert_conn, &isert_conn_list, conn_list) {
->  		if (isert_conn->device !=3D found)
->  			continue;
-> @@ -2828,8 +2846,38 @@ isert_remove_one(struct ib_device *ib_device, void=
- *client_data)
->  	wait_for_completion(&removal_comp);
->  }
-> =20
-> +static int isert_add_one(struct ib_device *ib_device)
-> +{
-> +	struct isert_device *device, *tmp;
-> +
-> +	mutex_lock(&device_list_mutex);
-> +	list_for_each_entry_safe(device, tmp, &device_list, dev_node) {
-> +		if (device->ib_device !=3D ib_device || !device->removing ||
-> +		    device->refcount)
-> +			continue;
-> +		list_del(&device->dev_node);
-> +		kfree(device);
-> +	}
-> +	mutex_unlock(&device_list_mutex);
-> +
-> +	return 0;
-> +}
-
-[Severity: Medium]
-Does this accumulate struct isert_device markers on device_list without
-bound across RDMA device unregistrations?
-
-Whenever any IB device is unregistered via __ib_unregister_device() ->
-disable_device() -> remove_client_context() -> isert_remove_one() (even a
-device never used by ib_isert), isert_remove_one() either keeps the existing
-struct isert_device on device_list via isert_device_put() (with dangling
-pointers in device->ib_device, device->pd, and the stack-allocated
-device->removal_comp) or allocates a new struct isert_device marker with
-GFP_KERNEL | __GFP_NOFAIL and appends it to device_list.
-
-Because isert_add_one() only frees a marker if a newly registered device
-happens to reuse the exact same struct ib_device pointer address
-(device->ib_device =3D=3D ib_device), any removed ib_device whose slab memo=
-ry is
-not reused by a later ib_device allocation (for example, during repeated
-rxe/siw link deletion or VF hotplug cycles) leaves its struct isert_device
-marker on device_list until module unload.
-
-> +
-> +static void isert_free_markers(void)
-> +{
-> +	struct isert_device *device, *tmp;
-> +
-> +	mutex_lock(&device_list_mutex);
-> +	list_for_each_entry_safe(device, tmp, &device_list, dev_node) {
-> +		list_del(&device->dev_node);
-> +		kfree(device);
-> +	}
-> +	mutex_unlock(&device_list_mutex);
-> +}
-> +
->  static struct ib_client isert_ib_client =3D {
->  	.name   =3D "isert",
-> +	.add    =3D isert_add_one,
->  	.remove =3D isert_remove_one,
->  };
-> =20
-> @@ -2881,6 +2929,7 @@ static int __init isert_init(void)
->  static void __exit isert_exit(void)
->  {
->  	ib_unregister_client(&isert_ib_client);
-> +	isert_free_markers();
-
-[Severity: Medium]
-Does isert_init() leak the struct isert_device markers if
-ib_register_client(&isert_ib_client) fails partway through?
-
-In ib_register_client(), if add_client_context() succeeds for one or more
-devices and then fails on a later device, it rolls back by calling
-ib_unregister_client():
-
-drivers/infiniband/core/device.c:ib_register_client()
-  xa_for_each_marked (&devices, index, device, DEVICE_REGISTERED) {
-    ret =3D add_client_context(device, client);
-    if (ret)
-      goto out;
-  }
-  ...
-out:
-  ...
-  if (need_unreg && ret)
-    ib_unregister_client(client);
-
-That rollback invokes remove_client_context() -> isert_remove_one() for each
-device where add_client_context() succeeded, which allocates a struct
-isert_device marker and adds it to device_list. In isert_init(), the error
-path jumps to destroy_release_wq without calling isert_free_markers():
-
-drivers/infiniband/ulp/isert/ib_isert.c:isert_init()
-	ret =3D ib_register_client(&isert_ib_client);
-	if (ret) {
-		isert_err("Unable to register isert ib client\n");
-		goto destroy_release_wq;
-	}
-
---=20
-Sashiko AI review =C2=B7 https://sashiko.dev/#/patchset/20261103125955.1530=
-355-1-yhlee@isslab.korea.ac.kr?part=3D5
