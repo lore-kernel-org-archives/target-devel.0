@@ -1,57 +1,57 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793712757;
-	b=d++q4S4j/CObqWCktQ9+o9kOgzJIDSvjOAjL6ntv9IjynlEpQDBWby0x54TUa+mkyhqI
-	 +9r/BkhS4ZJZbWwX1xj+FySnpFxgPiKoBmt42qD7q8wEDDWvJgaDesMWKAwe2SsWf6SjB
-	 Z8TCMbxZGjGkZG8eWMYu5qGDlU0lPSN79wrpg6Csks8MRKg5+V+qlL32jcdx6sqbSToZV
-	 9jOkozBsbw9SjdGlH9AAF7p2Wk3LZdffhUh9zQ7TIxThbORCzZKrDGbHZ0EGU77DogXIl
-	 kryMwzZMOVJIGJuW/sgmvT8wjHb+PGaBEUWf0IMwjDHefDYIIDm41Dy9ZPYL54Xw67A==
+	t=1793713166;
+	b=RDD57DvpsGoHS8GhaDWWQG0e5KSoYdWcXROax+Kamy8R59emqh3ySXrVqDZVBVdLge/U
+	 +b/o2e4r8B2+epQUMp8NctqO0XKpJHBbaTxZpSNamEeF3VgxPD5OASxpykTf53P8xvEY+
+	 mr4oZ6bdvbKvbG6tguZV6bKjK7ZFd7siFlRGDJXPNnRaX0P4ctCoC6fK98Q9Ru6K07LdU
+	 uHrV3pLvgAxK0yf8xwX8TUQyi+h1nwsUw+/yubxIIbWwREDyUwPsJa3tjCMeloGEbD4oz
+	 U1QEXn5IRj5yugiMta5ccmWrm38/ofoqUjEXWpdBh9aTp8y4LK08uznvY1hi3qErFNg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793712757;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793713166;
 	h=Received:DKIM-Signature:Message-ID:From:Subject:Reply-To:To:Cc:
 	 In-Reply-To:References:Content-Type:Content-Transfer-Encoding:Date;
-	bh=OvcOFf3MmrlGCp5T/+TtsY9dUnafa0lLhir0uL91yPg=;
-	b=EArcA4ME2Ls4gjWyrb4Cb9MP6eUO8BGFZU5xdyoi4ySeUiEhEGppGWjD+NZHBx09jUxZ
-	 924QGGSoX0fcTSXjP/2ftQRa8rrnSM/09a4gDq7iGj+eExEoEHZowm+8tqPFbXWdrSEd0
-	 614TyOy5mBYt4vxg7pIrYJuNNVqZgoR0aRx1BHuHRlqirewi85w2icydfAMiBytJvfycw
-	 6dglg1gxqXPwz/Zg6PnzWedDq2lBrLtA1jch1LWKofhkzACpE0IVHtzwytC3lqFvptNpC
-	 x48i6jQXMl81pKxkR+pGbIUamO6kNEiDeAJXZAGRdeJ4LIjm2bfLRKDriwR0NURqh+g==
+	bh=hCSNrY6Dw3KNDEqgv/IZHslYqKdk0LvrNJV2LCDQSLU=;
+	b=QQUm6xw/kApNXpye14pQWgbvRqJY96yaKiWfrknJv93Tt5Fbr0PBhfYygkCL63F9KPwy
+	 47c4MKa670xmTiJaIUzoXKe2ZK3+pFjX5IAjQz+n4Z1P6996wopky0D0boBVNxNzl3cRc
+	 xglJCnKTFX/bk4Coa1lB+MmrxTbhykFoDYV7OgmFOqGcfPdXkG5LaV9X2o3sSrD8xqhCX
+	 GSsAGHrtp2tRkxlPs1UBOfedxW/M6af4v8hq0aQ6BzDNSG9dvqVCc9JBDK6BseVd0RF29
+	 pBcIbpdnwmjCb58KpdR6w3bPoIKqUfsrOp7MFOc1CPg5NapWYZKUahvBXhj89RBygkw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=hlZEHPSm;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=MQuQS4nR;
 	arc=none smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EE7AE606D82E;
-	Tue,  3 Nov 2026 13:32:36 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9F4F4606A326;
+	Tue,  3 Nov 2026 13:39:25 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=hlZEHPSm
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7040A1F00A21;
-	Tue,  3 Nov 2026 13:32:36 +0000 (UTC)
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=MQuQS4nR
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4DBE81F000C1;
+	Tue,  3 Nov 2026 13:39:25 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793712756;
-	bh=OvcOFf3MmrlGCp5T/+TtsY9dUnafa0lLhir0uL91yPg=;
+	s=k20260515; t=1793713165;
+	bh=hCSNrY6Dw3KNDEqgv/IZHslYqKdk0LvrNJV2LCDQSLU=;
 	h=From:Subject:Reply-To:To:Cc:In-Reply-To:References:Date;
-	b=hlZEHPSmLrwlA8jxP14c1VQwL0UqpYwz3HeD+dyZdCFPmZn2gmFEBY3dm+d8DtPNL
-	 3t4EgyUNPW4CsxTXlHQ9QsfVEuO6EiztXwNTVwu9GEt1Hq00kk2AW8u0JejATny40u
-	 haZZF6PvmEd6LVSmT/ntmAT0tPryG+olZb0D9ul8VaciUOsYCGloxnd2djJs3Ukcja
-	 GKfOIMXEslNwpyXsas2BwauC2xK3SFJDutJM5MSdLkc5GcE03ZfBBfQa0kbi+xED/W
-	 Ub2iefB8JgDYAAwt2N5fYtt3+w9e5pZrSj/agJuaJsC6x81t6EJ1YJ1HLEk3lCtLR4
-	 ZSp7VnPJFYfBw==
-Message-ID: <sashiko-outbox-195360@kernel.org>
+	b=MQuQS4nRLeXKrFL/rP87T0TNWk7JPVrnmg+o17OIZ1rxwJk73f+E8tECk1NGJapVL
+	 GaJ1RDMOhbwjK4V6WxPq8jqq8xKsHMJRDgTXF8+IJ/9yLHltsrRAbcQqX7iDde3hhH
+	 ZLSkxCFgDCo862rxiTfKcn0rSQx2Im8D5QmYgvSqlt2PLqol/q7ekBRB/T0z0WfAqD
+	 heQBcyhU9vzYZKH2DAPUqMttvAx//2GtvWOxL8gzVdmaTNsRnNRc0Zh4P2/ZCB5xA1
+	 fryf6BShZrmN0ey9RKkmbNlpdOang7EXc+NbgYu5i2gKE+ZT6xlpwwdgw6CBSjsKgH
+	 HWrBWlx2N8fpA==
+Message-ID: <sashiko-outbox-195380@kernel.org>
 From: sashiko-bot@kernel.org
-Subject: Re: [PATCH v5 3/5] IB/isert: tear connections down from an
- ib_client on device removal
+Subject: Re: [PATCH v5 5/5] IB/isert: do not build a new isert_device for a
+ device being removed
 Reply-To: sashiko-reviews@lists.linux.dev
 To: "Yehyeong Lee" <yhlee@isslab.korea.ac.kr>
 Cc: linux-rdma@vger.kernel.org, target-devel@vger.kernel.org
-In-Reply-To: <20261103125955.1530355-4-yhlee@isslab.korea.ac.kr>
+In-Reply-To: <20261103125955.1530355-6-yhlee@isslab.korea.ac.kr>
 References: <20261103125955.1530355-1-yhlee@isslab.korea.ac.kr>
- <20261103125955.1530355-4-yhlee@isslab.korea.ac.kr>
+ <20261103125955.1530355-6-yhlee@isslab.korea.ac.kr>
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: quoted-printable
-Date: Tue, 03 Nov 2026 13:32:36 +0000
+Date: Tue, 03 Nov 2026 13:39:24 +0000
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Post: <mailto:target-devel@vger.kernel.org>
@@ -61,182 +61,248 @@ List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:target-devel+owner@vger.kernel.org>
 Precedence: list
 
-Thank you for your contribution! Sashiko AI review found 1 potential issue(=
+Thank you for your contribution! Sashiko AI review found 3 potential issue(=
 s) to consider:
-- [High] IB/isert: premature reinstatement in isert_teardown_conn() hangs l=
-ogin
+- [High] IB/isert: stale removal marker in isert_device_get() before isert_=
+add_one()
+- [Medium] IB/isert: unbounded leak of isert_device markers in device_list
+- [Medium] IB/isert: memory leak of removal markers in isert_init() on error
 --
 
-commit fa784d352b38db9ec9f326e2a339d1ae4eb8f372
+commit 812d1184eb1546b67f3290f713769f5e49331bb1
 Author: Yehyeong Lee <yhlee@isslab.korea.ac.kr>
 
-IB/isert: tear connections down from an ib_client on device removal
+IB/isert: do not build a new isert_device for a device being removed
 
-This commit registers an ib_client to tear down iSER target connections
-during RDMA device removal instead of waiting for connection release inside
-the RDMA_CM_EVENT_DEVICE_REMOVAL callback. It also adds reference counting
-for isert_np and tracks active connections on isert_conn_list.
+This patch retains or allocates a removing struct isert_device marker on
+device_list during isert_remove_one() so that concurrent isert_device_get()
+calls reject devices being removed with -ENODEV. The markers are then freed
+when a matching ib_device pointer is seen in isert_add_one() or when the
+module unloads in isert_exit().
 
 > diff --git a/drivers/infiniband/ulp/isert/ib_isert.c b/drivers/infiniband=
 /ulp/isert/ib_isert.c
-> index 61b214012a70b..4812dabd93945 100644
+> index 712d6165150e3..4bcd14f5045ac 100644
 > --- a/drivers/infiniband/ulp/isert/ib_isert.c
 > +++ b/drivers/infiniband/ulp/isert/ib_isert.c
-[ ... ]
-> @@ -610,48 +668,50 @@ isert_np_cma_handler(struct isert_np *isert_np,
->  	return -1;
->  }
-> =20
-> -static int
-> -isert_disconnected_handler(struct rdma_cm_id *cma_id,
-> -			   enum rdma_cm_event_type event)
-> +static void
-> +isert_teardown_conn(struct isert_conn *isert_conn)
->  {
-> -	struct isert_conn *isert_conn =3D cma_id->qp->qp_context;
-> -	struct isert_np *isert_np =3D cma_id->context;
-> -	bool owned =3D false, bound =3D false, terminated =3D false;
-> +	struct isert_np *isert_np =3D isert_conn->np;
-> +	bool owned =3D false, bound =3D false;
-> +	bool promoted =3D false, terminated =3D false;
-> =20
->  	mutex_lock(&isert_conn->mutex);
-> -	switch (isert_conn->state) {
-> -	case ISER_CONN_UP:
-> -		mutex_lock(&isert_np->mutex);
-> -		if (list_empty(&isert_conn->node)) {
-> -			bound =3D isert_conn->state =3D=3D ISER_CONN_BOUND ||
-> -				isert_conn->state =3D=3D ISER_CONN_FULL_FEATURE;
-> -		} else {
-> -			owned =3D true;
-> -			list_del_init(&isert_conn->node);
-> -		}
-> -		mutex_unlock(&isert_np->mutex);
-> -		break;
-> -	case ISER_CONN_BOUND:
-> -	case ISER_CONN_FULL_FEATURE: /* FALLTHRU */
-> -		bound =3D true;
-> -		break;
-> -	default:
-> -		break;
-> +	mutex_lock(&isert_np->mutex);
-> +	if (list_empty(&isert_conn->node)) {
-> +		bound =3D isert_conn->state =3D=3D ISER_CONN_BOUND ||
-> +			isert_conn->state =3D=3D ISER_CONN_FULL_FEATURE;
-> +	} else {
-> +		owned =3D true;
-> +		promoted =3D isert_conn->promoted;
-> +		list_del_init(&isert_conn->node);
+> @@ -260,10 +260,12 @@ isert_device_put(struct isert_device *device)
+>  	isert_info("device %p refcount %d\n", device, device->refcount);
+>  	if (!device->refcount) {
+>  		isert_free_device_ib_res(device);
+> -		list_del(&device->dev_node);
+> -		if (device->removal_comp)
+> +		if (device->removing) {
+>  			complete(device->removal_comp);
+> -		kfree(device);
+> +		} else {
+> +			list_del(&device->dev_node);
+> +			kfree(device);
+> +		}
 >  	}
-> +	mutex_unlock(&isert_np->mutex);
+>  	mutex_unlock(&device_list_mutex);
+>  }
+> @@ -276,14 +278,21 @@ isert_device_get(struct rdma_cm_id *cma_id)
 > =20
-> -	if (owned)
-> +	if (owned) {
->  		terminated =3D isert_conn_terminate(isert_conn);
-> -	else if (bound)
-> +	} else if (bound) {
-> +		isert_conn_terminate(isert_conn);
->  		iscsit_cause_connection_reinstatement(isert_conn->conn, 0);
-> +	}
->  	mutex_unlock(&isert_conn->mutex);
-
-[ ... ]
-
-> @@ -661,20 +721,33 @@ isert_connect_error(struct rdma_cm_id *cma_id)
->  {
->  	struct isert_conn *isert_conn =3D cma_id->qp->qp_context;
->  	struct isert_np *isert_np =3D cma_id->context;
-> -	bool owned;
-> +	bool owned =3D false, bound =3D false;
-> =20
-> +	mutex_lock(&isert_conn->mutex);
->  	mutex_lock(&isert_np->mutex);
-> -	owned =3D !list_empty(&isert_conn->node);
-> -	list_del_init(&isert_conn->node);
-> +	if (list_empty(&isert_conn->node)) {
-> +		bound =3D isert_conn->state =3D=3D ISER_CONN_BOUND ||
-> +			isert_conn->state =3D=3D ISER_CONN_FULL_FEATURE;
-> +	} else {
-> +		owned =3D true;
-> +		list_del_init(&isert_conn->node);
-> +	}
->  	mutex_unlock(&isert_np->mutex);
-> =20
-> +	if (owned) {
-> +		isert_conn->cm_id =3D NULL;
-> +	} else if (bound) {
-> +		isert_conn_terminate(isert_conn);
-> +		iscsit_cause_connection_reinstatement(isert_conn->conn, 0);
-> +	}
-> +	mutex_unlock(&isert_conn->mutex);
-
-[ ... ]
-
-> @@ -2679,6 +2741,10 @@ static void isert_get_rx_pdu(struct iscsit_conn *c=
-onn)
-> =20
->  	/* Now we are in FULL_FEATURE phase */
->  	mutex_lock(&isert_conn->mutex);
-> +	if (isert_conn->state >=3D ISER_CONN_TERMINATING) {
-> +		mutex_unlock(&isert_conn->mutex);
-> +		return;
-> +	}
->  	isert_conn->state =3D ISER_CONN_FULL_FEATURE;
->  	mutex_unlock(&isert_conn->mutex);
+>  	mutex_lock(&device_list_mutex);
+>  	list_for_each_entry(device, &device_list, dev_node) {
+> -		if (device->ib_device->node_guid =3D=3D cma_id->device->node_guid) {
+> -			device->refcount++;
+> -			isert_info("Found iser device %p refcount %d\n",
+> -				   device, device->refcount);
+> +		if (device->removing && device->ib_device =3D=3D cma_id->device) {
+>  			mutex_unlock(&device_list_mutex);
+> -			return device;
+> +			return ERR_PTR(-ENODEV);
+>  		}
+>  	}
 
 [Severity: High]
-Can calling iscsit_cause_connection_reinstatement() in isert_teardown_conn()
-and isert_connect_error() while isert_conn->state is ISER_CONN_BOUND leak
-isert_conn and hang device removal in isert_remove_one()?
+Can a stale removal marker in device_list cause isert_device_get() to reject
+valid connection requests on a newly enabled or namespace-moved RDMA device
+before isert_add_one() has a chance to clear it?
 
-In isert_accept_np(), isert_conn->state is set to ISER_CONN_BOUND and stays
-there throughout login negotiation until isert_get_rx_pdu() sets
-ISER_CONN_FULL_FEATURE. At the end of login negotiation,
-iscsi_target_do_tx_login_io() starts the RX and TX kthreads while
-conn->conn_state is still TARG_CONN_STATE_IN_LOGIN and before
-iscsi_post_login_handler() completes conn->rx_login_comp:
+Because ib_isert depends on rdma_cm, cma_client is registered before
+isert_ib_client. In enable_device_and_get(), client add callbacks run in
+registration order:
 
-  iscsi_target_do_login_io()
-    iscsi_target_do_tx_login_io()
-      iscsit_start_kthreads(conn)
-        conn->tx_thread_active =3D true;
-        conn->rx_thread_active =3D true;
-      iscsit_put_login_tx() -> isert_put_login_tx()
-        isert_conn->login_rsp_pending =3D true;
+drivers/infiniband/core/device.c:enable_device_and_get()
+  xa_for_each_marked (&clients, index, client, CLIENT_REGISTERED)
+    add_client_context(device, client)
 
-If isert_teardown_conn() or isert_connect_error() runs in this window,
-bound is true because isert_conn->state =3D=3D ISER_CONN_BOUND, so it calls
-iscsit_cause_connection_reinstatement(isert_conn->conn, 0), sending SIGINT
-to both conn->rx_thread and conn->tx_thread.
+When cma_add_one() runs first, it immediately activates wildcard listeners
+(such as an isert_np bound to INADDR_ANY) via cma_listen_on_dev() before
+returning:
 
-In drivers/target/iscsi/iscsi_target.c:iscsi_target_rx_thread(), SIGINT
-interrupts wait_for_completion_interruptible(&conn->rx_login_comp) before
-iscsit_get_rx_pdu() -> isert_get_rx_pdu() is reached:
+drivers/infiniband/core/cma.c:cma_add_one()
+  list_for_each_entry(id_priv, &listen_any_list, listen_any_item)
+    cma_listen_on_dev(id_priv, cma_dev, &to_destroy)
 
-	rc =3D wait_for_completion_interruptible(&conn->rx_login_comp);
-	if (rc < 0 || iscsi_target_check_conn_state(conn))
-		goto out;
+When the same struct ib_device pointer is re-enabled by
+rdma_dev_change_netns() (which calls disable_device() followed by
+enable_device_and_get() on the same struct ib_device) or when a freed
+struct ib_device address is reused by the slab allocator, the marker left by
+isert_remove_one() is still on device_list in the window after cma_add_one()
+starts listening and before isert_add_one() runs. Any incoming
+RDMA_CM_EVENT_CONNECT_REQUEST during that window will match
+device->removing && device->ib_device =3D=3D cma_id->device in the first pa=
+ss of
+isert_device_get() and fail with -ENODEV.
 
-And in drivers/target/iscsi/iscsi_target.c:iscsi_target_tx_thread(), waking
-on SIGINT jumps to transport_err, where conn->conn_state is still
-TARG_CONN_STATE_IN_LOGIN:
+Additionally, if a connection request arrives on a new ib_device after
+cma_add_one() starts listening and add_client_context() subsequently fails
+before setting CLIENT_DATA_REGISTERED for isert_ib_client, isert_device_get=
+()
+will have built a live isert_device, but the error unwind in
+disable_device() will skip isert_remove_one(), leaving its IB resources
+unreleased.
 
-transport_err:
-	if (conn->conn_state !=3D TARG_CONN_STATE_IN_LOGIN)
-		iscsit_take_action_for_connection_exit(conn, &conn_freed);
+> +	list_for_each_entry(device, &device_list, dev_node) {
+> +		if (device->removing ||
+> +		    device->ib_device->node_guid !=3D cma_id->device->node_guid)
+> +			continue;
+> +		device->refcount++;
+> +		isert_info("Found iser device %p refcount %d\n",
+> +			   device, device->refcount);
+> +		mutex_unlock(&device_list_mutex);
+> +		return device;
+> +	}
+> =20
+>  	device =3D kzalloc_obj(struct isert_device);
+>  	if (!device) {
+> @@ -2792,20 +2801,29 @@ isert_remove_one(struct ib_device *ib_device, voi=
+d *client_data)
+> =20
+>  	mutex_lock(&device_list_mutex);
+>  	list_for_each_entry(device, &device_list, dev_node) {
+> -		if (device->ib_device !=3D ib_device)
+> +		if (device->ib_device !=3D ib_device || device->removing)
+>  			continue;
+>  		device->refcount++;
+>  		device->removal_comp =3D &removal_comp;
+>  		found =3D device;
+>  		break;
+>  	}
+> -	mutex_unlock(&device_list_mutex);
+> -
+> -	if (!found)
+> +	if (!found) {
+> +		device =3D kzalloc_obj(struct isert_device,
+> +				     GFP_KERNEL | __GFP_NOFAIL);
+> +		INIT_LIST_HEAD(&device->dev_node);
+> +		device->ib_device =3D ib_device;
+> +		device->removing =3D true;
+> +		list_add_tail(&device->dev_node, &device_list);
+> +		mutex_unlock(&device_list_mutex);
+>  		return;
+> +	}
+> +	mutex_unlock(&device_list_mutex);
+> =20
+>  	mutex_lock(&isert_conn_mutex);
+> +	mutex_lock(&device_list_mutex);
+>  	found->removing =3D true;
+> +	mutex_unlock(&device_list_mutex);
+>  	list_for_each_entry(isert_conn, &isert_conn_list, conn_list) {
+>  		if (isert_conn->device !=3D found)
+>  			continue;
+> @@ -2828,8 +2846,38 @@ isert_remove_one(struct ib_device *ib_device, void=
+ *client_data)
+>  	wait_for_completion(&removal_comp);
+>  }
+> =20
+> +static int isert_add_one(struct ib_device *ib_device)
+> +{
+> +	struct isert_device *device, *tmp;
+> +
+> +	mutex_lock(&device_list_mutex);
+> +	list_for_each_entry_safe(device, tmp, &device_list, dev_node) {
+> +		if (device->ib_device !=3D ib_device || !device->removing ||
+> +		    device->refcount)
+> +			continue;
+> +		list_del(&device->dev_node);
+> +		kfree(device);
+> +	}
+> +	mutex_unlock(&device_list_mutex);
+> +
+> +	return 0;
+> +}
 
-Neither thread calls iscsit_take_action_for_connection_exit() to close the
-connection and invoke isert_free_conn(), leaving both threads sleeping in
-while (!kthread_should_stop()) and causing isert_remove_one() to wait
-indefinitely on removal_comp.
+[Severity: Medium]
+Does this accumulate struct isert_device markers on device_list without
+bound across RDMA device unregistrations?
 
-Furthermore, if iscsi_target_tx_thread() reaches transport_err just after
-iscsi_post_login_handler() sets conn->conn_state =3D TARG_CONN_STATE_LOGGED=
-_IN
-but before it adds conn->conn_list to sess->sess_conn_list,
-iscsit_close_connection() will run list_del(&conn->conn_list) on an
-uninitialized list head while iscsi_post_login_handler() is still running.
+Whenever any IB device is unregistered via __ib_unregister_device() ->
+disable_device() -> remove_client_context() -> isert_remove_one() (even a
+device never used by ib_isert), isert_remove_one() either keeps the existing
+struct isert_device on device_list via isert_device_put() (with dangling
+pointers in device->ib_device, device->pd, and the stack-allocated
+device->removal_comp) or allocates a new struct isert_device marker with
+GFP_KERNEL | __GFP_NOFAIL and appends it to device_list.
+
+Because isert_add_one() only frees a marker if a newly registered device
+happens to reuse the exact same struct ib_device pointer address
+(device->ib_device =3D=3D ib_device), any removed ib_device whose slab memo=
+ry is
+not reused by a later ib_device allocation (for example, during repeated
+rxe/siw link deletion or VF hotplug cycles) leaves its struct isert_device
+marker on device_list until module unload.
+
+> +
+> +static void isert_free_markers(void)
+> +{
+> +	struct isert_device *device, *tmp;
+> +
+> +	mutex_lock(&device_list_mutex);
+> +	list_for_each_entry_safe(device, tmp, &device_list, dev_node) {
+> +		list_del(&device->dev_node);
+> +		kfree(device);
+> +	}
+> +	mutex_unlock(&device_list_mutex);
+> +}
+> +
+>  static struct ib_client isert_ib_client =3D {
+>  	.name   =3D "isert",
+> +	.add    =3D isert_add_one,
+>  	.remove =3D isert_remove_one,
+>  };
+> =20
+> @@ -2881,6 +2929,7 @@ static int __init isert_init(void)
+>  static void __exit isert_exit(void)
+>  {
+>  	ib_unregister_client(&isert_ib_client);
+> +	isert_free_markers();
+
+[Severity: Medium]
+Does isert_init() leak the struct isert_device markers if
+ib_register_client(&isert_ib_client) fails partway through?
+
+In ib_register_client(), if add_client_context() succeeds for one or more
+devices and then fails on a later device, it rolls back by calling
+ib_unregister_client():
+
+drivers/infiniband/core/device.c:ib_register_client()
+  xa_for_each_marked (&devices, index, device, DEVICE_REGISTERED) {
+    ret =3D add_client_context(device, client);
+    if (ret)
+      goto out;
+  }
+  ...
+out:
+  ...
+  if (need_unreg && ret)
+    ib_unregister_client(client);
+
+That rollback invokes remove_client_context() -> isert_remove_one() for each
+device where add_client_context() succeeded, which allocates a struct
+isert_device marker and adds it to device_list. In isert_init(), the error
+path jumps to destroy_release_wq without calling isert_free_markers():
+
+drivers/infiniband/ulp/isert/ib_isert.c:isert_init()
+	ret =3D ib_register_client(&isert_ib_client);
+	if (ret) {
+		isert_err("Unable to register isert ib client\n");
+		goto destroy_release_wq;
+	}
 
 --=20
 Sashiko AI review =C2=B7 https://sashiko.dev/#/patchset/20261103125955.1530=
-355-1-yhlee@isslab.korea.ac.kr?part=3D3
+355-1-yhlee@isslab.korea.ac.kr?part=3D5
