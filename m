@@ -1,57 +1,102 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.82.173
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793699581;
-	b=lX/+9zC7Er1kB9BHB3Lt3JB/adFr/dJVB5alqZI9UJQVD2wFRWih3P14kDlgFQWo62R+
-	 HDeHFxZQbQPRdiR/V/ks5Eqmah5xHGSUmqaZty1EfYSMdbZbNLFkzOyeP6wfv/5kHfIzK
-	 mBwl/VUH5eDGwde9TkbxUomBsqQeVeQUHtusIIQn0avAXdT+HjmQIbsNuuI5RSNNdG1pe
-	 giCHNDdHrTV6aQmBo5g1xejMAf4FhyzcgvHlBjxfY+IAwVenuXLlA8IrxFgCS3u9L+Enx
-	 E/Bj/tN97kkLj8yAq1dgiI16QlZmMo5WYVLSisA+VgNb0WrsQamYFjpqI82SZ/jh22A==
+	t=1793710826;
+	b=22RJqILNkWdLTRy/hkgVB3Vp9tRspXTGEeEW5/z/ivSjJUcGZnPSETAGi3UR5tbQqAbP
+	 VoLwaEigyeb4naHcN2zJ9VtN9qmaw/3X/yiF+FWet2I9VOYWnu6w7q0zkY4PN6HlrZw7j
+	 0VBC7Zk9+0G/dT4xfTA2cq9WTnLcu2lCCDfH74Zb8zddApdYHX+hMegInnP8rndzdHJba
+	 UrXDHDBMTRvphQqJb680aJNOnCYrPJFOHHzDuij8msOtE6gPJkUd38UbCgrhjbPZ+I2HI
+	 I/MJfFJS6zeuBS5iJAhR7KstfBexwosDyO2j9CWfinUHnnCdmEOjqy8Eh5pl2k3A1Bg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793699581;
-	h=Received:DKIM-Signature:From:To:Cc:In-Reply-To:References:Subject:
-	 Message-Id:Date:MIME-Version:Content-Type:Content-Transfer-Encoding:
-	 X-Mailer;
-	bh=My0Z66KYNuRTAK3B795dnm8lK2ZMXMW4aavFw/8R0xM=;
-	b=eOQZ5KRLjDlZU8MVeV4lpdPq7W/zdekm9NES2bMIHNTechzyRsY6cE9Qaf5sTaZi8Uc0
-	 /j5KrMTsZNyZ/DzBEgVpOPXjwzGoplXAFXmnjgjJ9wgjhwy2n326pY7moODYXrk948xlT
-	 mIfdNBDd4wxYyBoLnR2GD2+bQWd5ckVir5+4eYSpmy1Cfcozpnmg1goXeTwaONwAla73Y
-	 Ntsoj8gObdod/NO9mPctmi1ElfatASheHxTY4QPD9pZkVGn7PqsObY5DZOhB3uLdadUJU
-	 rRabUIPoPceYwS0y60OQdZFFDS2qXPKvbDU/VkUQ0nH0ePA4JIQfbZPXHX+aCkY0QhQ==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793710826;
+	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
+	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:
+	 MIME-Version:Content-Transfer-Encoding;
+	bh=9TbVYvpSeD3EGVYLSVcnsamFqScX3vaSw3kvz6iivhs=;
+	b=r7M6CCwKH2h0zDxugrEc8u9BZgmeq27xcjFBpYWvbXcg6e7vbOdcD7mwOXYVDjIdNIYf
+	 bIAKDZ6UdMPSVwQ7x9hyr3i8CaZGyr79JAGSzRQZL96eFMTa+JUSpW8hQfpO42cNAyAsZ
+	 UtLFpcqilpAVJ9tdJ2w9D7FzcLb978mUG3sZG0dIg3KryGKekBDKRC3aGP+R8D5/kGJYo
+	 gkm7FoY7fUrvbdu/vG1nnNeoYMG5aIcCLyNvFFGX86EnBBJ6uF2hvvbXG3mxzDeqkbMbi
+	 41o2c7GAYrS+Hy5qGy16UCEOsrLk1w0R7VPN2cj2vDfNy+dNmBhfEri5CrznAlll/Ww==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ZtqS1jy+;
-	arc=none smtp.remote-ip=100.103.45.18
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	dmarc=fail header.from=isslab.korea.ac.kr;
+	spf=none smtp.mailfrom=isslab.korea.ac.kr;
+	dkim=pass header.d=isslab-korea-ac-kr.20260707.gappssmtp.com header.i=@isslab-korea-ac-kr.20260707.gappssmtp.com header.a=rsa-sha256 header.s=20260707 header.b=XOcMmpRM;
+	arc=none smtp.remote-ip=74.125.82.173
+Received: from mail-dy1-f173.google.com (mail-dy1-f173.google.com [74.125.82.173])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 35EA16082BED;
-	Tue,  3 Nov 2026 09:53:01 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3989D606D804
+	for <target-devel@vger.kernel.org>; Tue,  3 Nov 2026 13:00:25 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 3989D606D804
+Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=isslab.korea.ac.kr
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=isslab.korea.ac.kr
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ZtqS1jy+
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A9A851F00A1B;
-	Tue,  3 Nov 2026 09:53:00 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793699581;
-	bh=My0Z66KYNuRTAK3B795dnm8lK2ZMXMW4aavFw/8R0xM=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Date;
-	b=ZtqS1jy+YkNh/dusWp74kZOjGgEJPbo09JcPUd7JZiNBgXFL68rxZb76qlpeP5PHY
-	 +sY/GPIG7+iuKTV6cDE42VArd0HnhotreVjoORDNIsiUzEMMzHfIoK6mh6kNSmysM7
-	 NzksDfTukp22zaCX39Ff260mkElMwMg3Adh2F2Zdo9+c6/PjXjFGk/K/SpB3HDJGKy
-	 lLvAVHAdQEFm0Iuo3Kqgkv0/iTxWUqzXZYlQt+XxrZlkqzDsIA6mcyO6m04yF3rXoM
-	 zY5eVeJWjFJL0eWS29GEfgqGQPFBt2tpHBM+W7hm4QMrfUASOjbNbeWQkmYDFbKLDd
-	 OPbZSIZ67pdrg==
-From: Leon Romanovsky <leon@kernel.org>
-To: Bart Van Assche <bvanassche@acm.org>, 
- Yehyeong Lee <yhlee@isslab.korea.ac.kr>
-Cc: Jason Gunthorpe <jgg@ziepe.ca>, linux-rdma@vger.kernel.org, 
- target-devel@vger.kernel.org, linux-kernel@vger.kernel.org, 
- stable@vger.kernel.org
-In-Reply-To: <20261025013748.3755639-1-yhlee@isslab.korea.ac.kr>
-References: <20261025013748.3755639-1-yhlee@isslab.korea.ac.kr>
-Subject: Re: [PATCH v5 0/3] RDMA/srpt: fix the descriptor table checks and
- the context counters
-Message-Id: <179369957811.1712752.1012285000662293438.b4-ty@kernel.org>
-Date: Tue, 03 Nov 2026 04:52:58 -0500
+	dkim=pass (2048-bit key, unprotected) header.d=isslab-korea-ac-kr.20260707.gappssmtp.com header.i=@isslab-korea-ac-kr.20260707.gappssmtp.com header.a=rsa-sha256 header.s=20260707 header.b=XOcMmpRM
+Received: by mail-dy1-f173.google.com with SMTP id 5a478bee46e88-36a18fc7a38so7858043eec.1
+        for <target-devel@vger.kernel.org>; Tue, 03 Nov 2026 05:00:25 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=isslab-korea-ac-kr.20260707.gappssmtp.com; s=20260707; t=1793710824; x=1794315624; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=9TbVYvpSeD3EGVYLSVcnsamFqScX3vaSw3kvz6iivhs=;
+        b=XOcMmpRM56KA61aW/pYzSjrMfPvzgyovnX8aWLJ5mwZmT/p+tdfiyqOnHT3EiZiQkN
+         2e88Y9g1rcLFPE3G4TLiKC0gw4E3xns4pP5IpnshYNXWrsOc+KP3jOY45NtwGzISj7Lc
+         galk4Dk8+GekNUtHkUuv60vRess7Lb2VyKsu2ZevAQqs55UDJHo2iBCCnCQumPol2ZBj
+         BQLMOvRm1jagBalOWk/Z4DjwrcBCvgiZyzZB5Uq8b9Rd88OQnLW0XxIXMlMnV2Mnz/fl
+         6m3otDKL++DqytP50rm4z1CrWqci0LmwxJwwNnMOOjLlaLJUVJUG5hZJA3uE4vVoWAWO
+         KctA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1793710824; x=1794315624;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to:content-type;
+        bh=9TbVYvpSeD3EGVYLSVcnsamFqScX3vaSw3kvz6iivhs=;
+        b=fNxB/ns7zjh6oiQS0Ammoc4nnP3baBjNJuxNmLZAprFDCUQECh3PYoEXcGLG4OSgi3
+         jDTrywiiJ22u/GAnv0n1gzAVrIxsZWMp4s9luuEZ1UBvcJWNf5wDQnzFt1YENSAtU2Z/
+         w3MeGS9Y+josTvbI4RSO0yplWf+HUiIpzGKGmlL85+ClhGHCpdoubzKGkEURUjtfRBTq
+         7Fs6nvJkkVyix0AuUA/RAGoUXSXFYrePenPVHtsfFLiEoYqDlsiL/h+HKIQtR92NPWLE
+         aVsCyJXT+qkLCjdsT0Fi3YbMhx2eOxFo1MtYkx/4ztMfFuLoQ8grOovwwDwHCkwzmGxV
+         Uy3g==
+X-Forwarded-Encrypted: i=1; AKwUvBxQ1YH7IhJHbxWKbQxv4ME0UWrE8tqrwawH62B9/Ay3ZUG/lSfaMJYon6fGzrFdIc4KnEcbiHnME2nRps0=@vger.kernel.org
+X-Gm-Message-State: APuU4Z85EyJOSyhQb9rt83E6NZzgObYNnfxAkpnJ0mo7DCcVCzoYYk2G
+	l67oAtQ0V1B3K7Edjq0yFiYa3xpyUu0nHlPnxp9HbWsJZ7nIxBVT+VGQCAhSvl3/rdI=
+X-Gm-Gg: AYBFou3rbwBuiKUX/YV53xDHbjztLT5+oVPet7Zm3tiieI2ZWcCbVFEY0Ip9T9t5yu5
+	xRwV9PCBLv4hP9L2tMS+EWOENiClO3+31BZ7nwomPMqVphVt4KNqtdAcjXDfmzA8Yk6MGN04YhM
+	egySdd+Exh4k4/7ClR5K7vSDESGGEYQ/w1zNVmiZarXu3hNOfPMVG1bdDKA9/ZbAIIR+gNf39SJ
+	kYVjCgJKdI+8gjEbobasaejDYU2+ezAB9AB8GIepCL9mcn1NQHck9mFFrolA+5ldVAALlQG46gO
+	jMe96C0HqRNNjV8Y/2Tphavj45BkvbbWHMWgopad0B0f5QF3/qY4G4CZPFHVoL8/xXIE1RGpsD+
+	+Dl0qNQZXdXr3impOQHzJxYZkYEOCBl1YdspkFN2YQ5IHD9dLUjb4OHKa7SGlRD7/RHB8jK9h2n
+	7yoSpcRU3rXnEW08VPK7Q6YRmaw8H78aKEbUT9Nobju7QSM+Ia6qyc1T6D/vA/fYFduizhRX3UN
+	MQyBiLbN9RN5lWkC6Y5hDO+2kyV5RkWvuWxQXAXI73+uYQRJ2lKgBngsSm9tjLyyczxe03vlemJ
+	Z6KPhrmT00Q1eqlyPLRtm3lT2OZvPHdGx1aU+iU7UR7eywoh5uehXrIyAB4shDliXMmgAyen3Sm
+	MEZlzZHqnGMysJySnBVuW52+Eu2F98n8sYATTrF2FSXkqDvwTZefPusOCTcE=
+X-Received: by 2002:a05:7301:7306:b0:366:dbf9:32bd with SMTP id 5a478bee46e88-36a4235f4a1mr17903063eec.9.1793710823829;
+        Tue, 03 Nov 2026 05:00:23 -0800 (PST)
+Received: from yhlee-960QFG.Davolink ([2406:5900:1044:110c:2da3:4696:4c5e:89c1])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-36a42669128sm50806107eec.3.2026.11.03.05.00.20
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 03 Nov 2026 05:00:23 -0800 (PST)
+From: Yehyeong Lee <yhlee@isslab.korea.ac.kr>
+To: Sagi Grimberg <sagi@grimberg.me>,
+	Max Gurtovoy <mgurtovoy@nvidia.com>,
+	Jason Gunthorpe <jgg@ziepe.ca>,
+	Leon Romanovsky <leon@kernel.org>
+Cc: "Martin K . Petersen" <martin.petersen@oracle.com>,
+	Mike Christie <michael.christie@oracle.com>,
+	linux-rdma@vger.kernel.org,
+	target-devel@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Yehyeong Lee <yhlee@isslab.korea.ac.kr>,
+	stable@vger.kernel.org
+Subject: [PATCH v5 1/5] IB/isert: do not publish connections being released on a second list
+Date: Tue,  3 Nov 2026 21:59:51 +0900
+Message-ID: <20261103125955.1530355-2-yhlee@isslab.korea.ac.kr>
+X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20261103125955.1530355-1-yhlee@isslab.korea.ac.kr>
+References: <20261103125955.1530355-1-yhlee@isslab.korea.ac.kr>
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Post: <mailto:target-devel@vger.kernel.org>
@@ -61,34 +106,244 @@ List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:target-devel+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-Mailer: b4 0.15-dev-18f8f
+Content-Transfer-Encoding: 8bit
 
+isert_connect_error() and isert_disconnected_handler() take a connection
+off isert_np->accepted or isert_np->pending and release it, but they do not
+check whether the other one got there first, and the connection also stays
+reachable from the list that isert_free_np() walks.  Two callers can
+therefore release the same connection, and isert_free_np() can release one
+a CM handler has already freed.
 
-On Sun, 25 Oct 2026 10:37:45 +0900, Yehyeong Lee wrote:
-> The first two patches bound initiator supplied descriptor data, and the
-> third widens the counters that hold what the first one admits.
-> 
-> A 510 entry table fits in the default 8276 byte IU when the additional CDB
-> is empty, so the bound accepts it and the counters then have to hold it.
-> With only the bound, a conforming command carrying 256 or more descriptors
-> still wraps n_rw_ctx and leaks every context it allocated. With only the
-> wider counters, a command that sets ADDITIONAL CDB LENGTH to its maximum
-> still walks a descriptor table that runs past the receive buffer.
-> 
-> [...]
+Make the list the single owner token.  A caller that empties
+isert_conn->node under isert_np->mutex owns the drain and the release; one
+that finds it already empty stands back and returns zero, so cma keeps the
+id and the owner destroys it.  isert_connect_error() drains before it takes
+the connection, which is the order mainline already uses, so no drain can
+run on a QP whose id another handler is tearing down.
 
-Applied, thanks!
+A test-only delay in isert_free_np(), right after it has taken a
+connection, opens the window; it does not open on its own in this setup.
+With it, two runs of 7.4-rc1 reported 22 use-after-frees each and then an
+oops at a NULL instruction pointer in the rmdir task, which was killed.
+Two runs with this patch reported neither, and the rmdir returned in seven
+seconds.
 
-[1/3] RDMA/srpt: bound the indirect descriptor table to the IU
-      https://git.kernel.org/rdma/rdma/c/d5e2467b86d496
-[2/3] RDMA/srpt: reject zero-length buffer descriptors
-      https://git.kernel.org/rdma/rdma/c/f38458ac4ff689
-[3/3] RDMA/srpt: widen the indirect RDMA context counters
-      https://git.kernel.org/rdma/rdma/c/f9258be57e3e19
+  BUG: KASAN: slab-use-after-free in isert_connect_release+0x5c1/0x620
+  Read of size 8 at addr ffff888109c5d160 by task rmdir/191
 
-Best regards,
+  CPU: 1 UID: 0 PID: 191 Comm: rmdir Not tainted 7.4.0-rc1-NSR-00001-gffec6cbc0e7e #129 PREEMPT(full)
+  Hardware name: QEMU Ubuntu 24.04 PC v2 (i440FX + PIIX, arch_caps fix, 1996), BIOS 1.16.3-debian-1.16.3-2 04/01/2014
+  Call Trace:
+   <TASK>
+   dump_stack_lvl+0x53/0x70
+   print_report+0xd0/0x630
+   ? __pfx__raw_spin_lock_irqsave+0x10/0x10
+   ? isert_connect_release
+   ? isert_connect_release+0x5c1/0x620
+   kasan_report+0xce/0x100
+   ? isert_connect_release+0x5c1/0x620
+   isert_connect_release+0x5c1/0x620
+   isert_free_np+0x4cf/0xb20
+   ? __pfx_isert_free_np+0x10/0x10
+   iscsit_del_np+0x163/0x340
+   iscsit_tpg_del_network_portal+0x3c3/0x530
+   ? mutex_unlock+0x7b/0xd0
+   lio_target_call_delnpfromtpg+0x40/0x60
+   config_item_cleanup+0x115/0x190
+   configfs_rmdir+0x7c7/0x9f0
+   ? __pfx_configfs_rmdir+0x10/0x10
+   vfs_rmdir+0x291/0x7b0
+   ? lookup_one_qstr_excl+0x1a/0x1d0
+   filename_rmdir+0x390/0x560
+   ? __pfx_filename_rmdir+0x10/0x10
+   ? kasan_save_track+0x14/0x30
+   ? __kasan_slab_alloc+0x6e/0x70
+   ? strncpy_from_user+0x2b/0x1c0
+   __x64_sys_rmdir+0x41/0x60
+   do_syscall_64+0xdd/0x4a0
+   entry_SYSCALL_64_after_hwframe+0x77/0x7f
+  RIP: 0033:0x463b6b
+  Code: 77 05 c3 0f 1f 40 00 48 c7 c2 e0 ff ff ff f7 d8 64 89 02 48 c7 c0 ff ff ff ff c3 0f 1f 40 00 f3 0f 1e fa b8 54 00 00 00 0f 05 <48> 3d 00 f0 ff ff 77 05 c3 0f 1f 40 00 48 c7 c2 e0 ff ff ff f7 d8
+  RSP: 002b:00007ffcc34f26c8 EFLAGS: 00000246 ORIG_RAX: 0000000000000054
+  RAX: ffffffffffffffda RBX: 000000003b607218 RCX: 0000000000463b6b
+  RDX: 0000000000000000 RSI: 000000003b5ea9e0 RDI: 000000003b607218
+  RBP: 00007ffcc34f2700 R08: 0000000000000000 R09: 0000000000000000
+  R10: 00007ffcc34f2040 R11: 0000000000000246 R12: 000000003b607288
+  R13: 0000000000000000 R14: 0000000000000000 R15: 00000000005e6245
+   </TASK>
+
+  Allocated by task 72:
+   kasan_save_stack+0x33/0x60
+   kasan_save_track+0x14/0x30
+   __kasan_kmalloc+0x8f/0xa0
+   __kmalloc_cache_noprof+0x148/0x360
+   isert_cma_handler+0x1e3/0x28a0
+   cma_cm_event_handler+0x3e/0x240
+   cma_ib_req_handler+0x17d9/0x4480
+   cm_process_work+0x41/0x330
+   cm_work_handler+0x5727/0xc160
+   process_one_work+0x697/0x1060
+   worker_thread+0x45b/0xd10
+   kthread+0x2c8/0x3b0
+   ret_from_fork+0x36e/0x5a0
+   ret_from_fork_asm+0x1a/0x30
+
+  Freed by task 10:
+   kasan_save_stack+0x33/0x60
+   kasan_save_track+0x14/0x30
+   kasan_save_free_info+0x3b/0x60
+   __kasan_slab_free+0x43/0x70
+   kfree+0x121/0x390
+   isert_cma_handler+0x1148/0x28a0
+   cma_cm_event_handler+0x3e/0x240
+   cma_ib_handler+0x190/0x750
+   cm_process_work+0x41/0x330
+   cm_work_handler+0x1de2/0xc160
+   process_one_work+0x697/0x1060
+   worker_thread+0x45b/0xd10
+   kthread+0x2c8/0x3b0
+   ret_from_fork+0x36e/0x5a0
+   ret_from_fork_asm+0x1a/0x30
+
+Fixes: 691b0480933f ("IB/isert: Fix dead lock in ib_isert")
+Cc: stable@vger.kernel.org
+Signed-off-by: Yehyeong Lee <yhlee@isslab.korea.ac.kr>
+---
+ drivers/infiniband/ulp/isert/ib_isert.c | 81 ++++++++++++++++---------
+ 1 file changed, 54 insertions(+), 27 deletions(-)
+
+diff --git a/drivers/infiniband/ulp/isert/ib_isert.c b/drivers/infiniband/ulp/isert/ib_isert.c
+index efa8d7b7844c97..ef2edaa3218fee 100644
+--- a/drivers/infiniband/ulp/isert/ib_isert.c
++++ b/drivers/infiniband/ulp/isert/ib_isert.c
+@@ -521,13 +521,18 @@ isert_connected_handler(struct rdma_cm_id *cma_id)
+ 	isert_info("conn %p\n", isert_conn);
+ 
+ 	mutex_lock(&isert_conn->mutex);
++	mutex_lock(&isert_np->mutex);
++	if (list_empty(&isert_conn->node)) {
++		mutex_unlock(&isert_np->mutex);
++		mutex_unlock(&isert_conn->mutex);
++		isert_info("conn %p is being released already\n", isert_conn);
++		return;
++	}
+ 	isert_conn->state = ISER_CONN_UP;
+ 	kref_get(&isert_conn->kref);
+-	mutex_unlock(&isert_conn->mutex);
+-
+-	mutex_lock(&isert_np->mutex);
+ 	list_move_tail(&isert_conn->node, &isert_np->pending);
+ 	mutex_unlock(&isert_np->mutex);
++	mutex_unlock(&isert_conn->mutex);
+ 
+ 	isert_info("np %p: Allow accept_np to continue\n", isert_np);
+ 	up(&isert_np->sem);
+@@ -658,12 +663,20 @@ isert_connect_error(struct rdma_cm_id *cma_id)
+ {
+ 	struct isert_conn *isert_conn = cma_id->qp->qp_context;
+ 	struct isert_np *isert_np = cma_id->context;
++	bool owned;
+ 
+ 	ib_drain_qp(isert_conn->qp);
+ 
+ 	mutex_lock(&isert_np->mutex);
++	owned = !list_empty(&isert_conn->node);
+ 	list_del_init(&isert_conn->node);
+ 	mutex_unlock(&isert_np->mutex);
++
++	if (!owned) {
++		isert_info("conn %p is being released already\n", isert_conn);
++		return 0;
++	}
++
+ 	isert_conn->cm_id = NULL;
+ 	isert_put_conn(isert_conn);
+ 
+@@ -2479,12 +2492,33 @@ isert_accept_np(struct iscsi_np *np, struct iscsit_conn *conn)
+ 	return 0;
+ }
+ 
++static struct isert_conn *
++isert_np_take_conn(struct isert_np *isert_np, bool *promoted)
++{
++	struct isert_conn *isert_conn;
++
++	lockdep_assert_held(&isert_np->mutex);
++
++	*promoted = true;
++	isert_conn = list_first_entry_or_null(&isert_np->pending,
++					      struct isert_conn, node);
++	if (!isert_conn) {
++		*promoted = false;
++		isert_conn = list_first_entry_or_null(&isert_np->accepted,
++						      struct isert_conn, node);
++	}
++	if (isert_conn)
++		list_del_init(&isert_conn->node);
++
++	return isert_conn;
++}
++
+ static void
+ isert_free_np(struct iscsi_np *np)
+ {
+ 	struct isert_np *isert_np = np->np_context;
+-	struct isert_conn *isert_conn, *n;
+-	LIST_HEAD(drop_conn_list);
++	struct isert_conn *isert_conn;
++	bool promoted;
+ 
+ 	if (isert_np->cm_id)
+ 		rdma_destroy_id(isert_np->cm_id);
+@@ -2497,32 +2531,25 @@ isert_free_np(struct iscsi_np *np)
+ 	 * up in accepted and pending lists.
+ 	 */
+ 	mutex_lock(&isert_np->mutex);
+-	if (!list_empty(&isert_np->pending)) {
++	if (!list_empty(&isert_np->pending))
+ 		isert_info("Still have isert pending connections\n");
+-		list_for_each_entry_safe(isert_conn, n,
+-					 &isert_np->pending,
+-					 node) {
+-			isert_info("cleaning isert_conn %p state (%d)\n",
+-				   isert_conn, isert_conn->state);
+-			list_move_tail(&isert_conn->node, &drop_conn_list);
+-		}
+-	}
+-
+-	if (!list_empty(&isert_np->accepted)) {
++	if (!list_empty(&isert_np->accepted))
+ 		isert_info("Still have isert accepted connections\n");
+-		list_for_each_entry_safe(isert_conn, n,
+-					 &isert_np->accepted,
+-					 node) {
+-			isert_info("cleaning isert_conn %p state (%d)\n",
+-				   isert_conn, isert_conn->state);
+-			list_move_tail(&isert_conn->node, &drop_conn_list);
+-		}
+-	}
+ 	mutex_unlock(&isert_np->mutex);
+ 
+-	list_for_each_entry_safe(isert_conn, n, &drop_conn_list, node) {
+-		list_del_init(&isert_conn->node);
+-		isert_connect_release(isert_conn);
++	for (;;) {
++		mutex_lock(&isert_np->mutex);
++		isert_conn = isert_np_take_conn(isert_np, &promoted);
++		mutex_unlock(&isert_np->mutex);
++
++		if (!isert_conn)
++			break;
++
++		isert_info("cleaning isert_conn %p state (%d)\n",
++			   isert_conn, isert_conn->state);
++		if (promoted)
++			isert_put_conn(isert_conn);
++		isert_put_conn(isert_conn);
+ 	}
+ 
+ 	np->np_context = NULL;
 -- 
-Leon Romanovsky <leon@kernel.org>
+2.43.0
 
