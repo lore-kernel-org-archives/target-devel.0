@@ -1,57 +1,57 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793756627;
-	b=QinZ5h2eGR9JjFwKOIgIitvjDijOH6acTGo8pbsuFGxirX/2rjGguzufHKHJA9xOlNt5
-	 nNaHbFsyGr3DADaoWacVWmjlqe8Jd0uobtktkjSKFtZYw9D+NXGSqfXcvzI/oeR3Qs0rW
-	 tTGzCl2apvaJJVnCBdi4i4y/L+FueOgK+8So7Z5czoI4x818XWxcmQ4PYQTQhMFg4EpdH
-	 KU0ApeEhvWG7U//H4UZWiD3ysF+SmTR9bhdik1nZdriM5czLYflyFjyEbFOXBbOmdXnOi
-	 5TSpfkCHNmr9MxlAeHATRpcI74crp6XbgXz+lc2CxIVbbj+F7YpMh22YTL5zSuj/oaA==
+	t=1793757487;
+	b=pb6p4LT6WpxEvIpRa7fRpaxxClNeEATQbpAcZqgu3mBK9dwlCcttwfLLXGiXiXV7jNki
+	 TdM78CeEqlKEVb+0A8HGXgCDrA3ZUWtKLxaVF/MRXC7ILiOM3O1HdvSymj6zGFKH2xlz9
+	 3ww/Wg8Rj/4zYSjPhku5runFSmXe3hDvOjGFeZYS/9Qsq2Oke+plGh8b24WMlf6MVm51b
+	 +45R9E24PCYLIS3HiNt4mcSFbTmxVLIFBE2AE7PGFbm09DpknMPVU86dZIJClhqF0QTT7
+	 HoWCT9AeTNKEWuGDFAAODczBbpjQW8I1RMyaAxP6vodelhIvepS6a89PDmCWscKDxuA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793756627;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793757487;
 	h=Received:DKIM-Signature:Message-ID:From:Subject:Reply-To:To:Cc:
 	 In-Reply-To:References:Content-Type:Content-Transfer-Encoding:Date;
-	bh=K8erlwxkTMfXo//4EhMU9SF2J4lQcW73I0XnlPu5kgU=;
-	b=aSb/jG2HwYVwNoMAyQpHifPwQuZt1Z+xf06Z1mR8Vlhd00P4R6oss9GD8Ytmlktd6LE3
-	 6kracAEzl0Jpkdpo4/Z9JV3iSYvItHUgGPQvwJWkVrrCJV1FF7GEgntDr4hxIFmOFkwBw
-	 n3zHaCRtS2ceqgcmAWrbu36Zm9M9cAN4YT6CebRIgsfu05+UeoxyoP8aTE0OPaR2EMniA
-	 hjTaO4b6iy0TkEOe3iONU63tXyvapmCMaQO4QvcjXd2xjie7pEmo0lKZNgmtBeeVU0828
-	 oC+Q2AKVCFIKUrJ4HJY8DwktdKwsIBu6xssFD5UDkkiaOje6u1b39VItzulsaPSK8DQ==
+	bh=0u/iOpavIwnAL9U/KKE7NEQCYQWzU5PEpxb9/R3zqss=;
+	b=FgBbBpOGxwevnS7w6OtwT/XFLm/guwP33QpBHwCVAawmM2M0gRW2dusbWPBx05/eg4ON
+	 hM4u7xSZ9g7+Qr0mOFd1Uw0mAFSQl5J+I8aQKrffdQi1rc5RHBCpx2qZ7DCaRw9wQlJ7e
+	 VtHj9kxx9x9embZer+6t/eyjfNG9ww/ZSe5buskrmhXqQ4MuRzF8rCBsk9CqY0ezXf49c
+	 W448/k3UPCeablHm3BJdf7Vcnf1Iudc4zifYyPAOi6nPQWw9uz49iZMYzvv79HciO7eBi
+	 HW0lETPAxwoNtMUmJbMf20mHkg4NHwIxtmikSqwu+TgfDrMsXKoak0s1WF0ws44alQw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=QPEjlpmb;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b="h/05oGSW";
 	arc=none smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AB065606A326;
-	Wed,  4 Nov 2026 01:43:46 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2BCDC606A328;
+	Wed,  4 Nov 2026 01:58:06 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=QPEjlpmb
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1166D1F000C1;
-	Wed,  4 Nov 2026 01:43:46 +0000 (UTC)
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=h/05oGSW
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 964441F000C1;
+	Wed,  4 Nov 2026 01:58:06 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793756626;
-	bh=K8erlwxkTMfXo//4EhMU9SF2J4lQcW73I0XnlPu5kgU=;
+	s=k20260515; t=1793757486;
+	bh=0u/iOpavIwnAL9U/KKE7NEQCYQWzU5PEpxb9/R3zqss=;
 	h=From:Subject:Reply-To:To:Cc:In-Reply-To:References:Date;
-	b=QPEjlpmbgGMUdkCJzU0ZeI1Wd++qW6+uSgMUOxB0BIAlNduGISIakF8nmrDosophA
-	 42i6IKM+9P5K5LDIjhPJNFjkojD5Y4iMrdwLyMSO+nabUcLyEl/a5mBgHSaHa9z+UM
-	 UZsdiDOMqnz3MUIT9TiQw4H87VUDfduDhVi0CDZrgPd+W39mTjAE9R6z1GcO0HHmfG
-	 tPAkIr20GUS8SYR+sG/KuD7cYcsDyUuyVTvGzzJie4x8YXgtDyLUX2l4Y3B5pJc+X5
-	 wfpjF6vfpWMzooemVdgh58pbUp3rYvmxQNCQDe+2dQ63bayvMtt2pgJzsd8wjGyUUn
-	 DLvRmrjNtbH1A==
-Message-ID: <sashiko-outbox-196373@kernel.org>
+	b=h/05oGSWx+Rcrv8j3bTrliUBkZTE7bS9VdPpJZnM+UaEn9x2h7Usf9U9RQHQXFw1A
+	 2PexVImRffUKiwryQ5kepQC8WzGCXu7f4JQHc9XlcBjl6+xpOBfOTTzDeO+1rUM6Jn
+	 qbB7lvqUYmLKxZCQusZednJxWY7AAvMjm+QiXz/WGNIF+HmnUhx5BNJQoFVheYA6dZ
+	 n8QpRk1Ex1IHvLQFH8mW2SLebWY8mdGXc+HtZZbl3Lrl4+F4PDwQSBkACB5EHsM0Hu
+	 Q7b6JhpmHwk2ltH4XxvHGKjUq7FnrBsmP0F7AT3Z3QipupcIKu9QCyg0Db/55Vsoyp
+	 SbjfFvs0JYbKQ==
+Message-ID: <sashiko-outbox-196418@kernel.org>
 From: sashiko-bot@kernel.org
-Subject: Re: [PATCH v7 5/6] IB/isert: do not build a new isert_device for a
- device being removed
+Subject: Re: [PATCH v7 3/6] IB/isert: tear connections down from an
+ ib_client on device removal
 Reply-To: sashiko-reviews@lists.linux.dev
 To: "Yehyeong Lee" <yhlee@isslab.korea.ac.kr>
 Cc: linux-rdma@vger.kernel.org, target-devel@vger.kernel.org
-In-Reply-To: <20261104012219.1759523-6-yhlee@isslab.korea.ac.kr>
+In-Reply-To: <20261104012219.1759523-4-yhlee@isslab.korea.ac.kr>
 References: <20261104012219.1759523-1-yhlee@isslab.korea.ac.kr>
- <20261104012219.1759523-6-yhlee@isslab.korea.ac.kr>
+ <20261104012219.1759523-4-yhlee@isslab.korea.ac.kr>
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: quoted-printable
-Date: Wed, 04 Nov 2026 01:43:45 +0000
+Date: Wed, 04 Nov 2026 01:58:06 +0000
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Post: <mailto:target-devel@vger.kernel.org>
@@ -63,139 +63,105 @@ Precedence: list
 
 Thank you for your contribution! Sashiko AI review found 1 potential issue(=
 s) to consider:
-- [High] IB/isert: Cross-device aliasing via node_guid lookup in isert_devi=
-ce_get()
+- [High] IB/isert: NULL cm_id dereference in isert_qp_event_callback()
 --
 
-commit 01d8f2361924f11ef1e502a2b19ce2e53509658d
+commit 701b903737b3f3f8c4ac6d7d5a75f88a91eb010c
 Author: Yehyeong Lee <yhlee@isslab.korea.ac.kr>
 
-IB/isert: do not build a new isert_device for a device being removed
+IB/isert: tear connections down from an ib_client on device removal
 
-This patch uses ib_client data to track whether an ib_device is active and
-skips devices marked as removing in isert_device_get() so a concurrent
-CONNECT_REQUEST cannot create or grab an isert_device during device removal.
+This patch registers an ib_client for isert to tear down device connections
+from its remove callback instead of waiting and freeing connections inside =
+the
+RDMA_CM_EVENT_DEVICE_REMOVAL handler. It also adds reference counting for
+isert_np and tracks connections on isert_conn_list under isert_conn_mutex.
 
 > diff --git a/drivers/infiniband/ulp/isert/ib_isert.c b/drivers/infiniband=
 /ulp/isert/ib_isert.c
-> index 712d6165150e3..1b388075cc633 100644
+> index 61b214012a70b..4812dabd93945 100644
 > --- a/drivers/infiniband/ulp/isert/ib_isert.c
 > +++ b/drivers/infiniband/ulp/isert/ib_isert.c
 
 [ ... ]
 
-> @@ -275,14 +280,19 @@ isert_device_get(struct rdma_cm_id *cma_id)
->  	int ret;
+> @@ -661,20 +721,33 @@ isert_connect_error(struct rdma_cm_id *cma_id)
+>  {
+>  	struct isert_conn *isert_conn =3D cma_id->qp->qp_context;
+>  	struct isert_np *isert_np =3D cma_id->context;
+> -	bool owned;
+> +	bool owned =3D false, bound =3D false;
 > =20
->  	mutex_lock(&device_list_mutex);
-> +	if (!ib_get_client_data(cma_id->device, &isert_ib_client)) {
-> +		mutex_unlock(&device_list_mutex);
-> +		return ERR_PTR(-ENODEV);
+> +	mutex_lock(&isert_conn->mutex);
+>  	mutex_lock(&isert_np->mutex);
+> -	owned =3D !list_empty(&isert_conn->node);
+> -	list_del_init(&isert_conn->node);
+> +	if (list_empty(&isert_conn->node)) {
+> +		bound =3D isert_conn->state =3D=3D ISER_CONN_BOUND ||
+> +			isert_conn->state =3D=3D ISER_CONN_FULL_FEATURE;
+> +	} else {
+> +		owned =3D true;
+> +		list_del_init(&isert_conn->node);
 > +	}
->  	list_for_each_entry(device, &device_list, dev_node) {
-> -		if (device->ib_device->node_guid =3D=3D cma_id->device->node_guid) {
-> -			device->refcount++;
-> -			isert_info("Found iser device %p refcount %d\n",
-> -				   device, device->refcount);
-> -			mutex_unlock(&device_list_mutex);
-> -			return device;
-> -		}
-> +		if (device->removing ||
-> +		    device->ib_device->node_guid !=3D cma_id->device->node_guid)
-> +			continue;
-> +		device->refcount++;
-> +		isert_info("Found iser device %p refcount %d\n",
-> +			   device, device->refcount);
-> +		mutex_unlock(&device_list_mutex);
-> +		return device;
+>  	mutex_unlock(&isert_np->mutex);
+> =20
+> +	if (owned) {
+> +		isert_conn->cm_id =3D NULL;
+> +	} else if (bound) {
+> +		isert_conn_terminate(isert_conn);
+> +		iscsit_cause_connection_reinstatement(isert_conn->conn, 0);
+> +	}
+> +	mutex_unlock(&isert_conn->mutex);
+> +
+>  	if (!owned) {
+>  		isert_info("conn %p is being released already\n", isert_conn);
+>  		return 0;
 >  	}
+> =20
+>  	ib_drain_qp(isert_conn->qp);
+> -	isert_conn->cm_id =3D NULL;
+>  	isert_put_conn(isert_conn);
+> =20
+>  	return -1;
 
 [Severity: High]
-As reported by Sashiko on v6 [1], when two ib_device instances share the sa=
-me
-node_guid (for example, software RDMA devices over netdevs sharing a MAC
-address, which the commit message notes), can matching by node_guid in
-isert_device_get() bind a connection on one ib_device to another ib_device's
-isert_device?
+Can clearing isert_conn->cm_id before draining and destroying the QP cause a
+NULL pointer dereference in isert_qp_event_callback()?
 
-Each isert_device is bound to a specific ib_device pointer
-(device->ib_device =3D cma_id->device), allocates its protection domain on =
-that
-device in isert_create_device_ib_res(), and is looked up by pointer equality
-in isert_remove_one():
+During passive connection setup, isert_connect_request() creates
+isert_conn->qp with isert_qp_event_callback() as its event handler and calls
+isert_rdma_accept() -> rdma_accept(), which transitions the QP to RTR/RTS.
 
-drivers/infiniband/ulp/isert/ib_isert.c:isert_remove_one() {
+When RDMA_CM_EVENT_UNREACHABLE, RDMA_CM_EVENT_REJECTED, or
+RDMA_CM_EVENT_CONNECT_ERROR invokes isert_connect_error() while the connect=
+ion
+is still on isert_np->accepted or isert_np->pending (owned is true),
+isert_conn->cm_id is now set to NULL before ib_drain_qp(isert_conn->qp) runs
+and before the QP is destroyed. In addition, if isert_remove_one() holds a
+reference on isert_conn via kref_get_unless_zero(), isert_put_conn() in
+isert_connect_error() will not drop kref to zero, leaving isert_conn->qp al=
+ive
+with isert_conn->cm_id =3D=3D NULL until isert_remove_one() drops its refer=
+ence.
+
+On RDMA_CM_EVENT_UNREACHABLE, cma does not transition the QP to IB_QPS_ERR
+before invoking the handler, and drivers such as mlx4 and mlx5 dispatch
+IB_EVENT_COMM_EST asynchronously on a workqueue that is not synchronized by
+ib_drain_qp(). If IB_EVENT_COMM_EST runs in isert_qp_event_callback() during
+this window:
+
+drivers/infiniband/ulp/isert/ib_isert.c:isert_qp_event_callback() {
 	...
-	list_for_each_entry(device, &device_list, dev_node) {
-		if (device->ib_device !=3D ib_device)
-			continue;
-		device->refcount++;
-		device->removal_comp =3D &removal_comp;
-		device->removing =3D true;
-		found =3D device;
+	switch (e->event) {
+	case IB_EVENT_COMM_EST:
+		rdma_notify(isert_conn->cm_id, IB_EVENT_COMM_EST);
 		break;
-	}
-}
-
-In addition, while the commit message mentions that taking device_list_mutex
-under isert_conn_mutex prevents a sibling device from raising the reference
-count of one being removed, isert_device_get() only acquires
-device_list_mutex and does not acquire isert_conn_mutex.
-
-If ib_dev1 has an active isert_device in device_list and a CONNECT_REQUEST
-arrives on ib_dev2 (which shares node_guid with ib_dev1), isert_device_get()
-passes ib_get_client_data(cma_id->device, &isert_ib_client) for ib_dev2,
-matches ib_dev1's isert_device by node_guid, increments its refcount, and
-returns it.
-
-In isert_connect_request(), isert_alloc_login_buf() then maps DMA buffers on
-cma_id->device (ib_dev2), while isert_create_qp() allocates a CQ on
-device->ib_device (ib_dev1) and calls rdma_create_qp(cma_id, device->pd,
-&attr), which fails with -EINVAL because id->device !=3D pd->device:
-
-drivers/infiniband/ulp/isert/ib_isert.c:isert_connect_request() {
-	...
-	ret =3D isert_alloc_login_buf(isert_conn, cma_id->device);
-	if (ret)
-		goto out_conn_dev;
-
-	isert_set_nego_params(isert_conn, &event->param.conn);
-
-	isert_conn->qp =3D isert_create_qp(isert_conn, cma_id);
-	if (IS_ERR(isert_conn->qp)) {
-		ret =3D PTR_ERR(isert_conn->qp);
-		goto out_rsp_dma_map;
-	}
-}
-
-On the out_rsp_dma_map error path, isert_free_login_buf() unmaps
-login_rsp_dma and login_desc->dma_addr using isert_conn->device->ib_device
-(ib_dev1) instead of cma_id->device (ib_dev2), unmapping on the wrong device
-and leaking the DMA mappings on ib_dev2:
-
-drivers/infiniband/ulp/isert/ib_isert.c:isert_free_login_buf() {
-	struct ib_device *ib_dev =3D isert_conn->device->ib_device;
-
-	ib_dma_unmap_single(ib_dev, isert_conn->login_rsp_dma,
-			    ISER_RX_PAYLOAD_SIZE, DMA_TO_DEVICE);
 	...
 }
 
-Conversely, if ib_dev2 already has an active isert_device in device_list and
-ib_dev1 has none when a CONNECT_REQUEST arrives on ib_dev1 just before
-isert_remove_one(ib_dev1) runs, isert_device_get() matches ib_dev2's
-isert_device. When isert_remove_one(ib_dev1) then searches device_list for
-device->ib_device =3D=3D ib_dev1, found is NULL and it returns immediately
-without waiting while isert_connect_request() is still mapping DMA buffers =
-on
-ib_dev1.
-
-Should isert_device_get() match by device->ib_device !=3D cma_id->device
-instead of node_guid so that it is consistent with isert_remove_one()?
-
-[1] https://lore.kernel.org/r/20261103223802.1697607-6-yhlee@isslab.korea.a=
-c.kr
+rdma_notify() will be called with a NULL cm_id and dereference
+id_priv->cm_id.ib at a NULL base pointer.
 
 --=20
 Sashiko AI review =C2=B7 https://sashiko.dev/#/patchset/20261104012219.1759=
-523-1-yhlee@isslab.korea.ac.kr?part=3D5
+523-1-yhlee@isslab.korea.ac.kr?part=3D3
