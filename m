@@ -1,53 +1,101 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
-ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793776321;
-	b=BMTTmqM/1htItQAgW5RvSW3XmmI7AKnCGGVfhVpGpnj1l362Grn7nI6ZVt/yK2sHm8Ud
-	 tCxK+7o1kC+/ZQq31tPzJCvkRl5TOnPkm4uAg3ZUxQIKlfmVvG1Wtqdt6B6JvfjRgdFcW
-	 YePcZNojD36T5d+5y3q06KTKaIITSPifOWRvHXki0y8/chv4cO29JvAGh+RyNF495uno6
-	 ZHdi7aW2SGkf0yUS+52Yg5MpyK+zx+CkfQViJlFFBYltFQtCltbZIY/HnO0PcXhLaLAhE
-	 BbqFrL8aaRsKYhlfUsnLbmCqyBF/S3pOJYHRAzbzQA93joi2gcuRapQnNnWk5m0VEWQ==
-ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793776321;
-	h=Received:DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:
-	 References:MIME-Version:Content-Type:Content-Disposition:In-Reply-To;
-	bh=i0nF4NvOSbcZxgWHiwHcmP13MS4LghIt918I641xiu8=;
-	b=5aFX1vDK5wbAKThEKaCpiOr3hYmHtlk+B5OyNAasOr9zFC+JTAUQxYBcsm0xMl5DZNH/
-	 xq0sMjb3QtaKiY6gMvUIgvLSfW5DIcrMWJDn4PvrmP6Qd+BeFOZfUhEq7oZT5oLvRNCuJ
-	 wJYUzZnr9EtPZWd2CHG9eVgD/VpvdzcHs+W+trmX9PZVvrx9BkM2eWomSO0hlJR08eXL8
-	 QBBVNttu4vGId7OA9r2JlgiII7PR0CsqVB33JFnv4rU5/K51YzjdW6kDrUeAxT0+Hu9D7
-	 8Atsfzrrcujtqu9hWju5IWCT6SkI/Cb5Ju63Y+sbIVe36dWLGIc9tGGEePggE1KJBnQ==
-ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Hzj3tLP4;
-	arc=none smtp.remote-ip=100.103.45.18
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=209.85.208.169
+ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
+	t=1793787882;
+	b=nYLT4VXOJaSJNfNrsNGS7up3ZQDx/NQjN7rmTbcNERZ/8EgWcedZ4zeiXsUZksRmdBSx
+	 lB1oYMIpucMQTOxYxVl+hq0Yqr21qvHC5cAOhs5VbebLguw+hLdnj973XQbIpJTzcftft
+	 xGzkJx7Awe3paGIK6y6yfGh5ec67n97gmCSYCpy2vwhfM7GdJQ3ST1bT15ZrUzA4hHskx
+	 Wpup2SKnPEFyVNFQlpN1Zs5yMdnP//tRquJwt5XOMOFsCsMW94aidZc7/KYupm1QOnCq2
+	 KRvWqowG66I+bW/lTe7jnvis3eX0tZCdT0E8cqAgLaFepTCx5OFgXDQonFCtIQJIg3g==
+ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793787882;
+	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
+	 Received:MIME-Version:From:Date:X-Gm-Features:Message-ID:Subject:To:
+	 Cc:Content-Type;
+	bh=+dcl/erqXSVMqWlciMAxF0/KBcxrMf17dIv8kW6c+wM=;
+	b=1Getq1Bw0rB6qad2MegN0miJuJLVzZXaL5REXEJ4uC5Vb3YkqAo4SrJ/b0Y/d9si4Gtw
+	 xLpA/xoEiOt2cuofLQXskCwYV413sVGStRm1SvBrZSjJrUSDFH04dsFyEP1NpehQhk+vi
+	 yDM/mD5uwsoGFj6OO72pE39G9Zk2h6hfEbhknN2Qvc/HRvYF1ywn0tcXSSsIvDT1xzvsO
+	 7EpFsNgvA4hahEE5SZ8J1bCSVpiMYIqgpyzr0tGJ0dRvhl2brgIa4vI+lKRZ9Axy70Yzr
+	 anw/5l5h0sVP9ELZDnRVIEsvyM+4isoCgHaTTuD32PRmA9Bz+dAuQn17Cmo1tpzP2cA==
+ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
+	dmarc=pass header.from=gmail.com;
+	spf=pass smtp.mailfrom=gmail.com;
+	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=B179lsik;
+	arc=pass header.oldest-pass=0 smtp.remote-ip=209.85.208.169
+Received: from mail-lj1-f169.google.com (mail-lj1-f169.google.com [209.85.208.169])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2F805606A326;
-	Wed,  4 Nov 2026 07:12:01 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7EF64606A328
+	for <target-devel@vger.kernel.org>; Wed,  4 Nov 2026 10:24:42 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 7EF64606A328
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Hzj3tLP4
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id F1D461F000C1;
-	Wed,  4 Nov 2026 07:11:59 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793776321;
-	bh=i0nF4NvOSbcZxgWHiwHcmP13MS4LghIt918I641xiu8=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=Hzj3tLP4wSAHRDgBbzkAcSCh2/wZwwNt6W7hFxPFA9O57cmBe7/aVY4VLb7TGIWUQ
-	 UjkHHiAk1oxjcUi/8QucVYnYeE4vOD7a09Pty1t4+B34U63UqlVB1s7MCfs766sOT7
-	 M/qqmOLgTYJO7KB+tZ8lDq6S6I42jF7uTS+JBHBR8anoyyUEjsq9dUYwXdfra1vURh
-	 HbmMMacQerXM6K9mWB4n/R3+T/MR72+LHDCjFoKusYSrBDcjzEDkIB6UBTCYH+X45e
-	 +IBwIQ+yOTvNgz297PlUzOIe4tC6LBXCQFuMReMK3RXVSnwcLAfpVslWi3IHHU3GfI
-	 sjFDyqlVy8ctA==
-Date: Wed, 4 Nov 2026 08:11:57 +0100
-From: Krzysztof Kozlowski <krzk@kernel.org>
-To: Wentao Liang <vulab@iscas.ac.cn>
-Cc: "Martin K. Petersen" <mkp@kernel.org>, linux-scsi@vger.kernel.org, 
-	target-devel@vger.kernel.org
-Subject: Re: [PATCH] scsi: cxgbit: drop the cnp reference when the close
- reply never comes
-Message-ID: <20261104-dazzling-nifty-echidna-3aba41@quoll>
-References: <20261104021448.1468404-1-vulab@iscas.ac.cn>
+	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=B179lsik
+Received: by mail-lj1-f169.google.com with SMTP id 38308e7fff4ca-3ab27e45e7cso4567321fa.3
+        for <target-devel@vger.kernel.org>; Wed, 04 Nov 2026 02:24:42 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; t=1793787881; cv=none;
+        d=google.com; s=arc-20260327;
+        b=qiGJxN2iRRX0d0Gn8zXkhurm44M+4LLz4r9Eg6jztCdUHhy8xb80SHUiV9x+17M2TL
+         mcpL/AfRdM7XyUrnbrX5GRZ/MKvGXkgTb9nAiIGK37bTtkeK02Fi/m7bwa4sdT1bqlVg
+         dDNMTYmC94gE9H/rpPCA6RfZ9/W4MweZDGTePp92CvAiFrcpWqx7uj66FtjeU3dW+H0h
+         IQw0w93fC8K5uVk+FeYNWpj2hpSm++FA3BsStpz/Ck4WR99cSAO7u1ucaY1sf/UyI/97
+         MbmH7+IimOtw+O2eM4g+GVhpTBZfDyQc/HaZOY0jb6E14wxTsdIMLjLgPOmzzLm90ljf
+         IVIA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=cc:to:subject:message-id:date:from:mime-version:dkim-signature;
+        bh=+dcl/erqXSVMqWlciMAxF0/KBcxrMf17dIv8kW6c+wM=;
+        fh=AffWpZaFlFVu3HwMh+9QDOq1e5OZX6tB1O0W+JYwLmM=;
+        b=KYPytwcocCMgFvi/NbdZv1fnlFp+WxIXvX9f+9RMEMOsJ3AK6eFR44WtIQazbej5G5
+         nVqys55EV1P8RHpWycwvkWTz3PoI4yTrxzX7UeIIG+Vcd51h2hNHE5Wb7K72Tpky2VO7
+         qGJU9+ayWKWIeCvVUcA5XvEBk7X+QAU/bzuFF2GkLYQ0jh4mqWLPzTYJ95sljJpLfxQf
+         e8+Zur8M22BtoVO70wYgJTVhAX558Iy/IvDDDj98cbA9mjpviUwxeazAtaD0d/iFrsY0
+         EddIjfJcKnM1B5fawtpMcGyS+k9yFLFBSdYi/6BYOm/UuWFTK828M4epIKUswpuEhwV/
+         TLRA==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20260707; t=1793787881; x=1794392681; darn=vger.kernel.org;
+        h=content-type:cc:to:subject:message-id:date:from:mime-version:from
+         :to:cc:subject:date:message-id:reply-to:content-type;
+        bh=+dcl/erqXSVMqWlciMAxF0/KBcxrMf17dIv8kW6c+wM=;
+        b=B179lsikAo3MCoRa+xYIU4+cZtrZXD43+xWjXxmmK7EU5jzixchIfy30KlADnrT861
+         iOvQoQm6BBNZdCJEH0Q4WhyLpdI8kZdvfbbQNXoluGnrGFoHLA1WtHksMSh5Z9uI3/N5
+         ClWvmr/7fzJhhdoPSfUrsEdt2Vms6hp0PmDFXu9ly9n+lduev3vRRHwF0h0+YmYTcai4
+         1mysWtx6OwwvhVco8qHIUWDnpfCe25Ijst9ZbEymg41mIAehVIGkIL/PVYWeT+FnL5zw
+         H64u/RUyB3pt8ygIkFMF/DJdsTmn9Q0smb1O8dPO1Ya6tWfIYpkI/Y00oMahoPSz5fH1
+         r5SA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1793787881; x=1794392681;
+        h=content-type:cc:to:subject:message-id:date:from:mime-version
+         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to:content-type;
+        bh=+dcl/erqXSVMqWlciMAxF0/KBcxrMf17dIv8kW6c+wM=;
+        b=HB5VEUr7FaaXM4GXwGYhqIc9tP/7NF+eWixikhVZjuOYPUn2rbSX5NPpfsHtuvVFMG
+         iOMCovJRGsry2gxun4y8YgS+woW3i2HJBxioWbxl4JY5Xn1unLxhtVTWT1jJsTAnvuYw
+         rbwUHemzOalPrmxkyeq63gpI3wYTXesGjyUQEC40S8foI6mpB627+QlPcjUx5YRLyNYj
+         wV1urEEBRLHLXgsxS9VX3kEHPqs09dHSSeXNZ643i8FlhRsbIUqkirkXwg1/n7o36Oxd
+         md9I4Up+dorc6JcCd6BhJ3euitL+IyRigzrkrVEvm8T+7vBazIaWcGQJgawqvSz9dxNO
+         uYrw==
+X-Forwarded-Encrypted: i=1; AKwUvBxQJSysjQBhLpNWTTbPXQOh8yLczzwgYhpk6TA5dfOzEAbZfP8uexKZ7shAeLdBte53tv1RTvn22pGw0BE=@vger.kernel.org
+X-Gm-Message-State: APuU4Z+4fUmEh3vXhlD35tMqV55mUYeIIVZ05QtctXEYuBANESLijW1j
+	9QSmEHP+B84VHCsV/Iwy4VX/6dvlwnCZtlP/slonELgDWhdWDWBCR6/H767qdNP2xqI5asSdnYR
+	WfYQxX15VwFbyAk1F6eP4RB08l3XrhGA=
+X-Gm-Gg: AYBFou33hI2J/YUWqhmsvzZUsf7NlU7VK+U/tSqQDNbIZ9LirugRiC0RPUP8UJo7Oyq
+	gUqammalMQ46PlGlHoEPuUE7V+8qFI/BMAyFrP9HWZs6z3iAltVsu6RI+4xibgRQa93Mr8VQFJL
+	E1cCq4o0UZuTFYLU159TIEO1vyiN9lLFUQ950Q6kBTYSxgRESS+JjFN+SnTxgEPqYr/tAr44beN
+	4MRl/jWXIfM+00Ahej4sK0V9hp7Vn12WO6pJnct5mnEiC30M3FnmYLsRijUYsIN6EHerWKtHf++
+	rbwwGv8L3coNgLhXX8FEVty/oiRvH7hDgtuXftnTY51y6TwqGUD9oZyPLY6HJskrm5CPZxGib8f
+	adLtrkyBCMKucBWT79fE1zdwmla3AAPkFk28YYMfyQ3jofV3gzV/MJq5LwJQjS0oCEQ==
+X-Received: by 2002:a05:651c:a345:b0:3ab:3f60:51be with SMTP id
+ 38308e7fff4ca-3acb7b52404mr37108141fa.28.1793787880322; Wed, 04 Nov 2026
+ 02:24:40 -0800 (PST)
+Received: from 77377267392 named unknown by gmailapi.google.com with HTTPREST;
+ Wed, 4 Nov 2026 05:24:39 -0500
+Received: from 77377267392 named unknown by gmailapi.google.com with HTTPREST;
+ Wed, 4 Nov 2026 05:24:39 -0500
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Post: <mailto:target-devel@vger.kernel.org>
@@ -57,76 +105,75 @@ List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:target-devel+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20261104021448.1468404-1-vulab@iscas.ac.cn>
+From: zhang san <shunsheng1218@gmail.com>
+Date: Wed, 4 Nov 2026 05:24:39 -0500
+X-Gm-Features: AclHuK8mKYrOLw55T5M7eaMYFOVlEhEP6K_xnwt_-B3_tP11Fu0SQdsrg4zyZZ4
+Message-ID: <CAGTEBTZ5teYJyMk3o8-FZ897OsSgwVdFDpvKoKdfA9vR=Bi=-g@mail.gmail.com>
+Subject: [BUG/RFC] target: PR ALL_TG_PT traversal can dereference freed LUN
+ during removal
+To: mkp@kernel.org
+Cc: linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, 
+	linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 
+Hello,
 
-On Wed, 04 Nov 2026 02:14:48 +0000, Wentao Liang wrote:
-> __cxgbit_free_cdev_np() takes a reference on the cxgbit_np before asking
-> firmware to remove the server socket, and cxgbit_close_listsrv_rpl()
-> drops it when the reply arrives.  cxgbit_wait_for_reply() can also give
-> up before any reply is received: it returns -EIO straight away when
-> CXGB4_STATE_START_RECOVERY or CXGB4_STATE_DETACH has cleared
-> CDEV_STATE_UP while the request was in flight.  That path is not the
-> -ETIMEDOUT path, so the function continues, frees the server TID and
-> returns without dropping the reference.  As the TID is gone, the reply
-> handler can no longer look the cxgbit_np up and the reference is leaked,
-> keeping the np allocation alive forever.
-> 
-> Tell the two -EIO sources apart with completion_done():
-> cxgbit_close_listsrv_rpl() completes wr_wait before it drops the
-> reference, so a finished completion means the reply owns it.  If the
-> wait gave up without a reply, drop the reference locally once the TID
-> has been freed.
-> 
-> Fixes: 9730ffcb8957 ("cxgbit: add files for cxgbit.ko")
-> Cc: stable@vger.kernel.org
-> Assisted-by: DeepSeek-V4.1-Flash and OpenAI Codex
-> Signed-off-by: Wentao Liang <vulab@iscas.ac.cn>
-> ---
->  drivers/target/iscsi/cxgbit/cxgbit_cm.c | 9 +++++++++
->  1 file changed, 9 insertions(+)
-> 
+We found a use-after-free in __core_scsi3_alloc_registration() when a
+PR REGISTER AND IGNORE with ALL_TG_PT=1 races a concurrent LUN removal
+via configfs.
 
-Multiple things here:
-1. Your team ignored completely previous feedback. Multiple times.
+Problem description:
 
-2. You use multiple identities with this email address, thus I doubt that we
-   speak with an actual person.
+The function iterates dev->dev_sep_list with
+list_for_each_entry_safe() while dropping se_port_lock inside each
+iteration body. The current element (lun_tmp) is protected by a
+percpu_ref_tryget_live() reference, but the iterator's cached next
+pointer is not: if the next se_lun is removed and freed during the
+unlocked body, the loop's next iteration dereferences freed memory
+through the cached pointer. This manifests as a general protection
+fault on a non-canonical address (list poison).
 
-3. Your bot does not even bother running checkpatch, right?
+We reproduced this on mainline 6628e7d4c6b2 (v7.4-rc1) with a
+KASAN-enabled kernel: a GPF in __core_scsi3_alloc_registration() when
+the PR registration races a configfs port deletion. The reproducer
+uses controlled timing to expose the interleaving and is available on
+request; control runs were clean.
 
-4. Nothing of this was reproduced nor tested.
+Attempted fix and design question:
 
-5. Finally, the same feedback:
-You sent multiple independent patches, to multiple independent
-subsystems. The amount of these patches clearly suggest this was
-AI generated and most likely not tested.
+We explored taking a percpu_ref_tryget_live() reference on the next
+entry before dropping the lock, and releasing it when the iteration
+advances. This prevented the observed use-after-free in the tested
+interleaving.
 
-More importantly, you sent all this work without properly organizing
-relevant patches into patchsets. This makes reviewing difficult
-and might cause multiple reviewers to address the same issue.
-Replying to the entire set is impossible and requires handling each
-patch independently, instead of applying or discarding the set.
-Maintainers also won't see the bigger picture of your work. Quite
-worrying.
+However, when the next entry's tryget fails (the LUN is dying and
+being removed), there is a functional tradeoff:
 
-This is on the verge of hostile patch: bomb us with so many
-contributions, we won't be able to handle them in efficient manner,
-like responding ONCE to ask you to slow down.  Considering all this
-is untested and LLM generated, I have even more doubts whether this
-should be considered for review.
+  - We cannot safely carry that pointer across the lock drop without a
+lifetime guarantee.
+  - We cannot obtain a live reference with tryget in this case.
+  - Our prototype stops the traversal (break), which may skip later
+LUNs that are still valid and should receive ALL_TG_PT registrations.
 
-Please read kernel documentation BEFORE posting more work. It will
-explain you how to identify subsystems, how to organize your work per
-subsystem (so a patchset grouping multiple patches with a short cover
-letter), how to document the issue discovery method and what was
-or was not tested.
+We therefore do not consider the prototype ready to submit as a fix.
+
+We would appreciate guidance on the correct approach:
+
+  1. Is stopping the iteration when a dying LUN is encountered
+acceptable under the target core's PR registration semantics?
+  2. Should the traversal instead restart under se_port_lock, using a
+safe way to identify and avoid already processed LUNs?
+  3. Is there an existing target-core lifetime or traversal mechanism
+that should be used instead?
+
+We can provide the prototype patch, KASAN traces, kernel
+configuration, and test setup privately if useful. If a fix is
+proposed, please CC me so I can test the exact revision and provide a
+Tested-by tag if it passes.
+
+This finding comes from an AI-assisted source audit; the source
+analysis and injection-assisted tests were reviewed by us.
 
 Best regards,
-Krzysztof
-
-
-
-
+Yaohan Li
+shunsheng1218@gmail.com
