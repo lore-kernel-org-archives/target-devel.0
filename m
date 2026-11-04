@@ -1,101 +1,56 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=209.85.208.169
-ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1793787882;
-	b=nYLT4VXOJaSJNfNrsNGS7up3ZQDx/NQjN7rmTbcNERZ/8EgWcedZ4zeiXsUZksRmdBSx
-	 lB1oYMIpucMQTOxYxVl+hq0Yqr21qvHC5cAOhs5VbebLguw+hLdnj973XQbIpJTzcftft
-	 xGzkJx7Awe3paGIK6y6yfGh5ec67n97gmCSYCpy2vwhfM7GdJQ3ST1bT15ZrUzA4hHskx
-	 Wpup2SKnPEFyVNFQlpN1Zs5yMdnP//tRquJwt5XOMOFsCsMW94aidZc7/KYupm1QOnCq2
-	 KRvWqowG66I+bW/lTe7jnvis3eX0tZCdT0E8cqAgLaFepTCx5OFgXDQonFCtIQJIg3g==
-ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793787882;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 Received:MIME-Version:From:Date:X-Gm-Features:Message-ID:Subject:To:
-	 Cc:Content-Type;
-	bh=+dcl/erqXSVMqWlciMAxF0/KBcxrMf17dIv8kW6c+wM=;
-	b=1Getq1Bw0rB6qad2MegN0miJuJLVzZXaL5REXEJ4uC5Vb3YkqAo4SrJ/b0Y/d9si4Gtw
-	 xLpA/xoEiOt2cuofLQXskCwYV413sVGStRm1SvBrZSjJrUSDFH04dsFyEP1NpehQhk+vi
-	 yDM/mD5uwsoGFj6OO72pE39G9Zk2h6hfEbhknN2Qvc/HRvYF1ywn0tcXSSsIvDT1xzvsO
-	 7EpFsNgvA4hahEE5SZ8J1bCSVpiMYIqgpyzr0tGJ0dRvhl2brgIa4vI+lKRZ9Axy70Yzr
-	 anw/5l5h0sVP9ELZDnRVIEsvyM+4isoCgHaTTuD32PRmA9Bz+dAuQn17Cmo1tpzP2cA==
-ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=gmail.com;
-	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=B179lsik;
-	arc=pass header.oldest-pass=0 smtp.remote-ip=209.85.208.169
-Received: from mail-lj1-f169.google.com (mail-lj1-f169.google.com [209.85.208.169])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
+ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
+	t=1793802048;
+	b=gJ7jZltGALsL/n4wY7x2PY6sO0mtCe/KUJ+PA7b/ePJDHi2HxlGeaVfYdIakIC/VzIld
+	 lIGUV7jDSh49SFMAFNCNGPdzakMnXc77nJtSekCHbE86tYshhXvxoKIu06avGRpGPORsk
+	 cxX91KZTcP+VSyU5ktyaiCe5iYsVbWRI4NStqdjaAjbX3KwfSn9A35s5N33JINMVeNBsX
+	 5kexvNZI751OkYvPk5uI4JW4fvw0IkUjnTWHAnKxqFiW8lU+Ees3q83cIXq+KMblBZxXX
+	 XmpvfRJbte+m9cRCkMr36QZCHQotWeCYtM06xSlGqq0YlLvtpta/5WZ+FBxByW3ROAA==
+ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793802048;
+	h=Received:DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:
+	 References:MIME-Version:Content-Type:Content-Disposition:In-Reply-To;
+	bh=yhC6V3tszaLh22vM9JwqJz5sDuowI1YkEC8+eZFC8nQ=;
+	b=wVZU/mEMf5QwZml6iuqYhgMf3X5Vc5c2VUT6QqKOXO4gmampX4opz6DRbBFWJRX7W7eN
+	 pQIqyO7yJXB3TDfHpB+EMH0BUjosv8UHodxP2atodOcotc7RsrnmB9JDkBb2iYlMwRtJ2
+	 UYRje4bODeRg1I+RhWU8LDxJTIK5l7y3Aja9/3XQ3Hfv4UY7y2MSMhoaYTF0Zs+ozNnym
+	 tMRLrCZ5lmHrErnN2WIoVx6npwbiqhYwLyaMe/tVBQQTCf58ZeME98KRu1FV4FFI6ku6t
+	 RiV7nPEpsCeZan+OgFyzda/7PJ/OmNXgvX+FMPwBVx3gPQLgOR/6JpNqqV/+wv38Ypw==
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=bGGMFKbc;
+	arc=none smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7EF64606A328
-	for <target-devel@vger.kernel.org>; Wed,  4 Nov 2026 10:24:42 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 7EF64606A328
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6B8C0606A31B;
+	Wed,  4 Nov 2026 14:20:48 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=B179lsik
-Received: by mail-lj1-f169.google.com with SMTP id 38308e7fff4ca-3ab27e45e7cso4567321fa.3
-        for <target-devel@vger.kernel.org>; Wed, 04 Nov 2026 02:24:42 -0800 (PST)
-ARC-Seal: i=1; a=rsa-sha256; t=1793787881; cv=none;
-        d=google.com; s=arc-20260327;
-        b=qiGJxN2iRRX0d0Gn8zXkhurm44M+4LLz4r9Eg6jztCdUHhy8xb80SHUiV9x+17M2TL
-         mcpL/AfRdM7XyUrnbrX5GRZ/MKvGXkgTb9nAiIGK37bTtkeK02Fi/m7bwa4sdT1bqlVg
-         dDNMTYmC94gE9H/rpPCA6RfZ9/W4MweZDGTePp92CvAiFrcpWqx7uj66FtjeU3dW+H0h
-         IQw0w93fC8K5uVk+FeYNWpj2hpSm++FA3BsStpz/Ck4WR99cSAO7u1ucaY1sf/UyI/97
-         MbmH7+IimOtw+O2eM4g+GVhpTBZfDyQc/HaZOY0jb6E14wxTsdIMLjLgPOmzzLm90ljf
-         IVIA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=cc:to:subject:message-id:date:from:mime-version:dkim-signature;
-        bh=+dcl/erqXSVMqWlciMAxF0/KBcxrMf17dIv8kW6c+wM=;
-        fh=AffWpZaFlFVu3HwMh+9QDOq1e5OZX6tB1O0W+JYwLmM=;
-        b=KYPytwcocCMgFvi/NbdZv1fnlFp+WxIXvX9f+9RMEMOsJ3AK6eFR44WtIQazbej5G5
-         nVqys55EV1P8RHpWycwvkWTz3PoI4yTrxzX7UeIIG+Vcd51h2hNHE5Wb7K72Tpky2VO7
-         qGJU9+ayWKWIeCvVUcA5XvEBk7X+QAU/bzuFF2GkLYQ0jh4mqWLPzTYJ95sljJpLfxQf
-         e8+Zur8M22BtoVO70wYgJTVhAX558Iy/IvDDDj98cbA9mjpviUwxeazAtaD0d/iFrsY0
-         EddIjfJcKnM1B5fawtpMcGyS+k9yFLFBSdYi/6BYOm/UuWFTK828M4epIKUswpuEhwV/
-         TLRA==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1793787881; x=1794392681; darn=vger.kernel.org;
-        h=content-type:cc:to:subject:message-id:date:from:mime-version:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=+dcl/erqXSVMqWlciMAxF0/KBcxrMf17dIv8kW6c+wM=;
-        b=B179lsikAo3MCoRa+xYIU4+cZtrZXD43+xWjXxmmK7EU5jzixchIfy30KlADnrT861
-         iOvQoQm6BBNZdCJEH0Q4WhyLpdI8kZdvfbbQNXoluGnrGFoHLA1WtHksMSh5Z9uI3/N5
-         ClWvmr/7fzJhhdoPSfUrsEdt2Vms6hp0PmDFXu9ly9n+lduev3vRRHwF0h0+YmYTcai4
-         1mysWtx6OwwvhVco8qHIUWDnpfCe25Ijst9ZbEymg41mIAehVIGkIL/PVYWeT+FnL5zw
-         H64u/RUyB3pt8ygIkFMF/DJdsTmn9Q0smb1O8dPO1Ya6tWfIYpkI/Y00oMahoPSz5fH1
-         r5SA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793787881; x=1794392681;
-        h=content-type:cc:to:subject:message-id:date:from:mime-version
-         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to:content-type;
-        bh=+dcl/erqXSVMqWlciMAxF0/KBcxrMf17dIv8kW6c+wM=;
-        b=HB5VEUr7FaaXM4GXwGYhqIc9tP/7NF+eWixikhVZjuOYPUn2rbSX5NPpfsHtuvVFMG
-         iOMCovJRGsry2gxun4y8YgS+woW3i2HJBxioWbxl4JY5Xn1unLxhtVTWT1jJsTAnvuYw
-         rbwUHemzOalPrmxkyeq63gpI3wYTXesGjyUQEC40S8foI6mpB627+QlPcjUx5YRLyNYj
-         wV1urEEBRLHLXgsxS9VX3kEHPqs09dHSSeXNZ643i8FlhRsbIUqkirkXwg1/n7o36Oxd
-         md9I4Up+dorc6JcCd6BhJ3euitL+IyRigzrkrVEvm8T+7vBazIaWcGQJgawqvSz9dxNO
-         uYrw==
-X-Forwarded-Encrypted: i=1; AKwUvBxQJSysjQBhLpNWTTbPXQOh8yLczzwgYhpk6TA5dfOzEAbZfP8uexKZ7shAeLdBte53tv1RTvn22pGw0BE=@vger.kernel.org
-X-Gm-Message-State: APuU4Z+4fUmEh3vXhlD35tMqV55mUYeIIVZ05QtctXEYuBANESLijW1j
-	9QSmEHP+B84VHCsV/Iwy4VX/6dvlwnCZtlP/slonELgDWhdWDWBCR6/H767qdNP2xqI5asSdnYR
-	WfYQxX15VwFbyAk1F6eP4RB08l3XrhGA=
-X-Gm-Gg: AYBFou33hI2J/YUWqhmsvzZUsf7NlU7VK+U/tSqQDNbIZ9LirugRiC0RPUP8UJo7Oyq
-	gUqammalMQ46PlGlHoEPuUE7V+8qFI/BMAyFrP9HWZs6z3iAltVsu6RI+4xibgRQa93Mr8VQFJL
-	E1cCq4o0UZuTFYLU159TIEO1vyiN9lLFUQ950Q6kBTYSxgRESS+JjFN+SnTxgEPqYr/tAr44beN
-	4MRl/jWXIfM+00Ahej4sK0V9hp7Vn12WO6pJnct5mnEiC30M3FnmYLsRijUYsIN6EHerWKtHf++
-	rbwwGv8L3coNgLhXX8FEVty/oiRvH7hDgtuXftnTY51y6TwqGUD9oZyPLY6HJskrm5CPZxGib8f
-	adLtrkyBCMKucBWT79fE1zdwmla3AAPkFk28YYMfyQ3jofV3gzV/MJq5LwJQjS0oCEQ==
-X-Received: by 2002:a05:651c:a345:b0:3ab:3f60:51be with SMTP id
- 38308e7fff4ca-3acb7b52404mr37108141fa.28.1793787880322; Wed, 04 Nov 2026
- 02:24:40 -0800 (PST)
-Received: from 77377267392 named unknown by gmailapi.google.com with HTTPREST;
- Wed, 4 Nov 2026 05:24:39 -0500
-Received: from 77377267392 named unknown by gmailapi.google.com with HTTPREST;
- Wed, 4 Nov 2026 05:24:39 -0500
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=bGGMFKbc
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7B8621F000C1;
+	Wed,  4 Nov 2026 14:20:47 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1793802048;
+	bh=yhC6V3tszaLh22vM9JwqJz5sDuowI1YkEC8+eZFC8nQ=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=bGGMFKbcd01mmhOy16P9dm9fCm+23gmFPsbEZY+LkVlBaJcOi/Q9c/XvqsCYBNMf7
+	 LcGm5SDE+fpgODNe3/zKSuwFkZGy42cIzVKHKBjSoKGxsE+c9mKdtq/l2hAULh723M
+	 L22idRoHI9uigCANa0msLLCWlZr3OrCnVHrQbGk9EHmUWlOejKXdfvF0gKcbZ4+jFN
+	 m5vTID5zL6yWg9UlmKVQ/Yjb0ud7fCC83EFSIIYqclxWI0H/sxZc0QNd8IoDBJhRxH
+	 QU+c57GNh2jObOEdk2wD3n1+RcdD0gcq82R3lUkCaJmfoJh/uRehjWMGC3lUCCpl3j
+	 70Bx67q8yNqjQ==
+Date: Wed, 4 Nov 2026 16:20:43 +0200
+From: Leon Romanovsky <leon@kernel.org>
+To: Yehyeong Lee <yhlee@isslab.korea.ac.kr>
+Cc: Sagi Grimberg <sagi@grimberg.me>, Max Gurtovoy <mgurtovoy@nvidia.com>,
+	Jason Gunthorpe <jgg@ziepe.ca>,
+	"Martin K . Petersen" <martin.petersen@oracle.com>,
+	Mike Christie <michael.christie@oracle.com>,
+	linux-rdma@vger.kernel.org, target-devel@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v8 0/6] IB/isert: fix the device removal use-after-free
+Message-ID: <20261104142043.GG478286@unreal>
+References: <20261104040318.1844865-1-yhlee@isslab.korea.ac.kr>
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Post: <mailto:target-devel@vger.kernel.org>
@@ -105,75 +60,69 @@ List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:target-devel+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-From: zhang san <shunsheng1218@gmail.com>
-Date: Wed, 4 Nov 2026 05:24:39 -0500
-X-Gm-Features: AclHuK8mKYrOLw55T5M7eaMYFOVlEhEP6K_xnwt_-B3_tP11Fu0SQdsrg4zyZZ4
-Message-ID: <CAGTEBTZ5teYJyMk3o8-FZ897OsSgwVdFDpvKoKdfA9vR=Bi=-g@mail.gmail.com>
-Subject: [BUG/RFC] target: PR ALL_TG_PT traversal can dereference freed LUN
- during removal
-To: mkp@kernel.org
-Cc: linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, 
-	linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20261104040318.1844865-1-yhlee@isslab.korea.ac.kr>
 
-Hello,
+On Wed, Nov 04, 2026 at 01:03:11PM +0900, Yehyeong Lee wrote:
+> The RDMA_CM_EVENT_DEVICE_REMOVAL callback in ib_isert waits for the
+> connection it was handed to reach ISER_CONN_DOWN and then frees it, a
+> use-after-free against isert_connect_release(), and the wait deadlocks
+> against the handler_mutex rdma_destroy_id() needs.  3/6 moves the teardown
+> into an ib_client callback, as nvmet-rdma did in f1d4ef7d8883, and gives
+> every connection one owner.  1/6 and 2/6 are older problems; 4/6, 5/6 and
+> 6/6 close three holes the walk makes visible.
+> 
+> v7 -> v8
+> 
+> v7: https://lore.kernel.org/r/20261104012219.1759523-1-yhlee@isslab.korea.ac.kr
+> 
+> v6: https://lore.kernel.org/r/20261103223802.1697607-1-yhlee@isslab.korea.ac.kr
+> 
+> v5: https://lore.kernel.org/r/20261103125955.1530355-1-yhlee@isslab.korea.ac.kr
+> 
+> v4: https://lore.kernel.org/r/20261103032924.1073138-1-yhlee@isslab.korea.ac.kr
+> 
+> Sashiko v7 3/6 High: isert_connect_error() clears cm_id after
+> ib_drain_qp() again, as before the series.  Before the drain the QP can
+> still take an event, and isert_qp_event_callback() dereferences cm_id.
+> 
+> Sashiko v7 5/6 High: isert_device_get() matches the ib_device pointer
+> instead of node_guid, the same key isert_remove_one() uses.  Two devices
+> can share a node_guid, and the PD and the DMA mappings belong to one of
+> them.
+> 
+> Measured over soft-RoCE with KASAN, 114 runs.  A test-only event delivered
+> to isert_qp_event_callback() before the drain oopsed in rdma_notify() nine
+> times over two runs of 3/6 as it was in v7 and not once in two runs of
+> this series.  A connect on a second device sharing a node_guid failed
+> rdma_create_qp() twice in both runs before 5/6 and not at all after it.
+> The cells v7 passed are unchanged: no KASAN, no Oops, no lockdep splat and
+> no refcount warning on either side, device_list empty after twenty link
+> removals and re-adds, and the login park finishing in eight seconds.  I
+> still could not measure the namespace move, for the reason given in v6.
+> 
+> Yehyeong Lee (6):
+>   IB/isert: do not publish connections being released on a second list
+>   IB/isert: drain the QP without holding isert_conn->mutex
+>   IB/isert: tear connections down from an ib_client on device removal
+>   IB/isert: drop the promotion reference when a connection errors out
+>   IB/isert: do not build a new isert_device for a device being removed
+>   IB/isert: only reinstate a connection that reached full feature phase
+> 
+>  drivers/infiniband/ulp/isert/ib_isert.c | 395 +++++++++++++++++-------
+>  drivers/infiniband/ulp/isert/ib_isert.h |   9 +-
+>  2 files changed, 294 insertions(+), 110 deletions(-)
 
-We found a use-after-free in __core_scsi3_alloc_registration() when a
-PR REGISTER AND IGNORE with ALL_TG_PT=1 races a concurrent LUN removal
-via configfs.
+So what do you expect from us now? You didn't bother to invest time into it,
+by all these resubmissions, you clearly showed us that this is 100% AI work,
+not reviewed, not tested, but marked for the stable@.
 
-Problem description:
+Thanks
 
-The function iterates dev->dev_sep_list with
-list_for_each_entry_safe() while dropping se_port_lock inside each
-iteration body. The current element (lun_tmp) is protected by a
-percpu_ref_tryget_live() reference, but the iterator's cached next
-pointer is not: if the next se_lun is removed and freed during the
-unlocked body, the loop's next iteration dereferences freed memory
-through the cached pointer. This manifests as a general protection
-fault on a non-canonical address (list poison).
-
-We reproduced this on mainline 6628e7d4c6b2 (v7.4-rc1) with a
-KASAN-enabled kernel: a GPF in __core_scsi3_alloc_registration() when
-the PR registration races a configfs port deletion. The reproducer
-uses controlled timing to expose the interleaving and is available on
-request; control runs were clean.
-
-Attempted fix and design question:
-
-We explored taking a percpu_ref_tryget_live() reference on the next
-entry before dropping the lock, and releasing it when the iteration
-advances. This prevented the observed use-after-free in the tested
-interleaving.
-
-However, when the next entry's tryget fails (the LUN is dying and
-being removed), there is a functional tradeoff:
-
-  - We cannot safely carry that pointer across the lock drop without a
-lifetime guarantee.
-  - We cannot obtain a live reference with tryget in this case.
-  - Our prototype stops the traversal (break), which may skip later
-LUNs that are still valid and should receive ALL_TG_PT registrations.
-
-We therefore do not consider the prototype ready to submit as a fix.
-
-We would appreciate guidance on the correct approach:
-
-  1. Is stopping the iteration when a dying LUN is encountered
-acceptable under the target core's PR registration semantics?
-  2. Should the traversal instead restart under se_port_lock, using a
-safe way to identify and avoid already processed LUNs?
-  3. Is there an existing target-core lifetime or traversal mechanism
-that should be used instead?
-
-We can provide the prototype patch, KASAN traces, kernel
-configuration, and test setup privately if useful. If a fix is
-proposed, please CC me so I can test the exact revision and provide a
-Tested-by tag if it passes.
-
-This finding comes from an AI-assisted source audit; the source
-analysis and injection-assisted tests were reviewed by us.
-
-Best regards,
-Yaohan Li
-shunsheng1218@gmail.com
+> 
+> 
+> base-commit: 6628e7d4c6b25c8d18f1345e3a20d21829aae7e4
+> -- 
+> 2.43.0
+> 
