@@ -1,68 +1,53 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=111.22.67.139
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=183.62.165.209
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793847187;
-	b=ST203Y7znIdtVk6Im8mY2dR77iLoTFC2spEI3qvaee0tvy5h/jx6ujs12PV2op7QZ4Da
-	 tBEsEQw3yX9/exIiiMy9391mAZaiFhFOXM+kSUosr4djZR6dmr1Gk713t0CM0MQZH7NkM
-	 kzhELVulcHeA4J29VCsKSwrHbqiHL4n38oOvb4bqFhCzpkDOiNV3gHwvkHO8llHtJ8zpC
-	 OXWZ7X2sUfRT5BP8jXlowE+ZG6cyqa9BrQhGt1UfW++00csBT/KM3BHoXc0RYMo2tkhy0
-	 UEszYRbJLwyNG5Mdeku8gE5fHDqszeCmTFLCjQKpKx2/Yi7OYgdcwFAfV1NUqmx5DtA==
+	t=1793878435;
+	b=RYYGkn8J9Loh7iuMZmQ49DA8UaZ8x0l+8tnR4imyqCQ1YGOEpTBinIljcqAG7xw2goR9
+	 Un903xeey22EsgeAR9R4Cm8MKHug647QOAOuILx+f+/TlqJTzOv7C6qnCsWGAXDEFLChw
+	 HlqA9pl2atByWJFPqUqv3If6aStRZoCOD/7SmLxQbmNQe6Ns7YFSbByuA6fHxIN1YJ8T4
+	 aIRqVjDibgof3Bis5Zi1pwIX5q+E0qIl8IEmgrEE/cFlDvHa4U3xChFvsgsyXLSQ/vEji
+	 1SLFYzpaAFkM9qKsCGhNwzG0PZ8CQ+Dea4EcQu2f1eAkSrDeCG2QXYT5kQJXec4uneQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793847187;
-	h=DMARC-Filter:DKIM-Signature:X-RM-TagInfo:X-RM-SPAM-FLAG:Received:
-	 X-RM-TRANSID:X-RM-TagInfo:X-RM-SPAM-FLAG:Received:X-RM-TRANSID:From:
-	 To:Cc:Subject:Date:Message-ID:X-Mailer:MIME-Version:
-	 Content-Transfer-Encoding;
-	bh=uM0Cw7/N4AuGZOpywSCNb4m81LuoZ20Z5pGl8NoLYy8=;
-	b=XDhCNy4w7GvigeL/gXuztsnNgWDTfoBexGDw7TDbTWmdOCLz9SdhKEjtSWTzy12DNwIE
-	 SZJ4Mu4GRh54hiPQtwiXxp3+4KAdPi+129ytKRtOtUxMAsEXxqZSL7Wcfhz/7UipScDbg
-	 xQxzqcFWAGw1Rbkt+MSpdctRK/xAXgyPZEB8i7NrGmA7vnoEJIywf4i0CoxhRPe7r9Qf4
-	 Bva3etyBXB4vl+7+/xCd3w+XfytAmQdrhuOnLrP6uVrKgjcMyXEWsZaMdwc0vDwlxP5Xr
-	 j9BTQo/F7HbT0GIHJwfZ3d6a+rxQnHptO4vXAp7OHo2AuCnVI/VveMb+vpmOWo3vS+w==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793878435;
+	h=DMARC-Filter:Received:Received:Received:X-Zmail-TransId:X-Mailer:
+	 Message-ID:Date:Mime-Version:From:To:Cc:Subject:Content-Type:X-MAIL:
+	 X-TLS:X-ENVELOPE-SENDER:X-SOURCE-IP:X-CLEAN:
+	 X-Fangmail-Anti-Spam-Filtered:X-Fangmail-MID-QID;
+	bh=9tkZ8OPzjjaxlWvc6Mc9inpVkFjM5yQ2KZkyJS+/6hs=;
+	b=EJRl9FrA2EyMCI5s9YIM1TEhMyq63HupONKD162nqDEaoL9QPOUdBrF6oEoBVBI9Ph12
+	 JDB0jzDaYxVplRoLgdz+sC7+VX9Hq1RlsfCblKaZLnZh4wv1OxW0Kee7mb7+gfoCuZ3Kx
+	 KQncTqW+ALJbG+GHhCVmVGhmDFhawh5tu3VxKitu/D9OBgM6PTT08goYaJ0l0fwYPfk0g
+	 Cj8y3VQqOkGxNdWPyxEitnvMINe6fnu1aoZ+ymNH976ItCp0vTwwDcFz0/i8z2HQ5ETFV
+	 rIfZht5soXEn+VXfTCXOJKTfbt8lXoX3JvrI/hOnW5ec6piMmC45Vv5GHMXLLKtwi2g==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=cmss.chinamobile.com;
-	spf=pass smtp.mailfrom=cmss.chinamobile.com;
-	dkim=pass header.d=cmss.chinamobile.com header.i=@cmss.chinamobile.com header.a=rsa-sha256 header.s=default header.b=Y2O8gX2u;
-	arc=none smtp.remote-ip=111.22.67.139
-Received: from cmccmta6.chinamobile.com (cmccmta6.chinamobile.com [111.22.67.139])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 8396B606A31B;
-	Thu,  5 Nov 2026 02:53:03 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 8396B606A31B
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=cmss.chinamobile.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=cmss.chinamobile.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=cmss.chinamobile.com header.i=@cmss.chinamobile.com header.a=rsa-sha256 header.s=default header.b=Y2O8gX2u
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=cmss.chinamobile.com; s=default; l=0;
-	h=from:subject:message-id:to:cc:mime-version;
-	bh=47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=;
-	b=Y2O8gX2ufTWwOqmmRWNd8SARyBynwC/BkHX90wKe2YfMaEBAGVudGVODGlqRsmpCTmYLzWgONHo4z
-	 T/HJesPOLm54V035AV5GvPBZvlRveeZRyHGuLl6Tk+ektDq8T7eLEXrJoRfHLNLM2C5JpaGbZ9Kt+v
-	 XCdvLWNAQIKq7tXU=
-X-RM-TagInfo: emlType=0                                       
-X-RM-SPAM-FLAG:00000000
-Received:from spf.mail.chinamobile.com (unknown[10.188.0.87])
-	by rmmx-syy-dmz-app09-12009 (RichMail) with SMTP id 2ee96aebef8730a-a729b;
-	Thu, 05 Nov 2026 10:52:56 +0800 (CST)
-X-RM-TRANSID:2ee96aebef8730a-a729b
-X-RM-TagInfo: emlType=0                                       
-X-RM-SPAM-FLAG:00000000
-Received:from FHB-W5100256 (unknown[10.55.1.70])
-	by rmsmtp-syy-appsvr09-12009 (RichMail) with SMTP id 2ee96aebef868c9-36e9c;
-	Thu, 05 Nov 2026 10:52:56 +0800 (CST)
-X-RM-TRANSID:2ee96aebef868c9-36e9c
-From: xujiahao <xujiahao@cmss.chinamobile.com>
-To: Ram Vegesna <ram.vegesna@broadcom.com>,
-	"Martin K . Petersen" <mkp@kernel.org>
-Cc: "James E . J . Bottomley" <James.Bottomley@HansenPartnership.com>,
-	linux-scsi@vger.kernel.org,
-	target-devel@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	xujiahao <xujiahao@cmss.chinamobile.com>,
-	kernel test robot <lkp@intel.com>
-Subject: [PATCH] scsi: elx: libefc: bound the node display name components
-Date: Thu,  5 Nov 2026 10:52:53 +0800
-Message-ID: <20261105025254.1953-1-xujiahao@cmss.chinamobile.com>
-X-Mailer: git-send-email 2.50.1.windows.1
+	dmarc=pass header.from=zte.com.cn;
+	spf=pass smtp.mailfrom=zte.com.cn;
+	arc=none smtp.remote-ip=183.62.165.209
+Received: from mxct.zte.com.cn (mxct.zte.com.cn [183.62.165.209])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 24793606A326;
+	Thu,  5 Nov 2026 11:33:53 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 24793606A326
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=zte.com.cn
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=zte.com.cn
+Received: from mse-fl2.zte.com.cn (unknown [10.5.228.133])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mxct.zte.com.cn (FangMail) with ESMTPS id 4jL0Z215Vgz5B13X;
+	Thu, 05 Nov 2026 19:33:46 +0800 (CST)
+Received: from xaxapp01.zte.com.cn ([10.88.99.176])
+	by mse-fl2.zte.com.cn with SMTP id 6A5BXhhW068218;
+	Thu, 5 Nov 2026 19:33:43 +0800 (+08)
+	(envelope-from shao.mingyin@zte.com.cn)
+Received: from mapi (xaxapp04[null])
+	by mapi (Zmail) with MAPI id mid32;
+	Thu, 5 Nov 2026 19:33:46 +0800 (CST)
+X-Zmail-TransId: 2afb6aec699af84-15795
+X-Mailer: Zmail v1.0
+Message-ID: <20261105193346452uAUQ3LtGtsQ_d_O9gjAw5@zte.com.cn>
+Date: Thu, 5 Nov 2026 19:33:46 +0800 (CST)
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Post: <mailto:target-devel@vger.kernel.org>
@@ -71,52 +56,28 @@ List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:target-devel+owner@vger.kernel.org>
 Precedence: list
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Mime-Version: 1.0
+From: <shao.mingyin@zte.com.cn>
+To: <mkp@kernel.org>, <linux-scsi@vger.kernel.org>,
+        <target-devel@vger.kernel.org>
+Cc: <James.Bottomley@HansenPartnership.com>, <linux-kernel@vger.kernel.org>
+Subject: =?UTF-8?B?W1BBVENIIDAvMl0gdGFyZ2V0OiByZW1vdmUgZGVhZCBrbWFwIGNoZWNrcw==?=
+Content-Type: text/plain;
+	charset="UTF-8"
+X-MAIL:mse-fl2.zte.com.cn 6A5BXhhW068218
+X-TLS: YES
+X-ENVELOPE-SENDER: shao.mingyin@zte.com.cn
+X-SOURCE-IP: 10.5.228.133 unknown Thu, 05 Nov 2026 19:33:46 +0800
+X-CLEAN: YES
+X-Fangmail-Anti-Spam-Filtered: true
+X-Fangmail-MID-QID: 6AEC699A.000/4jL0Z215Vgz5B13X
 
-efc_node_update_display_name() concatenates two strings into
-node->display_name, which is EFC_NAME_LENGTH (32) bytes, with
+kmap() and kmap_local_page() never return NULL, so the checks after them are
+dead code.  Remove them.
 
-	snprintf(node->display_name, sizeof(node->display_name), "%s.%s",
-		 nport->display_name, portid_display);
+No functional change intended; both patches are independent and can be
+applied on their own or as a subset.
 
-Both sources are declared as 32-byte arrays, so the format string allows
-up to 31 + 1 + 31 bytes.  With W=1 gcc reports:
-
-  efc_node.c:254:70: warning: '%s' directive output may be truncated
-  writing up to 15 bytes into a region of size between 0 and 31
-  [-Wformat-truncation=]
-
-In practice the inputs are far shorter: nport->display_name is either
-"s%06x" (7 characters) or "------", and portid_display is at most 6
-characters, so the result never exceeds 14 characters.  Adding the
-precision states that bound in the format string and makes the
-concatenation fit the buffer by construction.
-
-No functional change.
-
-Reported-by: kernel test robot <lkp@intel.com>
-Closes: https://lore.kernel.org/all/202502182036.RChzXKS8-lkp@intel.com/
-Signed-off-by: xujiahao <xujiahao@cmss.chinamobile.com>
+Signed-off-by: Shao Mingyin <shao.mingyin@zte.com.cn>
 ---
- drivers/scsi/elx/libefc/efc_node.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/scsi/elx/libefc/efc_node.c b/drivers/scsi/elx/libefc/efc_node.c
-index f17e052fe..f4bdeb79e 100644
---- a/drivers/scsi/elx/libefc/efc_node.c
-+++ b/drivers/scsi/elx/libefc/efc_node.c
-@@ -251,7 +251,7 @@ efc_node_update_display_name(struct efc_node *node)
- 
- 	efc_node_fcid_display(port_id, portid_display, sizeof(portid_display));
- 
--	snprintf(node->display_name, sizeof(node->display_name), "%s.%s",
-+	snprintf(node->display_name, sizeof(node->display_name), "%.15s.%.15s",
- 		 nport->display_name, portid_display);
- }
- 
--- 
-2.43.0
-
-
-
+base-commit: 7649ba73f9e7e1e04d0b46213e39c79ae09dd55c
