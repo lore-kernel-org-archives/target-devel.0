@@ -1,118 +1,94 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=170.10.129.124
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.82.48
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793905144;
-	b=zEpLRkL/c/1kOca8DOcs2kOb6QK0q/jg/k5qF/CUK9b5V9EAYhRZmGvPlw1Zjsm2qtVK
-	 KUk7+lYUqC/y1XQdeYBbYnOD3Wb1yVDlh956yOhq23NJrffEHyGD3H1BcP6zqpxpjYQcT
-	 DezybibFOBRAPKsxsekmewOvqhfaK9SOQV7hQhqQnbK4P0o+pqfLEY779rPWDFjQAdigE
-	 acgLufPYgCvGEMy5uGvqz06P+4R8PH5CTDh4XgHofIZ0y32jyT+rdkgk/pt9/aEB+Lh3g
-	 DptFWCTNe/hfa2pNoAvjBBtkn3c6Lug8XNuODNgm+OFWVtNuNMMRO1xHangPA78DnPg==
+	t=1793965068;
+	b=noccJX4s2fGpEilT9juFL0RhYZBZPfnL1ijC7Uy6nV4Udr0ij4AJOpo5vrmLiDJkNXoT
+	 qtxjHmVlgRuSLREGSXSZNl3sfMt5RuFrXxr13MHBfCNV9vtBPp+BDPiNuqGDDACEqe5wg
+	 3qLOl5EJ0VWhE046IdJFvkO5nS/yche3TAZN1nyomwFK9LpVO1hnyo0rCXhTfdltNLzSt
+	 wpE5BrPcRWaUma2g8RcUZ26CT6J1o0L/RcaqYosMSY/mB+tG2EGKjLOozQMuov9umrPtI
+	 jbgc7tzp8iz8DGD42197oSgssSslYGTQBEV/By4EcT+DnQc3tV29HyhTLRk/AVot6gw==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793905144;
-	h=DMARC-Filter:DKIM-Signature:Received:X-MC-Unique:
-	 X-Mimecast-MFC-AGG-ID:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:
-	 X-Received:Received:Message-ID:Subject:From:To:Cc:Date:In-Reply-To:
-	 References:Content-Type:Content-Transfer-Encoding:User-Agent:
-	 MIME-Version;
-	bh=GtVJ5fDzJs7dwdJ7kQ13zFePN7w2DrejpnY2Ytkrdiw=;
-	b=LmxOwMxpgiO408nemns3MnPXe4hFXy58tMtVMYi8jRbQSv9qioCHI63tYxM/XLy4Pyz1
-	 A/+qgmxAb+uotPX7yphM46wGqHAcG8nAYvpK3cQVP+jh5wwjFixSDePxcGI2goRWr9Xp+
-	 LkYlrPXaAFL8HFwQ7Vf+rLtiM6F2tSP9C9F2cywe1ETbMW6UBOUd2pC63liGmYxwEosx6
-	 77rn2ZQUPaJqiM31sS+8zKnhSgDXQOHyhSXXwpj3xVk/nJIbzNEfi3v8LFyqjhQfCausA
-	 tYwZ83gegYi8X8rXbxXJniyPPM4tPrFvr0sdLAczP4KcV3NrvYnMmkd9D0PaP9e3/JA==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793965068;
+	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
+	 X-Gm-Message-State:X-Gm-Gg:X-Received:Received:From:To:Cc:Subject:
+	 Date:Message-ID:X-Mailer:In-Reply-To:References:MIME-Version:
+	 Content-Transfer-Encoding;
+	bh=nk/cwVUI+HhtrpE9+By8yGGW1zgCdHKuqXC1z6SrQpw=;
+	b=5tKwI6eeiOLpxxtp75aSKdwAUW90hMPVCtMatVIqzUiCP18fJBeYmtJb0E6AhroIf/wX
+	 B6xzfSQZ20zgX5TMoq2a1Ckb5BWv692UR5RpUrUhoAWNZk7M+PaLcmHAVGCyXg10Tz2g1
+	 ehAK5hKTgRsAsK36nj0ZjPv1lDJ8nTig6GNIpfF1KGRunkxbBhrYjn3JqjhK8+FuuYEtH
+	 nSDsaBgP04Df8YlggGkDv/BOF2pPTP1P586j9xaB+A9XM6JxkuPiXxxIBniuEf/s0mFIG
+	 FB0p6yhSTVkfzbceO09xkTp5MZpdsz5mgFYd8QJylQWfgnSLHAlIZLj/izg46h4wncg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=redhat.com;
-	spf=pass smtp.mailfrom=redhat.com;
-	dkim=pass header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=DLycYrth;
-	dkim=pass header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=google header.b=L6B5jDV+;
-	arc=none smtp.remote-ip=170.10.129.124
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	dmarc=fail header.from=isslab.korea.ac.kr;
+	spf=none smtp.mailfrom=isslab.korea.ac.kr;
+	dkim=pass header.d=isslab-korea-ac-kr.20260707.gappssmtp.com header.i=@isslab-korea-ac-kr.20260707.gappssmtp.com header.a=rsa-sha256 header.s=20260707 header.b=e0rnDNCC;
+	arc=none smtp.remote-ip=74.125.82.48
+Received: from mail-dl1-f48.google.com (mail-dl1-f48.google.com [74.125.82.48])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 59475606A31B
-	for <target-devel@vger.kernel.org>; Thu,  5 Nov 2026 18:59:03 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 59475606A31B
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CF8B4606A33D
+	for <target-devel@vger.kernel.org>; Fri,  6 Nov 2026 11:37:47 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org CF8B4606A33D
+Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=isslab.korea.ac.kr
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=isslab.korea.ac.kr
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=DLycYrth;
-	dkim=pass (2048-bit key, unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=google header.b=L6B5jDV+
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1793905142;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=GtVJ5fDzJs7dwdJ7kQ13zFePN7w2DrejpnY2Ytkrdiw=;
-	b=DLycYrthOKqS3R3zYxK2muqHFBISPvgO4v38GTHXpzYpF6mhFL5dSE108rxcXAzhvrWEQP
-	pfTBNZmanqSEuoiVkQdtEJUMcmKe1DWAOuZqJRfGo7eP4f+9TO0FM6GiaEO/YpyOs0voNM
-	Tvm6zrFyS6wbBiwQX4HEWCqOPyFjU/I=
-Received: from mail-yw1-f197.google.com (mail-yw1-f197.google.com
- [209.85.128.197]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-247-PJkJWjMPPHW47cSKL8S-pw-1; Thu, 05 Nov 2026 13:59:01 -0500
-X-MC-Unique: PJkJWjMPPHW47cSKL8S-pw-1
-X-Mimecast-MFC-AGG-ID: PJkJWjMPPHW47cSKL8S-pw_1793905140
-Received: by mail-yw1-f197.google.com with SMTP id 00721157ae682-8b320a98b7eso34999677b3.3
-        for <target-devel@vger.kernel.org>; Thu, 05 Nov 2026 10:59:00 -0800 (PST)
+	dkim=pass (2048-bit key, unprotected) header.d=isslab-korea-ac-kr.20260707.gappssmtp.com header.i=@isslab-korea-ac-kr.20260707.gappssmtp.com header.a=rsa-sha256 header.s=20260707 header.b=e0rnDNCC
+Received: by mail-dl1-f48.google.com with SMTP id a92af1059eb24-1a8cc11ac42so524486c88.0
+        for <target-devel@vger.kernel.org>; Fri, 06 Nov 2026 03:37:47 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=redhat.com; s=google; t=1793905140; x=1794509940; darn=vger.kernel.org;
-        h=mime-version:user-agent:content-transfer-encoding:content-type
-         :references:in-reply-to:date:cc:to:from:subject:message-id:from:to
-         :cc:subject:date:message-id:reply-to:content-type;
-        bh=GtVJ5fDzJs7dwdJ7kQ13zFePN7w2DrejpnY2Ytkrdiw=;
-        b=L6B5jDV+fhmnDVZIKwO414AEnkdbC1y9UlWdyY1sY+9FXLp/OIb2pRQKxf8LxNGfqR
-         GKsAe/hXDkpUfK5VNDRnXJmryWsxw4i3rPhyfLYDkfBXhj8qJMkwvLyJt0DDza48mJ5p
-         7nDNabYytCLVRcEqiofEIXUIxj0yjn7JU/ecb9LxCxFmzdp0rvHikgCwEepns6xLUfey
-         OPTw0xywPSbGwfIwQ3LaAQk27GwQ7KyzZGgqezX16MuU6g46/LL70JH6hhPbA7h1f2JX
-         HkBXVHFq0TsHZ8t3xZRAC0rr4L0d8gymrARfhz3q5ZCa+ogTQAiTSR5nuFSLHCcGJRdq
-         tYlg==
+        d=isslab-korea-ac-kr.20260707.gappssmtp.com; s=20260707; t=1793965067; x=1794569867; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=nk/cwVUI+HhtrpE9+By8yGGW1zgCdHKuqXC1z6SrQpw=;
+        b=e0rnDNCCP/vEzSNMrsvM7E2F7XnN79sZ4lA7f2scoMSld3YqrX2kvu7bGUzammNRwk
+         FZ2qB79S8KuD5vM3UVIrU6cd+wdYWfzLE+/ealF8EMr6U1Lw/X3ebsPL4vQOmuvFObpC
+         9hxf3QdT6lK59b4jvXcEa+KdEi7CkXag2rYcLs6dwhebdkdII+xVQN/yXq2EHh9dAUja
+         Ll/iHDCa5c5E91jsTTV6OGcI8ziKHFmMHDlrIjp4CjLFur6OvmR8kgkdNeuRScRxa3Wr
+         NLF9FjDs4hp68IdIdH0/PD61Emgy8bhx5wosAPos6d4snA2+2aB7w0Lkp3psUMeMIU7o
+         y6SA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793905140; x=1794509940;
-        h=mime-version:user-agent:content-transfer-encoding:content-type
-         :references:in-reply-to:date:cc:to:from:subject:message-id:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=GtVJ5fDzJs7dwdJ7kQ13zFePN7w2DrejpnY2Ytkrdiw=;
-        b=KytgHjWN7UbwcLimTb8nyFItdcsQzXd4+HGS4DC7T14z4lgHWJY+DhCNghjqa2udDm
-         P8cQ4NIQeV6vHf5MICENGuvrQYExYRPE8BhpqZ9koZqIm0a8i3CCE0Ip6wacJITok6ks
-         eGdLiMwOWUTEpfCJDVf9iDI8gjsfmy8VLuQaOlrE+8lU6hY1OU6yra6BHe8KlMMDD8Q9
-         /9m45mqPyk3yEv1idxZ4hFJ+mW7DZCVl+1Z1DPRg7lOZ+WnTzx+jm1xo+qWZRHgGhuP3
-         MIBe3LcTUp1f46u7+xApTwiG1ANqt3M1UDAeb4KqYu39xdQ+AMUOkZoYA2JgWKC6YWct
-         XNDQ==
-X-Forwarded-Encrypted: i=1; AL+hErHBaKelZ1W9uezW6ZPCrrjpVC1rNZ1RtrP2JcbwAB9faFEEJpjwrCqxTeuY+ZAEUDZbOVYgtqrOmzbhv6o=@vger.kernel.org
-X-Gm-Message-State: APuU4Z/G7SUDlc0MUnlpxGKxMTq0UDOZmhT+rG5jb4WekIVrKuklZTr2
-	ZzfkgYZWVDWiUnX8Bvc77qG25BBQHoGTns4jLr0PWduiMp9qHcwzLpiGRh6Q9PMYI9pmpfLnSM2
-	pFeLmxg9U3nnCU9zp7A7Ko8dEenLep5FLnF1WLfiBj+Uk+3bi5lIaUIBhqZuvT/tJSg==
-X-Gm-Gg: AYBFou1GvYfi2x6zQf7/VzS4QUvegiDXVJcO2ex383dx6Triyji3iKuEB4jm8LuzBOQ
-	2tFM2cG3Fi0v4fRVxPC/wqiGVQEllKqLb2zWmi5bNXqOBYnbsA6gqmTiV/yQxuYAdP749fO9sMM
-	hRHvdPrOekxb+DvDAZRzBqfBULBzCbCx8bqA0SPFSsAXaT8gga5qBzN2wondSOwBEI6j2uuGgYS
-	K3oHj8P8njfybAhs1pZ1jGYCuUOnXfO5l29aIzZv9BkNJIBTaOcjuxbX+KRMv2MpTNkliMaaK85
-	WqYlZDXrpkXH3hcLLzrQx/PEGVf68uyhusi9yWMx7i+YooFq2flUWcETVG8/Rvm+s6X7QJXCIP2
-	mI+V5Qrmuu9qXrGD7E7Ufe8MBC6T93fjkjxDbVP3IDN9NtWbmZrO3DVcV0QvQN1SoxZ4Lp7uJPm
-	eiU+nSA5R/rjNz7l5zuILLKfQcvD1SVf1pru977aQED42SloizKHNsiAWCV1/kb3t2oElDIbI=
-X-Received: by 2002:a53:bd83:0:b0:679:887f:a2bf with SMTP id 956f58d0204a3-67c142c35eamr78959d50.36.1793905140256;
-        Thu, 05 Nov 2026 10:59:00 -0800 (PST)
-X-Received: by 2002:a53:bd83:0:b0:679:887f:a2bf with SMTP id 956f58d0204a3-67c142c35eamr78942d50.36.1793905139634;
-        Thu, 05 Nov 2026 10:58:59 -0800 (PST)
-Received: from loberman-thinkpadp16gen3.rmtusma.csb ([2600:6c65:2440:d8c:aa2b:ddff:fe88:da74])
-        by smtp.gmail.com with ESMTPSA id 956f58d0204a3-67c135e8d5esm242675d50.19.2026.11.05.10.58.58
+        d=1e100.net; s=20260707; t=1793965067; x=1794569867;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to:content-type;
+        bh=nk/cwVUI+HhtrpE9+By8yGGW1zgCdHKuqXC1z6SrQpw=;
+        b=jzqnjkqsetvDyh/qC4VxisYEAHhzmCKxqkWcEHZY45F8AmklJ0i0EF8O6AUcbaoXFa
+         5n6y8rmcZJe5Skvn35E5OtcNKG9jtynO1w52JRLHe6XOGJPMZuPIL/MvDYP46zLioXiz
+         mNMdIJX3qH1vtZFOhfRgrhYvpOltAtbowxc348dBdra9M0+6Bmoqzx3bpk7VEcge+tZh
+         D4hUFJ4kQGBozhRmJFLyXrbJknTDoPWA83igC7t0DEkrRbb6y7qMxXITmNH4gAbt7z4x
+         3jPMNsm5ICPj4dCMK1bvQGZuM0lskNfeCd4W3o1zcniql2T8Pgn+OMvz4k/WhbZo0zlA
+         1DLw==
+X-Gm-Message-State: APuU4Z/Fd+rOzhH3XZP13jFNk04vT6gSkq7D164+/lN2+Q4hW0krC8PT
+	4WP6+G4Zk04IxTTtHuxbfydMCIeTKKlPqXRh72SMCH/ZOPeiPWccizuJFQ41Lu6LA0p4bpGQnv/
+	COk+VsMg=
+X-Gm-Gg: AYBFou1mlGgmDcfwrfMX8uCaU9XIJBk6dQTMYYlZOB4FZK3ZOtCR/iOpLZ9t3jRXmJq
+	j9mKEN/siahho9gVxe7HEYS5dP+Nu0txzic/T0+ki3aEbvv0Fi1JGRwDpg47DTODBAZ+f3bY1RH
+	rgAom347V7RhrbUY7bArqiuFpjJF2poiTDVp0xR0mAZlr+eKbufnRaMMz0J3OtCjbLf29CQr2Wt
+	h0DboADy8c2TLESUoDELA3jPM++0PV616sVcDcbXsYTEVk4cyXRJnck6uKtEM//ABe2QsxRcNGL
+	B8UgjDxGmWTV1ii/quM84YJMr758nldSOaszTy5L9FFAI7jtl1C3ZemwqzFkrSi7w84j/XC/D9a
+	GY0gcBgQMhljHIeKJjanAmA3pXFkAhHqbZnccA2e/bAxj1fG//06bGxy84TLuELaieQJtaSeIpu
+	mVz+vlOLA3+lCcUVz8QxDw+EUyk4qKn0/gOAv1K+h9Nkd5Vk6JBCMooZnwPvZwcc2F6Y5rrvnpe
+	Yr1Ez4j7h1WK/REppvb7SmotAr0Uvh62T1xtq7PPX1Rkv9K4ADm4CtF/XysWPfIKVsm/9H3+SZx
+	FIyUMRTtZCAMJ25wcK8cMV6P12i2KNsOGfAOyKy9mTve/hPbxq/zJr/4dyNJhglK6SSpXQ54pc/
+	Rq4i1IzkRtSRm+mKJsUSvvvcHdzXk/8eoerhxMQ==
+X-Received: by 2002:a05:7022:7f04:b0:1a9:cad6:5b58 with SMTP id a92af1059eb24-1b25d3650f3mr2994163c88.39.1793965066505;
+        Fri, 06 Nov 2026 03:37:46 -0800 (PST)
+Received: from localhost.localdomain ([2406:5900:1044:110c:7bac:856c:1494:b5cd])
+        by smtp.gmail.com with ESMTPSA id a92af1059eb24-1b25e261962sm8107687c88.0.2026.11.06.03.37.44
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 05 Nov 2026 10:58:58 -0800 (PST)
-Message-ID: <7dccd24b8dc18be694ffca063cd4c13655ff1c9a.camel@redhat.com>
-Subject: Re: [PATCH 1/2] target: iblock: drop the dead kmap() NULL check
-From: Laurence Oberman <loberman@redhat.com>
-To: shao.mingyin@zte.com.cn, mkp@kernel.org, linux-scsi@vger.kernel.org, 
-	target-devel@vger.kernel.org
-Cc: James.Bottomley@HansenPartnership.com, linux-kernel@vger.kernel.org
-Date: Thu, 05 Nov 2026 13:58:57 -0500
-In-Reply-To: <20261105193351820CRZfBnzFE8zZm2DrNx0T_@zte.com.cn>
-References: 
-	20261105193346452uAUQ3LtGtsQ_d_O9gjAw5@zte.com.cn <20261105193351820CRZfBnzFE8zZm2DrNx0T_@zte.com.cn>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.60.2 (3.60.2-2.fc44) 
+        Fri, 06 Nov 2026 03:37:46 -0800 (PST)
+From: Yehyeong Lee <yhlee@isslab.korea.ac.kr>
+To: linux-rdma@vger.kernel.org
+Cc: target-devel@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v8 0/6] IB/isert: fix the device removal use-after-free
+Date: Fri,  6 Nov 2026 20:37:38 +0900
+Message-ID: <20261106113738.2063585-1-yhlee@isslab.korea.ac.kr>
+X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20261104142043.GG478286@unreal>
+References: <20261104142043.GG478286@unreal>
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Post: <mailto:target-devel@vger.kernel.org>
@@ -122,32 +98,21 @@ List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:target-devel+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 
-On Thu, 2026-11-05 at 19:33 +0800, shao.mingyin@zte.com.cn wrote:
-> From: Shao Mingyin <shao.mingyin@zte.com.cn>
->=20
-> kmap() never returns NULL, so the check after it is dead code.
->=20
-> No functional change.
->=20
-> Signed-off-by: Shao Mingyin <shao.mingyin@zte.com.cn>
-> ---
-> diff --git a/drivers/target/target_core_iblock.c
-> b/drivers/target/target_core_iblock.c
-> index ea65d39fef88..604fca959f2e 100644
-> --- a/drivers/target/target_core_iblock.c
-> +++ b/drivers/target/target_core_iblock.c
-> @@ -461,8 +461,6 @@ iblock_execute_zero_out(struct block_device
-> *bdev, struct se_cmd *cmd)
-> =C2=A0	int ret;
-> =C2=A0
-> =C2=A0	buf =3D kmap(sg_page(sg)) + sg->offset;
-> -	if (!buf)
-> -		return TCM_LOGICAL_UNIT_COMMUNICATION_FAILURE;
-> =C2=A0	/*
-> =C2=A0	 * Fall back to block_execute_write_same() slow-path if
-> =C2=A0	 * incoming WRITE_SAME payload does not contain zeros.
+Hi Leon,
 
-Looks good.
-Reviewed-by: Laurence Oberman <loberman@redhat.com>
+Sorry for the flood of versions. I should have waited for review instead
+of reposting every time the bot flagged something. I'll stop here and
+won't send another version unless someone asks for one.
 
+For what it's worth, each version was tested on soft-RoCE with KASAN,
+racing device removal against connect, login and teardown. I don't have
+iSER hardware, so none of it has run on a real HCA.
+
+If it helps, I can send 1/6 and 2/6 on their own, without the stable
+tag, and leave the rest until someone can test it on hardware. If you'd
+rather drop the series, that's fine too.
+
+Best regards,
+Yehyeong Lee
