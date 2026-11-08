@@ -1,56 +1,49 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=128.116.240.228
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794028084;
-	b=P60UwOBOaA45+qHdNmWkg02/iRsJWazF4h7TdpkMbGL0Z65Q4/DZGAB9Ys4xJPoyzueM
-	 CA1Fe/fmI15kSfYWjwJOShinnBNFILtY9OirEaize6hR99ygAdaOutcz8YzcN5diteWiL
-	 5fqxiwzLAkwK4g+vUwbJ3ynB6DiH/yGSoiClzKzjQeh5zQcK3QLmkv7kLqxzMh0vl9YqG
-	 3iFnIRyzAl8PzLsAjJpoJej/w9p/ngRe2lSSK+w3+mH+KZfyxdfsYX3jvoEqA9pRA3ddO
-	 lK1K+Q2/ypdtkwwUBbbwi/axEA3AKLahR+9EXIsRf6XS8hP8nxGqqkXEi3chDOv7CEQ==
+	t=1794135010;
+	b=DnHOCjSpZ0huoJ+86/Vcpz0L330rtf7gijfocRmYUEpvckp4cvGtAOSrJZJ5m1FXrSUt
+	 KAwxDrv2m++g0tNRagmSmTgBG1TOAGcgHYrOPNE3QBZoDUkcE+Z8sIlrTX/Npby+1IZCy
+	 49n0GRff6npvVEh+HB3ptwirapKEpMGASmNdoDYlKBkwAwNtZOIRFN8tjODMDt882IPEN
+	 e81yRVDbM046DIoev57ZnTl6XPyKFQqXe3g3dpbh6DdPfDF7ahSCrHxKwP4cVMS5NL10i
+	 lH9F/OazT98sqdzYFbMTihrZvwGn/zGaW5+R+spIymLk9PxPcDT5WIfDtmWFDP4HVkQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794028084;
-	h=Received:DKIM-Signature:Message-ID:From:Subject:Reply-To:To:Cc:
-	 In-Reply-To:References:Content-Type:Content-Transfer-Encoding:Date;
-	bh=2/uzpiTnyIDmeuumQuPqSuEPfkJ7NI8oGaUfAzoTW3w=;
-	b=nfp+pbcb2p4ZsNFmgLzmw7zRfc54r+RwG6QkFdsw+1qO158NY8FVexjaGdhLybtF3RZ9
-	 cdn5U+/tCX0j1erCw2xgfWhPDjAM/NVFN2DPUZVt2lZZQ8/Ogc91b+/G8uGSOjqtljvfN
-	 92Z0f+EDCHOfquGvDAkXgOWVt6uDk6/EttNES1iXuQT+fDND45axwtithkBL98W+xybPl
-	 sNmxdG3hIfD9HifiT8Ma4ENa438dH+uIvW71bD5U7j0UlvinoSNRnNfroY+vU2zbvmVYm
-	 ONhCJggStwiV7OhtsaTuve1t0f5+Mz8stkjDlSQ36a18CKy3DC623Sc1w+WiaejM0oA==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794135010;
+	h=DMARC-Filter:DKIM-Signature:Received:Mime-Version:
+	 Content-Transfer-Encoding:Content-Type:Date:Message-Id:Cc:Subject:
+	 From:To:X-Mailer:References:In-Reply-To;
+	bh=8pq/IDSCY4LBixR6A7q8Ut/Zwku91AwAfepkFX7dr7A=;
+	b=RwB0fByIODtbA0RBkWancp8G1ak6Rqki3iP2No6U7Dqsf1J88t1mWyfa6HhnX9Ngj25V
+	 dQJx7tjH1zH+SRqXF7yN/cWaTB+W2fAYP0pXtkV1YN9HcT1EH15NW+oCP2h2GD4MlBgre
+	 ehk0SheZqiZUmqy+x8tcsVtlPniaNUVlodtPXcXEfvCpu8lvlBXFEuku//awOvOoUOyRn
+	 xcfWhCnmLLAUqezFHt54aTfjWEEpNgUJlPmMWBwJxkryNFxSfMGwHwbBqjNtukETwYB5G
+	 PdEaQZhBMXMfhgPw8WVmn3pgrs/THMlXBsJP1ZkPhabnMYExNM4mAuoenhht8/xBaUg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=J8uOoHEM;
-	arc=none smtp.remote-ip=100.103.45.18
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	dmarc=pass header.from=arkamax.eu;
+	spf=pass smtp.mailfrom=arkamax.eu;
+	dkim=pass header.d=arkamax.eu header.i=@arkamax.eu header.a=rsa-sha256 header.s=mail1 header.b=l6JqTey+;
+	arc=none smtp.remote-ip=128.116.240.228
+Received: from arkamax.eu (128-116-240-228.dyn.eolo.it [128.116.240.228])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1ECE9606A326;
-	Sat,  7 Nov 2026 05:08:03 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C93BC606A31C;
+	Sun,  8 Nov 2026 10:50:08 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org C93BC606A31C
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=arkamax.eu
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arkamax.eu
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=J8uOoHEM
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7B6D51F0089F;
-	Sat,  7 Nov 2026 05:08:03 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1794028083;
-	bh=2/uzpiTnyIDmeuumQuPqSuEPfkJ7NI8oGaUfAzoTW3w=;
-	h=From:Subject:Reply-To:To:Cc:In-Reply-To:References:Date;
-	b=J8uOoHEMp4gxp8jE9cD0li10YdgYm13tmbLZnMS0lg7Ot3ySzyevQdwgOX6Y+/jO8
-	 nI0bqIll1ce1FkJb3tLMwySc73f9x6TYK9szQFQhTj6ESw/hcOBY8p90BUMRjl21nA
-	 Qti1WitM7jVaZhBx99YaoMjsjdCGPjMJOE4GFesVefVZYZh/gyIskaYaTkaM06Hm1L
-	 h93P+XYsRVbll1PWl0wLke/ZW+Hb/PV64HjBgwotr4R5lUw0wvda8agjYIdnGWtHsg
-	 liC8Tvyg7RGjUkmHYG/p4VqCGyX4eav1fakvqji2dUy9bFGI7NHZ/vdwJoyJsb4WCH
-	 HOkGIj7CcWMTg==
-Message-ID: <sashiko-outbox-202608@kernel.org>
-From: sashiko-bot@kernel.org
-Subject: Re: [PATCH] scsi: target: Constify struct configfs_attribute
- pointers
-Reply-To: sashiko-reviews@lists.linux.dev
-To: =?utf-8?b?VGhvbWFzIFdlacOfc2NodWg=?= <linux@weissschuh.net>
-Cc: linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
-In-Reply-To: <20261107-configfs-const-target-v1-1-a1bf9511386c@weissschuh.net>
-References: <20261107-configfs-const-target-v1-1-a1bf9511386c@weissschuh.net>
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
-Date: Sat, 07 Nov 2026 05:08:03 +0000
+	dkim=pass (2048-bit key, unprotected) header.d=arkamax.eu header.i=@arkamax.eu header.a=rsa-sha256 header.s=mail1 header.b=l6JqTey+
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; s=mail1; bh=0acOCyvV6JrPcx
+	ohfcRhMPkj9sEYJAZOtcKos1dv26U=; h=in-reply-to:references:to:from:
+	subject:cc:date; d=arkamax.eu; b=l6JqTey+gSc2m70BjbSxBgD7zMF0t0DV4LBvM
+	o1pqJIOCm3IMx47zpfjkDJrA4vBVWdOx3MCk9an8r3TtOHPXndgiMJbwA5WpCwTDE/T8k2
+	STjen5tnqUfRj/yTPK/P+cQME4JUZBw6hLv6gcz+OcCItbsHU43DR6G8uD2KddBjx0O4I7
+	Mv0++t2IPByKWaxU9NTz/oSd9yUpdxEOTS237OOO7HwurXZ31IvHARGyfl+6bi7GcQXgx/
+	3DOOOkRpZ/rYX2GEvBaKcT/FHSTjH8AFD4QSUr8FQ7Mw4OqKCXYslV/p2PvLg030AS7bHC
+	yFu+hOZop+mH7jB9XF3tewung==
+Received: from localhost (128-116-240-228.dyn.eolo.it [128.116.240.228])
+	by arkamax.eu (OpenSMTPD) with ESMTPSA id 8c21eb9d (TLSv1.3:TLS_AES_256_GCM_SHA384:256:NO);
+	Sun, 8 Nov 2026 11:50:00 +0100 (CET)
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Post: <mailto:target-devel@vger.kernel.org>
@@ -59,50 +52,42 @@ List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:target-devel+owner@vger.kernel.org>
 Precedence: list
+Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+Date: Sun, 08 Nov 2026 11:50:00 +0100
+Message-Id: <DMPRS0MF3KC3.1H1C97P5ES18@arkamax.eu>
+Cc: <michael.christie@oracle.com>, <linux-scsi@vger.kernel.org>,
+ <linux@yadro.com>
+Subject: Re: [PATCH 0/2] target: iscsi: fix hanged WRITE_PENDING commands
+From: "Maurizio Lombardi" <mlombard@arkamax.eu>
+To: "Dmitry Bogdanov" <d.bogdanov@yadro.com>, "Martin Petersen"
+ <martin.petersen@oracle.com>, "Maurizio Lombardi" <mlombard@redhat.com>,
+ "Laurence Oberman" <loberman@redhat.com>, <target-devel@vger.kernel.org>
+X-Mailer: aerc 0.20.0
+References: <20261027180123.13163-1-d.bogdanov@yadro.com>
+In-Reply-To: <20261027180123.13163-1-d.bogdanov@yadro.com>
 
-Thank you for your contribution! Sashiko AI review found 1 potential
-issue to consider:
-- [Low] scsi: target: incomplete ct_attrs_const conversion in target
-  core and iscsi
---
+On Tue Oct 27, 2026 at 7:01 PM CET, Dmitry Bogdanov wrote:
+> ISCSI has some old leftovers in the code that prevents passing the aborte=
+d
+> command to the target core to make the actual abort. Such commands hang
+> until connection is closed.
+> So remove those leftovers.
+>
+> Dmitry Bogdanov (2):
+>   Revert "scsi: target: iscsi: Fix hang for aborted WRITE_PENDING
+>     commands"
+>   scsi: target: iscsi: fix hanging WRITE_PENDING commands
+>
+>  drivers/target/iscsi/iscsi_target.c      | 19 -------------------
+>  drivers/target/iscsi/iscsi_target_erl1.c |  8 --------
+>  2 files changed, 27 deletions(-)
 
-commit d8c2eba7f9079194d5b3b7e6d1172b540dc79568
-Author: Thomas Wei=C3=9Fschuh <linux@weissschuh.net>
+Sorry for the late reply, I was on vacation.
 
-scsi: target: Constify struct configfs_attribute pointers
+I like this solution and since Laurence tested it and confirmed that it wor=
+ks
+then I am completely ok with reverting my patch.
 
-This commit constifies struct configfs_attribute pointer arrays across the
-target subsystem and its fabric drivers and switches struct config_item_type
-definitions from ct_attrs to ct_attrs_const.
-
-> diff --git a/drivers/target/target_core_fabric_configfs.c b/drivers/targe=
-t/target_core_fabric_configfs.c
-> index ab8f81650710e..61929f28fcc57 100644
-> --- a/drivers/target/target_core_fabric_configfs.c
-> +++ b/drivers/target/target_core_fabric_configfs.c
-[ ... ]
-> @@ -921,7 +921,7 @@ target_fabric_setup_tpg_base_cit(struct target_fabric=
-_configfs *tf)
->  	attrs[i++] =3D &target_fabric_tpg_base_attr_rtpi;
-> =20
->  	cit->ct_item_ops =3D &target_fabric_tpg_base_item_ops;
-> -	cit->ct_attrs =3D attrs;
-> +	cit->ct_attrs_const =3D attrs;
->  	cit->ct_owner =3D tf->tf_ops->module;
->  	pr_debug("Setup generic tpg_base\n");
-
-[Severity: Low]
-Should target_unregister_template() in drivers/target/target_core_configfs.c
-also be updated to free t->tf_tpg_base_cit.ct_attrs_const instead of
-t->tf_tpg_base_cit.ct_attrs?
-
-In addition, drivers/target/target_core_stat.c and
-drivers/target/iscsi/iscsi_target_stat.c still define non-const struct
-configfs_attribute pointer arrays and initialize .ct_attrs in their struct
-config_item_type definitions, which will break the build once the
-transitional ct_attrs union member is removed and CONFIGFS_ATTR_RO is made
-const.
-
---=20
-Sashiko AI review =C2=B7 https://sashiko.dev/#/patchset/20261107-configfs-c=
-onst-target-v1-1-a1bf9511386c@weissschuh.net?part=3D1
+Reviewed-by: Maurizio Lombardi <mlombard@redhat.com>
