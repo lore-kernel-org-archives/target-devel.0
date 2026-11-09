@@ -1,45 +1,45 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
 	t=1794196549;
-	b=qxIBYDFm0exYu2+ywAeteCQQlKSfVq0DhYgn5X3QHriaIAXTdvMuqtnYlgNTxD6mCJUZ
-	 uKIsPgmfQMBFdW2rDGIlBYyE7gnBGpqR/mAk/65V9V4vDayUYmZUKgkL2fHCv7K+aD3N6
-	 EPSJJ/hlw65V8Ve3R+1TlY4n3lBED2MF9sem/QJiQDFU3guyh7epiHyPUHhEs22TS7spI
-	 XBhHas/MvfMpmyOaUHk71rFS77C/Dw10iGhg7GswxNTONDDjPFZ0RUfoe+ayeDYlzhBSG
-	 345LfQMT5hF4QZNeOwQlusP89bLPYjjXAqc2PM7Z1smnOzYZ7T/w+Puipe1PpNXXO9g==
+	b=usXWNg/YXL/dJ6qEFa/SXWMv0yF3ayHZJJ9gSbdtRM+EUK3CAJaJaG+jAPpTckNqpcNG
+	 V/kgneBFJdBq+Srv6GX7q5NQMPQ9Q06f1PfUdVChVL7cnjDSX1IntFauxOgTFI+TMGOGv
+	 W/zT1s71shWGhlx1FvOtFTUqY0X2kbmMvK+bJm9p+lj3U4slu0oIPPE7ossyO2yEzrM5q
+	 QZkRFPTMVN4KCa2MNTEPTjYdVGJjDjz/9+wKouLYVE3qVEpkIXhdfFhxp2fP3aYU93apv
+	 j61wzRvnk5zWy3A8vpkP2UYjOkKpT7MCFwTBwaio1YvDyo9t7h8ZripqHgqcRqpGoCA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
 	a=rsa-sha256; c=relaxed/relaxed; t=1794196549;
 	h=Received:DKIM-Signature:From:To:Cc:Subject:Date:Message-ID:X-Mailer:
 	 In-Reply-To:References:MIME-Version:Content-Type:
 	 Content-Transfer-Encoding;
-	bh=ROdqwXcZpsSHl4ybTWbGmZ5YKrRrEnDl4wILqeiJeh8=;
-	b=cr5DS/AjroziO9WiYseSuLhFJVBLa9i5ugFKT92dQ1472KoDaf4eNAkY1rlMPl0aZkvF
-	 SA6t4UMpfGZxNqToQXVhOlyI/3J+V4wp8ZoHaEs3Z5zl679YiLsYHmSRujH8QKwztJiOc
-	 9NNCXYUGY2rd41/jP3r4vwczfPMn2D+Avh5VsOSR9QqDT3hcXr83nIt2IgniDrHhO6PdZ
-	 HS6VvvJmpsXfAIirlJGETYHvYbs85TjBN63YYVgqHEqbs/n6Jz4pAm6L47cSY2FaSCFFR
-	 dvpr1TzhbZv3znDdCUOyIhJFy15MTG5J3tXKQhSjJXPZaeAj4lP4YPb6PdqoAAEU9bg==
+	bh=2QHduY7QRBGYLTY6K22XQVDTFclXeKjALaCeqC7h7s4=;
+	b=1F2faDCeVxxXgT3UHaPYGh4KXgj1gP/KJNoWsI0D1/u4etSdz2GbXRPst3g0mnwACcL4
+	 k9mtFcGvh/vMagx3qyPdm1uUYMYcHCx6vaQe2U8khCSE76LiYff+qFi5H/6FAfcHpkMAm
+	 vaOiuNjHvhyfOKdVloaE2MNtWlZzPClF8Piu3b5k1wzGpjlgAdlJ/f7FVSBSABKvoj4WE
+	 YtPBGRTf03kNCuBJLWSudGcjuX/Nr7x7mwk0C28a0188k+GNB5WNI1+vT2k+9Jz/mVpgR
+	 7wFHipVE1/WyZkk7Lq5MNy26fnwSF5UdU+NhuFkMSJHlX19/pFkL4qfGGiXHnEcQqJw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Q5eQhuGe;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=heF2RTMc;
 	arc=none smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E4F18606D809;
-	Mon,  9 Nov 2026 03:55:48 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9E995606D811;
+	Mon,  9 Nov 2026 03:55:49 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Q5eQhuGe
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D15991F008BE;
-	Mon,  9 Nov 2026 03:55:47 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=heF2RTMc
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C54481F008A1;
+	Mon,  9 Nov 2026 03:55:48 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1794196548;
-	bh=ROdqwXcZpsSHl4ybTWbGmZ5YKrRrEnDl4wILqeiJeh8=;
+	s=k20260515; t=1794196549;
+	bh=2QHduY7QRBGYLTY6K22XQVDTFclXeKjALaCeqC7h7s4=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=Q5eQhuGesij01f+WYvWSG24n9WuTLhTWMNwv0MCQbwf33TSCPnoAXlRuoIopF/16b
-	 +i2TGdElLLxEl2/u6TZKhTMDo8oxLG9y3l1YNskufmsFwXVizcV1iZIZbTpKNWRbFF
-	 I/VlKx2AKdjpQ0hsSzTr8FR94KGBJ1cVjcVOJHhAzjyFckcmcg7xD7W23F6DBY4bpl
-	 orPsdtZVu2nIIgS4taI6stl6AfPQEdimZUDu2TNtbxfA6ygCZ94OrbmhZ0K0Q2yPSP
-	 iZumP4p5+lPGVJ95I6eoyTAehmEwmkNlceZVfrcI877OS2DzR6xtaIasffGkgGXs2F
-	 KljDkEPnb8E+w==
+	b=heF2RTMc7Q+cscYHQRa1GMtwehsEPim/CMQcAFKRvudIgdH8qrxNMJT44Fz5pvsDO
+	 7L0MnQwe8eZxKksnMrp481E3q2Y2lZDe8Hy5MxtU+WED2+aCZVFXGChLhN8CDKa0xO
+	 bo4W/UxOHqVtfmlLJHIhGnYu2PkeMH5lBlmUkrrzkP91PQpkrjXGjWHjQRC4eOPRJn
+	 /9NoL1qmoTbS9+zzEbkQO22By6TPxdtOaIRqQ57AIz9KJAnTUjjJsJFAj4R2RbLdXn
+	 QsNEXp7Vj9WZeiMsT149KVp/lQVKzb/0Ab1zleiwfnuneKnDhYyfidPYCQfY/ntHwN
+	 MyU3VugCPOHxQ==
 From: "Martin K. Petersen (Oracle)" <mkp@kernel.org>
 To: target-devel@vger.kernel.org,
 	linux-scsi@vger.kernel.org,
@@ -48,12 +48,12 @@ Cc: "Martin K . Petersen" <mkp@kernel.org>,
 	michael.christie@oracle.com,
 	bvanassche@acm.org,
 	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] scsi: target: Fix NULL pointer dereference in core_alua_do_port_transition()
-Date: Sun,  8 Nov 2026 22:55:29 -0500
-Message-ID: <179419615235.1941224.10228625629108243932.b4-ty@b4>
+Subject: Re: [PATCH] scsi: target: Fix NULL pointer dereference in target_dev_alua_lu_gp_store()
+Date: Sun,  8 Nov 2026 22:55:30 -0500
+Message-ID: <179419615234.1941224.11103122342148610453.b4-ty@b4>
 X-Mailer: git-send-email 2.56.0
-In-Reply-To: <20261026195133237y2UxJLoV1FK6aD1zrFbIU@zte.com.cn>
-References: <20261026195133237y2UxJLoV1FK6aD1zrFbIU@zte.com.cn>
+In-Reply-To: <20261026194955694FnXGoQ352dstLk5HPBqCG@zte.com.cn>
+References: <20261026194955694FnXGoQ352dstLk5HPBqCG@zte.com.cn>
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Post: <mailto:target-devel@vger.kernel.org>
@@ -66,25 +66,21 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 
-On Mon, 26 Oct 2026 19:51:33 +0800, shao.mingyin@zte.com.cn wrote:
+On Mon, 26 Oct 2026 19:49:55 +0800, shao.mingyin@zte.com.cn wrote:
 
-> core_alua_do_port_transition() assumes that the device has an ALUA LU
-> group member and that the member is associated with an LU group. Neither
-> is guaranteed: internal-use HBAs never allocate dev_alua_lu_gp_mem, and
-> the association with an LU group is dropped when "NULL" is written to the
-> device's alua_lu_gp attribute.
-> 
-> The configfs path can reach the second case. After clearing the LU group
-> association, writing the implicit ALUA access state of a target port
-> group calls core_alua_do_port_transition(), which dereferences the NULL
-> lu_gp in atomic_inc(&lu_gp->lu_gp_ref_cnt).
+> Writing "NULL" to the alua_lu_gp attribute clears the ALUA LU group
+> association of a device. The attribute can be written again after the
+> association has already been cleared. In that case lu_gp_mem->lu_gp and
+> lu_gp_new are both NULL, but the code still calls
+> __core_alua_attach_lu_gp_mem(), which dereferences the NULL lu_gp
+> pointer:
 > 
 > [...]
 
 Applied to 7.4/scsi-fixes, thanks!
 
-[1/1] scsi: target: Fix NULL pointer dereference in core_alua_do_port_transition()
-      https://git.kernel.org/mkp/scsi/c/c0bb6614132c
+[1/1] scsi: target: Fix NULL pointer dereference in target_dev_alua_lu_gp_store()
+      https://git.kernel.org/mkp/scsi/c/fe5988e8708e
 
 -- 
 Martin K. Petersen
