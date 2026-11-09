@@ -1,59 +1,54 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794188745;
-	b=vOaIEu9UVa2Ocr4+a7oPmVzbTtzGYFxqy4FMFnat4w1E4hKZjId6RjoxGuPmSHI98Pvt
-	 FbJu5a+iGnRsqC/VKAjjGikAaCzbXS9Dat93pD+6UxSY1UXYG7grIWbVI/C5cLmWffb1O
-	 yYzmgQ3cPQcjbPWB4wQ8GOspucCf1BBMLafOwV70RdheTMwXmFuExjyDISvfpzpcwXPI0
-	 BrdcFEpbvLoHSMv9sKwZRQTbLtdtnTsv3WEncorzRicOd9YIh8tz/LSO9PEb7nMEihouH
-	 xjaoYWNMtXU9IFtXQ1yCRfvzIyID5sX+pYW68haL84h7jvVzWH7XdlySD1c9XfkYpIA==
+	t=1794195197;
+	b=WXgP6zhbmX1OzC87ux+wY97zz2zChSzUMgubMqEELZDUXsKQ2WgEp9SfRsvNz0lUc9zc
+	 kClAbSGKzLfP8MTlUV3OwEVNLRqN0jenE2mon7l1mYRheUec077ae/Bj+ZRwl7C2CbzOl
+	 /5x7ArfCluDqOlxEBrr82+MD3hgsisUrtTRbQYkKFuNk3Hz5PrSeE37sFimGijyE0O6Bx
+	 ZGRJZAa8MRGL3TPrP7JZ1Ncx7Hm8mf0FyMEKifW94eUaDYIUyDXyd9eaHMw7UubzE3QyT
+	 eNR6QgWWPnrRZ4IL/3+nJA4JmRHy2RfQM3CHAKlMQeQB2sxVmX7Sk9UC7D9Jgu0zAbw==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794188745;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794195197;
 	h=Received:DKIM-Signature:To:Cc:Subject:From:In-Reply-To:Message-ID:
 	 References:Date:MIME-Version:Content-Type;
-	bh=/3oD/voQY7oS/fisfpwP1Btaj9r2Y4l36G9k37HEMU4=;
-	b=SkE/nzQOl8+hJTEySHzTtcQOE4lklVV7ymyNWQFHW+1tYUJsOZyAZcCVAbzq2x11kil2
-	 d0CjRjB05ARDO1oAO5zvRhnnnuE5EKdFcs4fYrYHKcq3nR1r1XdQig78/KyXDuQpVV8Nz
-	 joBv/3i2yLp+GHDx6FkDen4UjAxx+FPRW2sZ/TG0DW6uqYj2Knd2sV6ywRPNAL5dXgT3R
-	 Rh2qYBRJRXDK+0RDOZ9x7dFtIKUeuKe3GKZ+koIb6WeJlz70USj2iOIGd/PiacKkBOZAp
-	 P79rXoerQfsrYjmbclmlwQmNsErOSHUMFfOXseoXrWMu+aI6e5TCewqaBTuEDuSzMJA==
+	bh=hZeWcvJmcWSh6f8njGGlnk6OtxBT31JFdhmDrEkmf1g=;
+	b=XNRCr8QT/tj05z31pspL+LKJpkmEjUnu5Eb0mBTWl+SWx9LP5V8WI2riDpBBxVYd+/jF
+	 nXMCwKU35c89I1bjnV+gChsoKCQHwcEGenNCnuGBb5gwvqUu+CynNBoq5sawNuU2dgWSB
+	 CzqwMkWr293133cXHKKahaBDKfqWojZVLbkePylmX72thpM14cWwoOcCbY+g+LFFlt/cK
+	 O2xhrEJSRHtv/8oI38AsqXnKfxpkyv4r/uGg+oOxHu6JBJl00Iyjy7GYR5PAQzkk8mto2
+	 Szn6ZhF3EyiKRCETOmi9ODrbK6BiNr0q/45sFglnBE6JAh7Xk175JabPZtPYzjET+JQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=FH7sRyIv;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=oBjSP9FM;
 	arc=none smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DF557606A33B;
-	Mon,  9 Nov 2026 01:45:44 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 23079606A321;
+	Mon,  9 Nov 2026 03:33:16 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=FH7sRyIv
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 87E061F0089F;
-	Mon,  9 Nov 2026 01:45:44 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=oBjSP9FM
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5841E1F008AB;
+	Mon,  9 Nov 2026 03:33:16 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1794188744;
-	bh=/3oD/voQY7oS/fisfpwP1Btaj9r2Y4l36G9k37HEMU4=;
+	s=k20260515; t=1794195196;
+	bh=hZeWcvJmcWSh6f8njGGlnk6OtxBT31JFdhmDrEkmf1g=;
 	h=To:Cc:Subject:From:In-Reply-To:References:Date;
-	b=FH7sRyIvpjx3JsXUgvWYE4gqeJ3AQ7JFmkcf4r+kYqw23Gf0/13klBq9VI/OhCf7i
-	 R/LOYzms07ykyp7ohMoPjfOqvBSCq6AbeBiATDFR2iQOzlUHN0RH43RhaO0hIAL+1q
-	 GHTfcHJvgSqC+CEVHOhNg1OG7XCfF+9hRMgmlAu/vK3NcrZ6Q7kn5YHXOzjZodEpAK
-	 RmITNuInWLs8476Tr69fpyD1F9QlrYwgDNZasFEIEqbay6kIiBB2ZuDyZOlJ9aZGYT
-	 zsUsbBKdXu1az5lxl392LN9EOeIYXCkN867jT00I0jzJkcFRIBQ/I9tFZQlR4DU8LJ
-	 BuIlxNmh2N2bw==
-To: Laurence Oberman <loberman@redhat.com>
-Cc: Martin Petersen <martin.petersen@oracle.com>,  Maurizio Lombardi
- <mlombard@redhat.com>,  target-devel@vger.kernel.org,
-  michael.christie@oracle.com,  linux-scsi@vger.kernel.org
-Subject: Re: [PATCH 0/2] target: iscsi: fix hanged WRITE_PENDING commands
+	b=oBjSP9FMQk8gkTQfwSVISUnjhd63EJhcZKQ81yIBlArAeFHB1+WEcnnZCUNUlKvkA
+	 FBCVO+FHBlL58sYhcAJn+vZcuJY+QwRro0QT8OOCqaPMvk0FRYuQXN5wvVodf61iQf
+	 WBRTBk8CW+y0fhpSQsypp/0X3V1PZVOwb8QiS8FxPuWkbU6cER0jxlRs2Ezg1ukVXR
+	 /itD5B2V8GGcpFK4yOgJbe+ZTMj57Y+TSviO+B2c3uP16KDRWbamRYcuXG2kF+dl5V
+	 EKFDB0yWTapSNefB2lGhrjyRW1vMUEitpF5iacjljN+iARAwoD/B/G9iT+LGiYWC7v
+	 Hit01yGUgeNnw==
+To: <shao.mingyin@zte.com.cn>
+Cc: <mkp@kernel.org>,  <linux-scsi@vger.kernel.org>,
+  <target-devel@vger.kernel.org>,  <James.Bottomley@HansenPartnership.com>,
+  <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 0/2] target: remove dead kmap checks
 From: "Martin K. Petersen" <mkp@kernel.org>
-In-Reply-To: <0e12bf8de941ab70a7eb2136fb794cf1dc4bfd8d.camel@redhat.com>
-Message-ID: <yq1eccuye0n.fsf@mail.kernel.org>
-References: <20261027180123.13163-1-d.bogdanov@yadro.com>
-	<d7a1701ddc2e7c976ad8ff9ec071d9bfdc86a7e2.camel@redhat.com>
-	<20261028140221.GB32229@yadro.com>
-	<f4cbbca9e8b743da07902e97b09e49ac7e1cc5fb.camel@redhat.com>
-	<7e08a1f08defd24b42722ce0ad52326ff59236cd.camel@redhat.com>
-	<0e12bf8de941ab70a7eb2136fb794cf1dc4bfd8d.camel@redhat.com>
-Date: Sun, 08 Nov 2026 20:45:43 -0500
+In-Reply-To: <20261105193346452uAUQ3LtGtsQ_d_O9gjAw5@zte.com.cn>
+Message-ID: <yq1a4niwufi.fsf@mail.kernel.org>
+References: <20261105193346452uAUQ3LtGtsQ_d_O9gjAw5@zte.com.cn>
+Date: Sun, 08 Nov 2026 22:33:15 -0500
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Post: <mailto:target-devel@vger.kernel.org>
@@ -66,13 +61,13 @@ MIME-Version: 1.0
 Content-Type: text/plain
 
 
-Laurence,
+> kmap() and kmap_local_page() never return NULL, so the checks after
+> them are dead code. Remove them.
+>
+> No functional change intended; both patches are independent and can be
+> applied on their own or as a subset.
 
-> Gentle ping on this one, I really needing Dmitry's series to be taken.
-> A large customer is waiting so we can include this in RHEL. I did lots
-> of testing and due diligence on this issue.
-
-It's been sitting in fixes for a few days.
+Applied to 7.5/scsi-staging, thanks!
 
 -- 
 Martin K. Petersen
