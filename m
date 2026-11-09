@@ -1,49 +1,59 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=128.116.240.228
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794135010;
-	b=DnHOCjSpZ0huoJ+86/Vcpz0L330rtf7gijfocRmYUEpvckp4cvGtAOSrJZJ5m1FXrSUt
-	 KAwxDrv2m++g0tNRagmSmTgBG1TOAGcgHYrOPNE3QBZoDUkcE+Z8sIlrTX/Npby+1IZCy
-	 49n0GRff6npvVEh+HB3ptwirapKEpMGASmNdoDYlKBkwAwNtZOIRFN8tjODMDt882IPEN
-	 e81yRVDbM046DIoev57ZnTl6XPyKFQqXe3g3dpbh6DdPfDF7ahSCrHxKwP4cVMS5NL10i
-	 lH9F/OazT98sqdzYFbMTihrZvwGn/zGaW5+R+spIymLk9PxPcDT5WIfDtmWFDP4HVkQ==
+	t=1794188745;
+	b=vOaIEu9UVa2Ocr4+a7oPmVzbTtzGYFxqy4FMFnat4w1E4hKZjId6RjoxGuPmSHI98Pvt
+	 FbJu5a+iGnRsqC/VKAjjGikAaCzbXS9Dat93pD+6UxSY1UXYG7grIWbVI/C5cLmWffb1O
+	 yYzmgQ3cPQcjbPWB4wQ8GOspucCf1BBMLafOwV70RdheTMwXmFuExjyDISvfpzpcwXPI0
+	 BrdcFEpbvLoHSMv9sKwZRQTbLtdtnTsv3WEncorzRicOd9YIh8tz/LSO9PEb7nMEihouH
+	 xjaoYWNMtXU9IFtXQ1yCRfvzIyID5sX+pYW68haL84h7jvVzWH7XdlySD1c9XfkYpIA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794135010;
-	h=DMARC-Filter:DKIM-Signature:Received:Mime-Version:
-	 Content-Transfer-Encoding:Content-Type:Date:Message-Id:Cc:Subject:
-	 From:To:X-Mailer:References:In-Reply-To;
-	bh=8pq/IDSCY4LBixR6A7q8Ut/Zwku91AwAfepkFX7dr7A=;
-	b=RwB0fByIODtbA0RBkWancp8G1ak6Rqki3iP2No6U7Dqsf1J88t1mWyfa6HhnX9Ngj25V
-	 dQJx7tjH1zH+SRqXF7yN/cWaTB+W2fAYP0pXtkV1YN9HcT1EH15NW+oCP2h2GD4MlBgre
-	 ehk0SheZqiZUmqy+x8tcsVtlPniaNUVlodtPXcXEfvCpu8lvlBXFEuku//awOvOoUOyRn
-	 xcfWhCnmLLAUqezFHt54aTfjWEEpNgUJlPmMWBwJxkryNFxSfMGwHwbBqjNtukETwYB5G
-	 PdEaQZhBMXMfhgPw8WVmn3pgrs/THMlXBsJP1ZkPhabnMYExNM4mAuoenhht8/xBaUg==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794188745;
+	h=Received:DKIM-Signature:To:Cc:Subject:From:In-Reply-To:Message-ID:
+	 References:Date:MIME-Version:Content-Type;
+	bh=/3oD/voQY7oS/fisfpwP1Btaj9r2Y4l36G9k37HEMU4=;
+	b=SkE/nzQOl8+hJTEySHzTtcQOE4lklVV7ymyNWQFHW+1tYUJsOZyAZcCVAbzq2x11kil2
+	 d0CjRjB05ARDO1oAO5zvRhnnnuE5EKdFcs4fYrYHKcq3nR1r1XdQig78/KyXDuQpVV8Nz
+	 joBv/3i2yLp+GHDx6FkDen4UjAxx+FPRW2sZ/TG0DW6uqYj2Knd2sV6ywRPNAL5dXgT3R
+	 Rh2qYBRJRXDK+0RDOZ9x7dFtIKUeuKe3GKZ+koIb6WeJlz70USj2iOIGd/PiacKkBOZAp
+	 P79rXoerQfsrYjmbclmlwQmNsErOSHUMFfOXseoXrWMu+aI6e5TCewqaBTuEDuSzMJA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=arkamax.eu;
-	spf=pass smtp.mailfrom=arkamax.eu;
-	dkim=pass header.d=arkamax.eu header.i=@arkamax.eu header.a=rsa-sha256 header.s=mail1 header.b=l6JqTey+;
-	arc=none smtp.remote-ip=128.116.240.228
-Received: from arkamax.eu (128-116-240-228.dyn.eolo.it [128.116.240.228])
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=FH7sRyIv;
+	arc=none smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C93BC606A31C;
-	Sun,  8 Nov 2026 10:50:08 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org C93BC606A31C
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=arkamax.eu
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arkamax.eu
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DF557606A33B;
+	Mon,  9 Nov 2026 01:45:44 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=arkamax.eu header.i=@arkamax.eu header.a=rsa-sha256 header.s=mail1 header.b=l6JqTey+
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; s=mail1; bh=0acOCyvV6JrPcx
-	ohfcRhMPkj9sEYJAZOtcKos1dv26U=; h=in-reply-to:references:to:from:
-	subject:cc:date; d=arkamax.eu; b=l6JqTey+gSc2m70BjbSxBgD7zMF0t0DV4LBvM
-	o1pqJIOCm3IMx47zpfjkDJrA4vBVWdOx3MCk9an8r3TtOHPXndgiMJbwA5WpCwTDE/T8k2
-	STjen5tnqUfRj/yTPK/P+cQME4JUZBw6hLv6gcz+OcCItbsHU43DR6G8uD2KddBjx0O4I7
-	Mv0++t2IPByKWaxU9NTz/oSd9yUpdxEOTS237OOO7HwurXZ31IvHARGyfl+6bi7GcQXgx/
-	3DOOOkRpZ/rYX2GEvBaKcT/FHSTjH8AFD4QSUr8FQ7Mw4OqKCXYslV/p2PvLg030AS7bHC
-	yFu+hOZop+mH7jB9XF3tewung==
-Received: from localhost (128-116-240-228.dyn.eolo.it [128.116.240.228])
-	by arkamax.eu (OpenSMTPD) with ESMTPSA id 8c21eb9d (TLSv1.3:TLS_AES_256_GCM_SHA384:256:NO);
-	Sun, 8 Nov 2026 11:50:00 +0100 (CET)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=FH7sRyIv
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 87E061F0089F;
+	Mon,  9 Nov 2026 01:45:44 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1794188744;
+	bh=/3oD/voQY7oS/fisfpwP1Btaj9r2Y4l36G9k37HEMU4=;
+	h=To:Cc:Subject:From:In-Reply-To:References:Date;
+	b=FH7sRyIvpjx3JsXUgvWYE4gqeJ3AQ7JFmkcf4r+kYqw23Gf0/13klBq9VI/OhCf7i
+	 R/LOYzms07ykyp7ohMoPjfOqvBSCq6AbeBiATDFR2iQOzlUHN0RH43RhaO0hIAL+1q
+	 GHTfcHJvgSqC+CEVHOhNg1OG7XCfF+9hRMgmlAu/vK3NcrZ6Q7kn5YHXOzjZodEpAK
+	 RmITNuInWLs8476Tr69fpyD1F9QlrYwgDNZasFEIEqbay6kIiBB2ZuDyZOlJ9aZGYT
+	 zsUsbBKdXu1az5lxl392LN9EOeIYXCkN867jT00I0jzJkcFRIBQ/I9tFZQlR4DU8LJ
+	 BuIlxNmh2N2bw==
+To: Laurence Oberman <loberman@redhat.com>
+Cc: Martin Petersen <martin.petersen@oracle.com>,  Maurizio Lombardi
+ <mlombard@redhat.com>,  target-devel@vger.kernel.org,
+  michael.christie@oracle.com,  linux-scsi@vger.kernel.org
+Subject: Re: [PATCH 0/2] target: iscsi: fix hanged WRITE_PENDING commands
+From: "Martin K. Petersen" <mkp@kernel.org>
+In-Reply-To: <0e12bf8de941ab70a7eb2136fb794cf1dc4bfd8d.camel@redhat.com>
+Message-ID: <yq1eccuye0n.fsf@mail.kernel.org>
+References: <20261027180123.13163-1-d.bogdanov@yadro.com>
+	<d7a1701ddc2e7c976ad8ff9ec071d9bfdc86a7e2.camel@redhat.com>
+	<20261028140221.GB32229@yadro.com>
+	<f4cbbca9e8b743da07902e97b09e49ac7e1cc5fb.camel@redhat.com>
+	<7e08a1f08defd24b42722ce0ad52326ff59236cd.camel@redhat.com>
+	<0e12bf8de941ab70a7eb2136fb794cf1dc4bfd8d.camel@redhat.com>
+Date: Sun, 08 Nov 2026 20:45:43 -0500
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Post: <mailto:target-devel@vger.kernel.org>
@@ -52,42 +62,17 @@ List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:target-devel+owner@vger.kernel.org>
 Precedence: list
-Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset=UTF-8
-Date: Sun, 08 Nov 2026 11:50:00 +0100
-Message-Id: <DMPRS0MF3KC3.1H1C97P5ES18@arkamax.eu>
-Cc: <michael.christie@oracle.com>, <linux-scsi@vger.kernel.org>,
- <linux@yadro.com>
-Subject: Re: [PATCH 0/2] target: iscsi: fix hanged WRITE_PENDING commands
-From: "Maurizio Lombardi" <mlombard@arkamax.eu>
-To: "Dmitry Bogdanov" <d.bogdanov@yadro.com>, "Martin Petersen"
- <martin.petersen@oracle.com>, "Maurizio Lombardi" <mlombard@redhat.com>,
- "Laurence Oberman" <loberman@redhat.com>, <target-devel@vger.kernel.org>
-X-Mailer: aerc 0.20.0
-References: <20261027180123.13163-1-d.bogdanov@yadro.com>
-In-Reply-To: <20261027180123.13163-1-d.bogdanov@yadro.com>
+MIME-Version: 1.0
+Content-Type: text/plain
 
-On Tue Oct 27, 2026 at 7:01 PM CET, Dmitry Bogdanov wrote:
-> ISCSI has some old leftovers in the code that prevents passing the aborte=
-d
-> command to the target core to make the actual abort. Such commands hang
-> until connection is closed.
-> So remove those leftovers.
->
-> Dmitry Bogdanov (2):
->   Revert "scsi: target: iscsi: Fix hang for aborted WRITE_PENDING
->     commands"
->   scsi: target: iscsi: fix hanging WRITE_PENDING commands
->
->  drivers/target/iscsi/iscsi_target.c      | 19 -------------------
->  drivers/target/iscsi/iscsi_target_erl1.c |  8 --------
->  2 files changed, 27 deletions(-)
 
-Sorry for the late reply, I was on vacation.
+Laurence,
 
-I like this solution and since Laurence tested it and confirmed that it wor=
-ks
-then I am completely ok with reverting my patch.
+> Gentle ping on this one, I really needing Dmitry's series to be taken.
+> A large customer is waiting so we can include this in RHEL. I did lots
+> of testing and due diligence on this issue.
 
-Reviewed-by: Maurizio Lombardi <mlombard@redhat.com>
+It's been sitting in fixes for a few days.
+
+-- 
+Martin K. Petersen
