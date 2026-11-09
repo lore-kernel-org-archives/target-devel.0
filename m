@@ -1,69 +1,58 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=160.30.148.35
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794195492;
-	b=m/VWeEgcETl5ptmtoL6FBwhFwfk5eHu3V5VTc/L2pMF+zOzx1kX9CKwatieA7EWSGYD4
-	 t3jhJqgswqr0NoZewBpp+LFZE2UsFzF5PXkbqiXYGHzav17OdTVeJy+rjhVzGby4o6/kB
-	 hcJfwQwEZbqjZOgdmFwwdkrU9dbU/JxswWQtcdSmTYJW4IQ9GDGmM209SBZbrsK5wD/8o
-	 Pyo6XWEQkAzzJIstdL64U3JXSnP1Ayx4lAP9WD+XubxjgB/nPuJ6nYI9kYFbBvZZ56SAR
-	 3YETQgcCVlqYaydNS8xdY6Qzj72mUG6gawTqnYMAWwPw4Hq275o3UQ5mhFJ6Rliaghw==
+	t=1794196542;
+	b=WQJ3AO0Lnvi4acOKVp3P3t/RIM2LUxmqNQEBHGd7oQO7CaXQPSttxVajJDBYeFz3RIHL
+	 6w2e810hoYnrLqWDLCiZ2ajwyGjn21/E1cZCzrOGUF3w7Mlj3X1db3H8/V/hP/J+x1Gyp
+	 WWmdM7X/7BDlchPPUDS94Xfzac+1mEfT75eYpZ9jdnATxnxncqz3fftfjQFHzOg98aqcP
+	 hV5OlFKiy5udAsUjQJ7yrbdxNblYSLxqrq9U6XIFPsGjpGze8wt/yAS60NvtNYc3w90vz
+	 tUHNh3TMamEVhM7yuWW2w2NR3NutmKGIp6UzrzETOukqLJIoctg04D0/lixF8KMjaOQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794195492;
-	h=DMARC-Filter:Received:DKIM-Signature:Received:Received:
-	 X-Zmail-TransId:X-Mailer:Message-ID:In-Reply-To:References:Date:
-	 Mime-Version:From:To:Cc:Subject:Content-Type:X-MAIL:X-TLS:
-	 X-ENVELOPE-SENDER:X-SOURCE-IP:X-CLEAN:X-Fangmail-Anti-Spam-Filtered:
-	 X-Fangmail-MID-QID;
-	bh=dDNuQNZ4Q068kBc1irsl4Q24UzIeGT8nB+Lz9WNYUZI=;
-	b=yEi/D5H/BiMhOWQCdTlVDJafX1Ln57d/JEhVZgilDEJakwJuwfe1A4NlSWV/0kqd+A1V
-	 E24HZ71emXGgO+1Y9aSKp5GCPGvGjnY/o0nu5G5sCj6Ca2+bXXXRCHG8DA6tPNrLTooWu
-	 xs34hZszARrCAxZGXl4xXp9wbrHyjbPfs2mFVIB8qdg6Gb/Txw5vvHfjh9cbgt4oSeWba
-	 Vq/84Sju89M5lP4gIpoOV2Za8/JtD2AwTRk5OY64W5DFlkiiTrjj5wbCXTgdNlnODUq9y
-	 HR9QzMEfIDrXfunfZOJr40LLGs1mDM8AZgEsVyHYW6WQtEvERbHO36mEpT34Ws91Z4w==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794196542;
+	h=Received:DKIM-Signature:From:To:Cc:Subject:Date:Message-ID:X-Mailer:
+	 In-Reply-To:References:MIME-Version:Content-Type:
+	 Content-Transfer-Encoding;
+	bh=qL1PHWR+UFgKZbvNDIunq2Agijkm94RmUs2cUI64v70=;
+	b=TPXPKNsXwAS7xs5kfKbudlXAo6+mHUQSj6IdcYev2maOsNHRhsex9TEb62T8daCEqjue
+	 Gzdja9ouuhI7uMrr4kt5hOx0c5CJSrJRL+1h5ymRlAYl7Lnh+gIgMNMoby1Oa02zm5jzV
+	 K9aQcfVB+GEpAX9C5lDieCU7TW8k9uDot8CbhtgFoKJ+kgU+vRyNFLiWnUaJirS0jZFzC
+	 XcStp0p1lfRwO6CNLRvG0CTYDcdAefWgIIm4oZKmuwtF5BR20w5ZBvtws/XrwJ+udy16B
+	 Smzi4Z21yOfjKMHLxYv4Ya1sL+pWYscjNYfMWI6eC3ZGuGeoTaCnAKqjix9vmh/ey8g==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=zte.com.cn;
-	spf=pass smtp.mailfrom=zte.com.cn;
-	dkim=pass header.d=zte.com.cn header.i=@zte.com.cn header.a=rsa-sha256 header.s=z202610 header.b=2LvEJA9C;
-	arc=none smtp.remote-ip=160.30.148.35
-Received: from mxhk.zte.com.cn (mxhk.zte.com.cn [160.30.148.35])
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=b7+AmU61;
+	arc=none smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 24E18606A325;
-	Mon,  9 Nov 2026 03:38:10 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 24E18606A325
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=zte.com.cn
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=zte.com.cn
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 67BA0606D807;
+	Mon,  9 Nov 2026 03:55:42 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=zte.com.cn header.i=@zte.com.cn header.a=rsa-sha256 header.s=z202610 header.b=2LvEJA9C
-Received: from mse-fl2.zte.com.cn (unknown [10.5.228.133])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mxhk.zte.com.cn (FangMail) with ESMTPS id 4jNFqP4YWjz8Xs70;
-	Mon, 09 Nov 2026 11:38:09 +0800 (CST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=zte.com.cn;
-	s=z202610; t=1794195489;
-	bh=DJGnq2eXzgUcR8zJRuPb0SOZFdcdyGHn7xiZ7s4VT/M=;
-	h=In-Reply-To:References:Date:From:To:Cc:Subject;
-	b=2LvEJA9CWoC1uNjOkOw7i/AMIPzvX0A+u7giKTQYEQFpzujT34NuzFngG/+XJnPhV
-	 c68wEHrF5r/X/MICacL6c4lr0BQB3CcU5MYplzGyx1AeMSG7+2IV0FvyOllA98/mpN
-	 ULacPylBGgZcgjTJPi/pJVt0bRNnkctYij16N/IJzDqa2dMnVvr6Pivxaj4wx1OuBV
-	 z+Z35MYiXHFI2YpfLT7mEPxUi4/xTVMJQwvK4dR1+bgG6MPZsoijPIKYEt/T7vHee/
-	 ghLglatcW9C6Yb4cXcD/BsBI71DMSpAZWYkdCqERNkXtZkK/QlvgRzfKsQb/uTMj5k
-	 Am7Gnivh9WxGg==
-Received: from xaxapp02.zte.com.cn ([10.88.97.241])
-	by mse-fl2.zte.com.cn with SMTP id 6A93bxMx063732;
-	Mon, 9 Nov 2026 11:37:59 +0800 (+08)
-	(envelope-from shao.mingyin@zte.com.cn)
-Received: from mapi (xaxapp02[null])
-	by mapi (Zmail) with MAPI id mid32;
-	Mon, 9 Nov 2026 11:38:00 +0800 (CST)
-X-Zmail-TransId: 2afa6af1401894c-56b30
-X-Mailer: Zmail v1.0
-Message-ID: <20261109113800391iViOGp-B7D_jQ82lqt8F4@zte.com.cn>
-In-Reply-To: <20261109113753774uzCxndU_9x6G5W63TB1hA@zte.com.cn>
-References: 20261109113753774uzCxndU_9x6G5W63TB1hA@zte.com.cn
-Date: Mon, 9 Nov 2026 11:38:00 +0800 (CST)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=b7+AmU61
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 68CE61F008A1;
+	Mon,  9 Nov 2026 03:55:41 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1794196542;
+	bh=qL1PHWR+UFgKZbvNDIunq2Agijkm94RmUs2cUI64v70=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References;
+	b=b7+AmU61OAbBPX4FvtbiLu467QqZUR0IR4tfPhJHxyFXobxL1YFmg5qFnJGGP1lCU
+	 NDj9yiAOWB9xMFNq649EPaH1lXZIc47Dd7VN+rHAfnqwv/bTAjKj8eS2IdmfsKTsH1
+	 U6UADOm8lctG/2CQFt9HaFCSTq8+5HikfaCfH2t2D5CHHUqjJRNVbT3bdq9knEC+Kr
+	 K9h8OVmGiKIxRFcznvWeI825YOB3ckYWnvEV/U8D/rjrNxhcGLB60sI+ZEQZHb4ImJ
+	 AjHbE09YNG6B/r1Z6c/l3amDU1OlaT1OogZTaUMcRsU6yx7/A/TkxpMVcHorbwJ0TL
+	 xn4dsDon0HCgA==
+From: "Martin K. Petersen (Oracle)" <mkp@kernel.org>
+To: Ciro Iriarte <ciro.iriarte+software@gmail.com>
+Cc: "Martin K . Petersen" <mkp@kernel.org>,
+	target-devel@vger.kernel.org,
+	linux-scsi@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	stable@vger.kernel.org
+Subject: Re: [PATCH] scsi: target: core: Parse APTPL res_type and res_scope as hex
+Date: Sun,  8 Nov 2026 22:55:23 -0500
+Message-ID: <179419615241.1941224.11662554715359026347.b4-ty@b4>
+X-Mailer: git-send-email 2.56.0
+In-Reply-To: <ea903e6c-09b5-4a11-80e8-6e1387f39ef5@gmail.com>
+References: <ea903e6c-09b5-4a11-80e8-6e1387f39ef5@gmail.com>
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Post: <mailto:target-devel@vger.kernel.org>
@@ -72,43 +61,27 @@ List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:target-devel+owner@vger.kernel.org>
 Precedence: list
-Mime-Version: 1.0
-From: <shao.mingyin@zte.com.cn>
-To: <mkp@kernel.org>, <linux-scsi@vger.kernel.org>,
-        <target-devel@vger.kernel.org>
-Cc: <James.Bottomley@HansenPartnership.com>, <linux-kernel@vger.kernel.org>
-Subject: =?UTF-8?B?W1BBVENIIDIvM10gdGFyZ2V0OiB0bXI6IHByaW50IHJlZl90YXNrX3RhZyBhcyB1bnNpZ25lZA==?=
-Content-Type: text/plain;
-	charset="UTF-8"
-X-MAIL:mse-fl2.zte.com.cn 6A93bxMx063732
-X-TLS: YES
-X-ENVELOPE-SENDER: shao.mingyin@zte.com.cn
-X-SOURCE-IP: 10.5.228.133 unknown Mon, 09 Nov 2026 11:38:09 +0800
-X-CLEAN: YES
-X-Fangmail-Anti-Spam-Filtered: true
-X-Fangmail-MID-QID: 6AF14021.004/4jNFqP4YWjz8Xs70
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 
-From: Shao Mingyin <shao.mingyin@zte.com.cn>
+On Sat, 31 Oct 2026 22:21:39 -0300, Ciro Iriarte wrote:
 
-ref_task_tag is u64 but the message uses %lld.  Use %llu, and switch
-the unleveled printk() to pr_info().
+> core_scsi3_update_aptpl_buf() saves the reservation holder's type and
+> scope to the APTPL metadata file as zero-padded hex ("res_type=%02x",
+> "res_scope=%02x"), but target_pr_res_aptpl_metadata_store() reads them
+> back with "%d" tokens and match_int(), which parse with base 0. A
+> leading zero selects octal, so match_token() parses only the "0" of
+> "res_type=08", the trailing "8" makes the token not match, and the field
+> is ignored as unknown. An Exclusive Access - All Registrants holder
+> (type 0x8) is left with type 0 and the write fails with -EINVAL and
+> 
+> [...]
 
-No functional change.
+Applied to 7.4/scsi-fixes, thanks!
 
-Signed-off-by: Shao Mingyin <shao.mingyin@zte.com.cn>
----
-diff --git a/drivers/target/target_core_tmr.c b/drivers/target/target_core_tmr.c
-index db7388e207b2..0b719f3f9cdf 100644
---- a/drivers/target/target_core_tmr.c
-+++ b/drivers/target/target_core_tmr.c
-@@ -166,8 +166,8 @@ void core_tmr_abort_task(
- 	if (dev->transport->tmr_notify)
- 		dev->transport->tmr_notify(dev, TMR_ABORT_TASK, &aborted_list);
- 
--	printk("ABORT_TASK: Sending TMR_TASK_DOES_NOT_EXIST for ref_tag: %lld\n",
--			tmr->ref_task_tag);
-+	pr_info("ABORT_TASK: Sending TMR_TASK_DOES_NOT_EXIST for ref_tag: %llu\n",
-+		tmr->ref_task_tag);
- 	tmr->response = TMR_TASK_DOES_NOT_EXIST;
- 	atomic_long_inc(&dev->aborts_no_task);
- }
+[1/1] scsi: target: core: Parse APTPL res_type and res_scope as hex
+      https://git.kernel.org/mkp/scsi/c/08f08a6d49ef
+
+-- 
+Martin K. Petersen
