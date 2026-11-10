@@ -1,93 +1,94 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.128.173
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.210.170
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794236237;
-	b=4+i5QmC1nEZn0EvMxUfztddET0lVUADQtTOMT74HFJp+VyATPBlWbH1Bqivw9NVDmsGR
-	 j2HMyxGkd57B+feT0zOu22LeVQPYvH5okKmdC4frM2YAJtdfvVUTcZiwC3KvJiv0YQ4T1
-	 71MBi6mLHG7L1KPuw+m7qnPXKFpVFwPnB0WS2bSGmUc9bZi2vd509luAt5atfuqhpeN4e
-	 nuEQe4WqsZ/CNUXtPyOZjVXW74GHHKluSAnE9JeVtn7WQsB5fy6vCEvVyWqpAU1+4cRH2
-	 BSIOiMO91Gf6BA7whhGNbPxDqv5skYGwqe/GUKjBH3PtqbRoFncqZ/hjCK+zTpZhjXQ==
+	t=1794280214;
+	b=NzGRXxnvaULy+DPQp4TIa1skZKUGEppGnMBZDPuhhNsCUx8utzIq477RHv2HXG8Pm3BW
+	 GwVwC6QxscYIRlSP+jlvbePXWQJ1XyFtqG8atRGHEcsykSPAMaL+ZbBe0pndFv3+YeLwT
+	 iuG0BQQ4xz1jc8owiAar2/LF6IsOkA/28WEJ/ugi//LNowzBUodaGmwBJ/17wA6J1CQXl
+	 ffjRBPeDMn2v+JSppqr8OizhMoSOnqNsgwKlK+7iej9ZKWM1E1bbVIK9cWWccwcV8EblQ
+	 4wt1O9u03nTw1UWfZ0a0geu1f2sRbrCyHPmA0id02no4OCeoJimYUWyE9Mx+C+nIlaQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794236237;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794280214;
 	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Gm-Message-State:X-Gm-Gg:X-Received:Received:Sender:From:To:Cc:
-	 In-Reply-To:References:Subject:Date:Message-ID:MIME-Version:
-	 Content-Type:Content-Transfer-Encoding;
-	bh=WnGcSIDD8xsihnvux7kQF612pALMJnteuiV/uKYZ0Nc=;
-	b=vzKyOKKM/tju7b05Bxr5EEEe1wJ4SpKDat0Jddx4BmH8PX2hwytZBSNdKJbT/hbuFphm
-	 vYg33biHpA75JmFATjHriQzLr14Wf42TJNimhQJVBPN0oWbvSCYBj1UJLOykzz/mHv3Jt
-	 aOF5EgNuSo4N6qAlEwmuuw7OjT5aE0nWfPixnexiPk0qmAZWcPzLXM+djZqCUnzaxykUv
-	 EfTU29uOQ5jOvw6RRjL74eQsmZnunKPwf2UTVnIUyWkmv9XuB0L94N8kb1+gFLadh/SQA
-	 a06rU7OjDOacYgWTikReAcXfekoZCJQXeko5UvrC50xrhRYfFBl1SEhBJJtPFYIWJwA==
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
+	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:MIME-Version:
+	 Content-Transfer-Encoding;
+	bh=6QYJzw9Rr63XbTuPHrN4Cbad1UtYv7xxIdUtWOpl04I=;
+	b=c5c+1Xb7Ks/JcBG6Yq02RNe9oQcdBCtu8eTFeyPyavfdb6HBM0zv1xzYm3pUpv6EdBxK
+	 xuLMV50SwXu1AEqNErOhDmvYHhTzaFq3wiq2SRCuMS9M/On1ByVDiYXjo3YOsb7WQYaX4
+	 PSY6ZsaDrIcMinIIxe37bjO8jYOXH6PdzaylAAcdCa47sc5roz3z3vJb7LX0RIkWOytSA
+	 oafI3kcVIlKrpotnUhngwBN/Xmnm12UTeKUDjd0xw62Dcmn6/CMCg/Y87FdjRWqLwjGRr
+	 DwLpbLCEBQL9EUM/MdUzvLjdoVK5HWDdZEMoHbEQNvU/WTG7xJyeMacgWW9sG2tGlAg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=gmail.com;
 	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=sgWDoxDB;
-	arc=none smtp.remote-ip=209.85.128.173
-Received: from mail-yw1-f173.google.com (mail-yw1-f173.google.com [209.85.128.173])
+	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=L+yttUZi;
+	arc=none smtp.remote-ip=209.85.210.170
+Received: from mail-pf1-f170.google.com (mail-pf1-f170.google.com [209.85.210.170])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9FBCF606A325
-	for <target-devel@vger.kernel.org>; Mon,  9 Nov 2026 14:57:16 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 9FBCF606A325
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 48C46606A339
+	for <target-devel@vger.kernel.org>; Tue, 10 Nov 2026 03:10:14 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 48C46606A339
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=sgWDoxDB
-Received: by mail-yw1-f173.google.com with SMTP id 00721157ae682-8b305d38bafso6373127b3.3
-        for <target-devel@vger.kernel.org>; Mon, 09 Nov 2026 06:57:16 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=L+yttUZi
+Received: by mail-pf1-f170.google.com with SMTP id d2e1a72fcca58-8a0880a46e7so857021b3a.1
+        for <target-devel@vger.kernel.org>; Mon, 09 Nov 2026 19:10:14 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1794236235; x=1794841035; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:mime-version:message-id:date
-         :subject:references:in-reply-to:cc:to:from:sender:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=WnGcSIDD8xsihnvux7kQF612pALMJnteuiV/uKYZ0Nc=;
-        b=sgWDoxDB9GBkZ5cRKpqIm9Car53R0jvltFnT3c93vi7tnQMMfsvSx8ddfcb2gmfwe9
-         gK8kJUSV5QcvTGlLUq/i8fzhND/XKrxbI/VWOXEl6YPFn4HCEre2ftX4gwtD4ww5EoVZ
-         JMqXr0sWdOG7hUu+1z3yq9fUMO9Bf1qQlCz2xDvnRFwIJu1UhPhSufztgH/UfDDfZqNk
-         rlpLPs330hEvuM55M0W6DNIl7xL60CJEpcn3PfuOpTQn+tkDnUJcCMaJw/CHlERZiLd3
-         ZVMnSQEqed7CVjyJwY6g6N7Fc7Yu/l6seM2eY+mqzEERpH9BvhxQ6Ud85AVLQGZ/uK96
-         CZ2g==
+        d=gmail.com; s=20260707; t=1794280214; x=1794885014; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=6QYJzw9Rr63XbTuPHrN4Cbad1UtYv7xxIdUtWOpl04I=;
+        b=L+yttUZiKSMf9NvCb+E1pLmj8OeGaaYw08dr2RAirE+Lz4npNIabN93ZWVbnQvBOmk
+         L/yuJyZBJXk+gbkG3Ff9GbaY/UHwWlFTW80K5LASoZSSlGlA+HKK4+3kty5gpse5xRY4
+         TI+pERF8HLHwUyjXVIkZqzQHRQNiZ+4a9ipfpMf/81jymsAP0aUBrdIzokuk4ZY/WnEu
+         yxiBGwyFRYuoSKH4xpoBKm6g86uUhQq4pQbB86n6O8c6bHsYhFkKH+5rsFw6uBhO8JV8
+         YWitWZAUHAoOpHd6BhxUuy673W5AKuYLbtmnvskoeROhohACc5FBdnN4+re4uTlbXTZ+
+         3PnA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794236235; x=1794841035;
-        h=content-transfer-encoding:content-type:mime-version:message-id:date
-         :subject:references:in-reply-to:cc:to:from:sender:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=WnGcSIDD8xsihnvux7kQF612pALMJnteuiV/uKYZ0Nc=;
-        b=Whp4PjTQngD4HEuIbGFxtVskxtPw9HK5yT0FLc4eC0VH82J2+kM+COmORtSKb+9qqH
-         uoCzJn7pCDvTGqFyhRCKZc8dVJs/uDFkor4rlwbcEV8X3bBSiZlcakv1j6bN59lm+f8y
-         Ot8nKTUjvNl6M+39pwtWm0D0aduN7DXVXgEpCj95996Hrqn7icYayTwFywpXmSmpijhM
-         9YjGGSSHco9Khhw6yW4z14O663O6i9D/i8IBt1ZFoqANPQrdEFOij2Ydi7sS2em5WexW
-         c7PRUt05kjYehdZFl4MESTokNyHTTqaTqEIDsKOnNy1KHgO9a2ZGiZ0GadoDXQZZm2w7
-         fmZQ==
-X-Gm-Message-State: APuU4Z+RTA0eI9TEgjf8Hltxtl1232YPk941qP4JStX+dzCGzF3WK7yd
-	BfJQZyJSfRv3S2mfuk79tHdOGOYnWIGZD/FbTX3aRP5ZsOo1hitsppLq
-X-Gm-Gg: AYBFou2l0BvQsfD5XA1HYt2++z1+QwmvfGXUn1H5Z+ZS6Q8nN2Cpdqs+h6+TUwsR4k+
-	B86i+YVVi1VxTYZHvkkPS3FtSesPeaGBLbHvOQ0HYFCHzA7ICPmPuK+AYE3hxfFDKtL/nuWGsXY
-	x9lk5a/NH7ngYgqDbxhaD6dmo76IlXkHWr4Ecqy5f8vOfva74+O6cKu+xH1LlJKbetWnJHXHfES
-	kpe4hIEfnjMJMUQM8TNKFutU/wtY4PKYQWAIdqaOW/HgycmrJ78bDEtFiqutOkYvNFEmDyqvQsU
-	0GPogDxTKlSEcSq/gRjJMg65ldBoqXTVkWMbdEbTmlvFNC4U0CTzfdiYuJ3BKP+bNZkROJbOnjv
-	/oP2NQm2tYYQXxZLYZOeoQpcWDDRqOOMHG8whT0GSpyye2bOnUJ5X/qzLFEl6YtB9Eht7Igr4rf
-	uUPB0DwEvlhLGJqpWbTcvf1XqpAw21kWqYcWGoIJl6wF7WF4NOaZLGE6H2KSVrofEgJrPNoQD9R
-	29mm1XZw+Nuv0U8TgnF4ZyVubfzGdVuoiixtSUfyIYJvzGSQPvK5J2ba8BugPOFhcurol8TzmNS
-	ieb1kV00/V0+JK6/SFXv79MziXaixWCp+5HKW+p23Fq/qFAUG1RQEqBB7Ul2UyMfwhxuqOiY5w=
-	=
-X-Received: by 2002:a05:690c:399:b0:8b3:90db:a7d3 with SMTP id 00721157ae682-8b390dbcf9emr105627b3.40.1794236235307;
-        Mon, 09 Nov 2026 06:57:15 -0800 (PST)
-Received: from nb-x1-03 ([181.120.144.175])
-        by smtp.gmail.com with ESMTPSA id 00721157ae682-8b36bbe8ce7sm37040637b3.25.2026.11.09.06.57.13
+        d=1e100.net; s=20260707; t=1794280214; x=1794885014;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=6QYJzw9Rr63XbTuPHrN4Cbad1UtYv7xxIdUtWOpl04I=;
+        b=tJ2qM4jvRrAJM/dH+Z3e+B4CVx6Pxmwp8w1vgUPAPBPmTU7kZvgMCP4E8MuRN009ND
+         IsfLHhQ6pvvsGcLHsWO968XHNSJi6jPe8KM/plBOBvBuyDp/gqXYUf+7BUVoCL9/3kCA
+         dUoeLuhb6mKXsG0HkFhuYoLyKR9E4uGtvEERw7TW5SjGr03jv8UlHzz1bqtk23M9o85Y
+         hbYi+9IZPQvuPKU0KlQu1F4nsbxlcSz0NsdcsttbMWoBBFopVzgq8vajGE61BO/eruzi
+         IJDqHTBZzy/GK9pXumAam8Q+JnTSTc+gPVIOly9P9CVMF1zoGbMg+GEyxRhaJsEMvzjz
+         1TYg==
+X-Forwarded-Encrypted: i=1; AL+hErGN95FjSzjOx1kmna+mmDe0WbOcsmWGEKprHrrzw0X74LDkje2g1iWGCc2oqNZo+uXwDMs2FXfiVwgfUso=@vger.kernel.org
+X-Gm-Message-State: APuU4Z8Vzc9JZxbyH2V+Qw1j8pTDdzJ0mw9Gvzu2qmsC7D9giAz5mmCt
+	MlhWalXUjUFvCw5CJrJAJ091IJhPTQBI2J1owAw94D8hECa4PS/ty+132rv+dcYGxNM=
+X-Gm-Gg: AYBFou2d97vzJrTtxQlf+o4RSvTVFPJsh3x8yYpxRVN16Sdm9NFuWygumJC/7zdUjju
+	wHlPdsHs0T2qh/KsO3e3CjJSvDlVxULjyMyjnCSaPS3/REjriUpR5GD562jAKATquIjLSN9gabU
+	lYwjjza+aSyBh9Hy+A5ahA4rT2DYM+HfT92GqKuGxz6sNJHtWZKKNvCf4bGIE/EpDQm7vbIyJS1
+	JjQm+ZtQMHpLu2tERBBZ+Nc57k1zY9RI7ZAXmc090/8K3jvIwk1+8RpD3PXtuoCQSMFUv29r4/g
+	hP3sjeRcWVU6hcRfVodKS4Vt93+/sYNlf/fI/EqZ9adGywlD924t0AK+sSwDI0XsBMNQ0D+WABD
+	Q2TbjzseJwI+SdPfk9VrbQyuWFkLGjg5GOa3Xkr3P+Sh1AoAw1jQSPEn7CFG97hH47/VWDQy7De
+	YTEABPyVhDLAR50MO8vt8HVnIWll1TpqOxrUNKs/x0FrQiEikTXjF9hrV7/9HQI/dg2zbrBTsbS
+	/+4AE19OM2gAs8eaWKFKo5LuqqSws2ekt4LIYKgYvhKwiQhokHtL7qUdjoi/pG9hUQ197LN/0W4
+	1VqDGsTbDYDRFk/YqkqonDF4k9ES6sbLyvftvpCkfg==
+X-Received: by 2002:a05:6a00:9287:b0:8a0:12ab:e29 with SMTP id d2e1a72fcca58-8ba97ac0667mr920272b3a.9.1794280213567;
+        Mon, 09 Nov 2026 19:10:13 -0800 (PST)
+Received: from localhost.localdomain ([183.62.176.219])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-8baab8dffb5sm308939b3a.55.2026.11.09.19.10.10
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 09 Nov 2026 06:57:14 -0800 (PST)
-Sender: Ciro Iriarte <ciro.iriarte@gmail.com>
-From: Ciro Iriarte <ciro.iriarte+software@gmail.com>
-To: "Martin K. Petersen" <mkp@kernel.org>
-Cc: target-devel@vger.kernel.org, linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org, stable@vger.kernel.org
-In-Reply-To: <591ac67a-fa1e-4395-9573-2d9405cfe0b6@gmail.com>
-References: <591ac67a-fa1e-4395-9573-2d9405cfe0b6@gmail.com>
-Subject: [PATCH v2] scsi: target: compare all six ISID bytes when identifying a nexus
-Date: Mon, 09 Nov 2026 11:31:01 -0300
-Message-ID: <8b1ac7d9-b0e4-42ac-b8a2-c4c70cccdddc@gmail.com>
+        Mon, 09 Nov 2026 19:10:13 -0800 (PST)
+From: liuyong <pkfxxxing@gmail.com>
+To: Bart Van Assche <bvanassche@acm.org>
+Cc: Jason Gunthorpe <jgg@ziepe.ca>,
+	Leon Romanovsky <leon@kernel.org>,
+	linux-rdma@vger.kernel.org,
+	target-devel@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	security@kernel.org
+Subject: [PATCH 0/1] RDMA/srpt: Fix read underflow information disclosure
+Date: Tue, 10 Nov 2026 11:08:05 +0800
+Message-ID: <20261110030809.913063-1-pkfxxxing@gmail.com>
+X-Mailer: git-send-email 2.43.0
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Post: <mailto:target-devel@vger.kernel.org>
@@ -97,226 +98,49 @@ List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:target-devel+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-lio_sess_get_initiator_sid() reports the ISID as twelve hex digits, and
-iSCSI TransportIDs carry the same digits. __transport_register_session(),
-__core_scsi3_do_alloc_registration() and
-core_scsi3_alloc_aptpl_registration() turn that text into
-sess_bin_isid and pr_reg_bin_isid with get_unaligned_be64(), which takes
-the first eight characters, i.e. the first four ISID bytes.
+Hi,
 
-open-iscsi ISIDs start with 00023d00 and differ only in the qualifier in
-the last two bytes, so every session of one initiator gets the same
-binary ISID. target_scsi2_reservation_check() and
-target_scsi3_pr_reservation_check() then treat any session of the
-reservation holder's initiator as the holder:
+This patch fixes an SRPT information disclosure that allows a remote
+initiator with LUN access to read uninitialized target kernel memory,
+potentially exposing sensitive data from previous uses of those pages.
 
-- after RESERVE(6) on one session, another session of the same
-  initiator can still write;
-- with a Write Exclusive persistent reservation, another session that
-  is not registered, or registered but not the holder, can still write.
+SRPT creates RDMA contexts from the initiator's buffer descriptors before
+parsing the CDB. For a READ underflow, target core reduces
+cmd->data_length, and a backend such as rd_mcp fills only that length.
+The prebuilt RDMA WRITE requests still send the full descriptor-sized
+buffer, including the uninitialized tail. The underflow itself is valid;
+the problem is transferring more data than the command provides.
 
-Reproduced with two open-iscsi sessions (ifaces default and if2) to a
-ramdisk LUN: on v6.12.113 every TEST UNIT READY, READ(10) and WRITE(10)
-the test sent from the second session completed with GOOD, under
-RESERVE(6) and under each persistent reservation type, whether or not
-that session was registered.
+The fix caps the data SGEs at cmd->data_length in srpt_queue_response().
 
-Convert all six bytes. Text that is not exactly twelve hex digits keeps
-the old conversion of its first eight characters, now copied into a
-zeroed buffer so that a shorter string, such as an initiator_sid written
-to res_aptpl_metadata, is not read past its end.
+The patch is based on Linux 7.4.0-rc1 commit
+f66469d9905b39d2c260a15d7d6db450f4db67c1. The issue was reproduced on
+the same commit using software RoCE and an rd_mcp RAMDISK with an explicit
+ACL-LUN mapping. The triggering READ(10) requests one 512-byte block but
+provides an 8192-byte data-in descriptor.
 
-An all-zero ISID now converts to 0, which
-target_scsi2_reservation_reserve() took to mean "no ISID". Set
-DRF_SPC2_RESERVATIONS_WITH_ISID when the fabric reports ISIDs instead.
-Also update the TransportID parser comment that referred to the
-get_unaligned_be64() read.
+Relevant target kernel log excerpt:
 
-With distinct ISIDs, target_scsi3_pr_reservation_check() now sets
-isid_mismatch for the holder initiator's other sessions, and
-core_scsi3_pr_seq_non_holder() treated every such session as
-unregistered: DEF_PR_REG_ACTIVE is kept per se_dev_entry, which all
-sessions of the initiator share, so it cannot tell them apart. A
-session that registered its own key would then get RESERVATION
-CONFLICT for writes under a Registrants Only or All Registrants
-reservation, and for PREEMPT, CLEAR and RELEASE. Look up that session's
-own registration with core_scsi3_locate_pr_reg() instead.
+[    7.496367] ib_srpt Received SRP_LOGIN_REQ with i_port_id 5352:502d:4556:494c:2d49:4e49:542d:3031, t_port_id 5054:00ff:fe12:3456:5054:00ff:fe12:3456 and it_iu_len 512 on port 1 (guid=fe80:0000:0000:0000:5054:00ff:fe12:3456); pkey 0xffff
+[    7.528685] TARGET_CORE[srpt]: Expected Transfer Length: 8192 does not match SCSI CDB Length: 512 for SAM Opcode: 0x28
 
-With this patch, TEST UNIT READY and WRITE(10) from the second session
-under RESERVE(6) return RESERVATION CONFLICT. Under Write Exclusive,
-WRITE(10) from the second session conflicts whether or not it is
-registered, and READ(10) is allowed. Under the Registrants Only and All
-Registrants types, WRITE(10) from the second session conflicts until it
-registers, as does READ(10) under the Exclusive Access types; once
-registered it has access and can PREEMPT the holder.
+The patch has been compiled and verified to fix the reported issue.
 
-Initiators that relied on the old behaviour, reserving through one
-session and writing through another without registering it, will now
-see RESERVATION CONFLICT, as SPC requires.
+A reproducer and additional reproduction materials are available.
+Please contact me privately if you need them.
 
-Fixes: c66ac9db8d4a ("[SCSI] target: Add LIO target core v4.0.0-rc6")
-Cc: stable@vger.kernel.org
-Signed-off-by: Ciro Iriarte <ciro.iriarte+software@gmail.com>
----
-v2:
-- core_scsi3_pr_seq_non_holder(): on an ISID mismatch, look up the
-  session's own registration instead of treating it as unregistered.
-  v1 made that path reachable for the holder initiator's other sessions,
-  so a registered second session got RESERVATION CONFLICT under the
-  Registrants Only / All Registrants types and for PREEMPT, CLEAR and
-  RELEASE (Sashiko review). Re-tested on v6.12.113 with types 1, 5-8
-  and PREEMPT/RELEASE/CLEAR from the second session.
-- Fixes: now points at c66ac9db8d4a, which added the get_unaligned_be64()
-  conversion; e48354ce078c only made it reachable (Sashiko review).
-- Reworded the TransportID parser comment.
+The issue was discovered and fixed by Qihoo 360's Tulongfeng multi-agent
+system.
 
-v1: https://lore.kernel.org/r/591ac67a-fa1e-4395-9573-2d9405cfe0b6@gmail.com
- drivers/target/target_core_fabric_lib.c |  9 ++---
- drivers/target/target_core_pr.c         | 46 ++++++++++++++++++++++---
- drivers/target/target_core_pr.h         |  1 +
- drivers/target/target_core_transport.c  |  2 +-
- 4 files changed, 49 insertions(+), 9 deletions(-)
+Regards,
+liuyong
+360 Vulnerability Research Institute
 
-diff --git a/drivers/target/target_core_fabric_lib.c b/drivers/target/target_core_fabric_lib.c
-index ad024009d..ccfeba645 100644
---- a/drivers/target/target_core_fabric_lib.c
-+++ b/drivers/target/target_core_fabric_lib.c
-@@ -372,10 +372,11 @@ static bool iscsi_parse_pr_out_transport_id(
- 			return false;
- 		}
- 		/*
--		 * The registration code reads the ISID as a C string,
--		 * and its first 8 bytes with get_unaligned_be64(), so
--		 * require 8 bytes after the separator and a NUL inside
--		 * the rest of the descriptor.
-+		 * The registration code reads the ISID as a C string, so
-+		 * require a NUL inside the rest of the descriptor.  Keep the
-+		 * existing minimum of 8 bytes after the separator: a valid
-+		 * ISID is twelve hex digits, and target_isid_to_bin() falls
-+		 * back to the first eight characters of anything else.
- 		 */
- 		if (buf + tid_len - p < 8 || !memchr(p, '\0', buf + tid_len - p)) {
- 			pr_err("Incomplete or unterminated ISID in iSCSI Initiator port TransportID\n");
-diff --git a/drivers/target/target_core_pr.c b/drivers/target/target_core_pr.c
-index ca1a2802a..0f2ff9d42 100644
---- a/drivers/target/target_core_pr.c
-+++ b/drivers/target/target_core_pr.c
-@@ -19,6 +19,7 @@
- #include <linux/fcntl.h>
- #include <linux/fs.h>
- #include <linux/fs_struct.h>
-+#include <linux/hex.h>
- #include <scsi/scsi_proto.h>
- #include <linux/unaligned.h>
- 
-@@ -30,6 +31,28 @@
- #include "target_core_pr.h"
- #include "target_core_ua.h"
- 
-+/*
-+ * lio_sess_get_initiator_sid() prints the six ISID bytes as twelve hex
-+ * digits, and iSCSI TransportIDs carry the same digits.  Convert all six
-+ * bytes: reading the first eight digits as a big-endian u64 keeps only the
-+ * first four ISID bytes, so two sessions of one initiator that differ only
-+ * in the qualifier, the usual case, would compare equal.  Text in any other
-+ * format keeps the old conversion of its first eight characters, without
-+ * reading past the end of a shorter string.
-+ */
-+u64 target_isid_to_bin(const char *isid)
-+{
-+	u8 bin[6];
-+	char raw[8] = {};
-+
-+	if (strnlen(isid, 2 * sizeof(bin) + 1) == 2 * sizeof(bin) &&
-+	    !hex2bin(bin, isid, sizeof(bin)))
-+		return get_unaligned_be48(bin);
-+
-+	memcpy(raw, isid, strnlen(isid, sizeof(raw)));
-+	return get_unaligned_be64(raw);
-+}
-+
- /*
-  * Used for Specify Initiator Ports Capable Bit (SPEC_I_PT)
-  */
-@@ -285,7 +308,11 @@ target_scsi2_reservation_reserve(struct se_cmd *cmd)
- 
- 	dev->reservation_holder = sess;
- 	dev->dev_reservation_flags |= DRF_SPC2_RESERVATIONS;
--	if (sess->sess_bin_isid != 0) {
-+	/*
-+	 * An all-zero ISID converts to 0, so test whether the fabric has
-+	 * ISIDs rather than the value.
-+	 */
-+	if (tpg->se_tpg_tfo->sess_get_initiator_sid) {
- 		dev->dev_res_bin_isid = sess->sess_bin_isid;
- 		dev->dev_reservation_flags |= DRF_SPC2_RESERVATIONS_WITH_ISID;
- 	}
-@@ -323,7 +350,18 @@ static int core_scsi3_pr_seq_non_holder(struct se_cmd *cmd, u32 pr_reg_type,
- 			 * RESERVATION CONFLICT on some CDBs */
- 
- 	if (isid_mismatch) {
--		registered_nexus = 0;
-+		struct t10_pr_registration *pr_reg;
-+
-+		/*
-+		 * Another I_T nexus of the holder's initiator.  DEF_PR_REG_ACTIVE
-+		 * is shared by all of its sessions, so look for a registration
-+		 * made through this one.
-+		 */
-+		pr_reg = core_scsi3_locate_pr_reg(cmd->se_dev, nacl, se_sess);
-+		if (pr_reg) {
-+			registered_nexus = 1;
-+			core_scsi3_put_pr_reg(pr_reg);
-+		}
- 	} else {
- 		struct se_dev_entry *se_deve;
- 
-@@ -674,7 +712,7 @@ static struct t10_pr_registration *__core_scsi3_do_alloc_registration(
- 	 * save it to the registration now.
- 	 */
- 	if (isid != NULL) {
--		pr_reg->pr_reg_bin_isid = get_unaligned_be64(isid);
-+		pr_reg->pr_reg_bin_isid = target_isid_to_bin(isid);
- 		snprintf(pr_reg->pr_reg_isid, PR_REG_ISID_LEN, "%s", isid);
- 		pr_reg->isid_present_at_reg = 1;
- 	}
-@@ -866,7 +904,7 @@ int core_scsi3_alloc_aptpl_registration(
- 	 * SCSI Initiator Port, restore it now.
- 	 */
- 	if (isid != NULL) {
--		pr_reg->pr_reg_bin_isid = get_unaligned_be64(isid);
-+		pr_reg->pr_reg_bin_isid = target_isid_to_bin(isid);
- 		snprintf(pr_reg->pr_reg_isid, PR_REG_ISID_LEN, "%s", isid);
- 		pr_reg->isid_present_at_reg = 1;
- 	}
-diff --git a/drivers/target/target_core_pr.h b/drivers/target/target_core_pr.h
-index b793c9963..4debfe4be 100644
---- a/drivers/target/target_core_pr.h
-+++ b/drivers/target/target_core_pr.h
-@@ -72,6 +72,7 @@ extern void core_scsi3_free_pr_reg_from_nacl(struct se_device *,
- 					     struct se_node_acl *);
- extern void core_scsi3_free_all_registrations(struct se_device *);
- extern unsigned char *core_scsi3_pr_dump_type(int);
-+u64 target_isid_to_bin(const char *isid);
- 
- extern sense_reason_t target_scsi3_emulate_pr_in(struct se_cmd *);
- extern sense_reason_t target_scsi3_emulate_pr_out(struct se_cmd *);
-diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
-index 927861c30..4629c9343 100644
---- a/drivers/target/target_core_transport.c
-+++ b/drivers/target/target_core_transport.c
-@@ -419,7 +419,7 @@ void __transport_register_session(
- 			memset(&buf[0], 0, PR_REG_ISID_LEN);
- 			se_tpg->se_tpg_tfo->sess_get_initiator_sid(se_sess,
- 					&buf[0], PR_REG_ISID_LEN);
--			se_sess->sess_bin_isid = get_unaligned_be64(&buf[0]);
-+			se_sess->sess_bin_isid = target_isid_to_bin(buf);
- 		}
- 
- 		spin_lock_irqsave(&se_nacl->nacl_sess_lock, flags);
--- 
-2.55.0
+liuyong (1):
+  RDMA/srpt: Limit read data transfers to the command length
+
+ drivers/infiniband/ulp/srpt/ib_srpt.c | 20 ++++++++++++++++++++
+ 1 file changed, 20 insertions(+)
 
