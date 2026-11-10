@@ -1,57 +1,56 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=95.215.58.114
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=95.215.58.122
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794317382;
-	b=BAjQt8cfDKknhOmukosX1e+1vijXjvO7gQm9EkzKsp1teSfIqFd8jTkYfgA3B1E62AQa
-	 yGT6xd0IvvHiPoeJ4e6KwpcY4yw2fqx5OaMZ3q7v+TzSXJg9/xmyMP2Ff9QrS3Ma7Eh+N
-	 diOo7TknLtIKcNREBbxQMzOcZ3GjBd6bE7qr6tUWI52NosWNrRJLMXLITRKY1kL1eMRrZ
-	 UKnutolpATV0DGuu/aY1gzxRIILpbxmqC1kdKpgft+JQ3ilMti8N3lqA/A16uJzebi/Qr
-	 pL5olt0IEasYLaUM76atA9Rgfm4frVjTFFJaUHxpErRPT9rH4mNIlQl6k2u3POPINXw==
+	t=1794317388;
+	b=1Gb/ACVNrNUW4XD1hFTwXBPhADA3t2C5RbJLxilE/GA/EfpBsYeZP9IJW1iYj48reDzr
+	 OG0Y+9RdHWq26r3cI8b6soVtcLtrirz3kT33JCOp+PYpXUtUPmmMOGBowF9Yz+zsO6Sci
+	 1bWOaAsH6TBz435BEkveKKftA1yj6s+BomOi4WGmb4FOd5zaBCp9XVPu11pp3Ntw9D8wk
+	 mw1hTsewf/MU7VyxiDf9hNek1mTv/jBygA/NCAFWv/AXYrYH8Wsaz05mD8qxtmWZpHggh
+	 T4CV4bLLPGaE++LNIVWpqrnFiKQ5ay9QGcGlWe2FvvPPLi0aGiKSijvLchtMtCmCwGw==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794317382;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794317388;
 	h=DMARC-Filter:X-Envelope-To:DKIM-Signature:X-Envelope-To:Received:
-	 X-Mizu-Trace-ID:X-Migadu-Flow:From:Subject:Date:Message-Id:
-	 MIME-Version:Content-Type:Content-Transfer-Encoding:X-B4-Tracking:To:
-	 Cc:X-Mailer;
-	bh=me+Mok8uviVB0NYu7k/EZr8NLfEietX24VsByp8qjw8=;
-	b=qPpnbRxqRfgthHuFbZPeCCnzvGvyfFTVPHncMKM3mcSVybeXftKI2m30qgXPbXmQqt8T
-	 nXFM5qAUDVoDXDsUNxlcKieZ6B2BSrQtqPdjKScGfBWqVUyGUHnvdg2Ix1fcvuoL0ob04
-	 f/D0hoB78OLpoUp6MAznLxJ8QURMYjRDfkTa9fPAJ8D7ZMzMMihwCcM41w++Ypj83mM57
-	 8H1mN63J8I9v255RAgInKz6hXEEthQksm4zbsH9eUi0Q9JW0NUU++TvpAyHROcwsnelGJ
-	 VSNqsHlDx0FsGuGMtCNCH06FFUWn84lfar8DGtoXcs+uvjOgLPrtbuWdRVqFADaDQCA==
+	 X-Mizu-Trace-ID:X-Migadu-Flow:From:Date:Subject:MIME-Version:
+	 Content-Type:Content-Transfer-Encoding:Message-Id:References:
+	 In-Reply-To:To:Cc:X-Mailer;
+	bh=BDc1IvI6OsHXdrQ8x74AtWRkft+aXE3pPjEVY606+KI=;
+	b=nUY0h9UZ02947ceojUBmNo+rtbLtYjOpQUURD1vLfm5rLvYhLJYwR0HugnhrtAvmM5bP
+	 m7wkzbEjVHcTLX4xfF1xgJxL2fGfQXVmLwphsX128swyHHfle7fli079Hx44BS8LaoZr7
+	 QiFd+Zzz7xAE7G8ICJIM5TC0K72emeVCJRbww/hYnDmQxi0dR9BrW/8YIGDS2Kv1Smjcc
+	 b+aw5NZ4uvK3AMdNTch0MBmVZSGGJOZ1tCLWhyb7ZDV9QgHKpFDogQEfDw9NNr2YsY25o
+	 SAPXLe3X8l8ifNAc058eed2kkQslUGz5wFDxLXi3kjhsk1OPO8zdSDdd2yuVVyef6Ew==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=linux.dev;
 	spf=pass smtp.mailfrom=linux.dev;
-	dkim=pass header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=WXfrJjJC;
-	arc=none smtp.remote-ip=95.215.58.114
-Received: from mta1.migadu.com (out-114.mta1.migadu.com [95.215.58.114])
+	dkim=pass header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=TuAh6bOa;
+	arc=none smtp.remote-ip=95.215.58.122
+Received: from mta1.migadu.com (out-122.mta1.migadu.com [95.215.58.122])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BB6D7606A762
-	for <target-devel@vger.kernel.org>; Tue, 10 Nov 2026 13:29:40 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org BB6D7606A762
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 73556606AF20
+	for <target-devel@vger.kernel.org>; Tue, 10 Nov 2026 13:29:47 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 73556606AF20
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.dev
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=WXfrJjJC
+	dkim=pass (1024-bit key, unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=TuAh6bOa
 X-Envelope-To: target-devel@vger.kernel.org
-DKIM-Signature: a=rsa-sha256; bh=TqP5vO691FPgdSXaJrVOyHuZq5HHrrDwziy9HECDC6I=;
+DKIM-Signature: a=rsa-sha256; bh=t58bLFbopiLhye+XA8VecW5nbJtFNFWoJdVnDP5nc/A=;
  c=simple/simple; d=linux.dev;
  h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
- t=1794317378; v=1; x=1794922178;
- b=WXfrJjJCbTwrC9fiPFsSbMJUC4Ao8udEQ6VunJsz9jrta4xsTU7mqyGlvAK7Jz4u26xSmMHh
- zMSL7aiqzt4HM8HG7qCT8ID8xw/76RTZJrcruyuWZW9Al0hpmgT+ylvfCt69ZRiy/DUFiWvcwLQ
- Uiwm8N9BpuSeaGTiGwQax+LA=
+ t=1794317385; v=1; x=1794922185;
+ b=TuAh6bOaCEJ+qkh32W6hcLuO20vUvAF91Oks8v1acJWAjGdr2C4BnhO8Np4CiVaRofvfposs
+ upwDnqSTXrBYcFYcPZqMuz63UQ4snMxiLv7deeLjiPHLPfWHyyouTzygsE7rpia5QQW9tq9fNHh
+ MX/gp9GA19pV3zoLK1ZjpTZI=
 X-Envelope-To: target-devel@vger.kernel.org
-Received: by smtp.migadu.com with ESMTPS id 52397fc075a5a131;
-	Tue, 10 Nov 2026 13:29:38 +0000
-X-Mizu-Trace-ID: 52397fc075a5a131
+Received: by smtp.migadu.com with ESMTPS id a77828bfa05a4d54;
+	Tue, 10 Nov 2026 13:29:45 +0000
+X-Mizu-Trace-ID: a77828bfa05a4d54
 X-Migadu-Flow: FLOW_OUT
 From: Qiliang Yuan <qiliang.yuan@linux.dev>
-Subject: [PATCH 0/2] scsi: target: alua: Skip grace periods on LUN add and
- remove
-Date: Tue, 10 Nov 2026 08:29:32 -0500
-Message-Id: <20261110-bug-target-alua-lun-gp-v1-0-127a46efdae9@linux.dev>
+Date: Tue, 10 Nov 2026 08:29:34 -0500
+Subject: [PATCH 2/2] scsi: target: alua: Drop the grace period wait from
+ LUN detach
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Post: <mailto:target-devel@vger.kernel.org>
@@ -63,46 +62,51 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIAD0c82oC/x3MQQqAIBBA0avErBtwQiK6SrSwmmxALDQjEO+et
- HyL/zNEDsIRxiZD4EeinL6C2gbWw3jLKFs1dKrriUjhkizeJli+0bhk0CWP9sJFk+J92Ii0hhp
- fgXd5//E0l/IB2rkvQ2gAAAA=
+Message-Id: <20261110-bug-target-alua-lun-gp-v1-2-127a46efdae9@linux.dev>
+References: <20261110-bug-target-alua-lun-gp-v1-0-127a46efdae9@linux.dev>
+In-Reply-To: <20261110-bug-target-alua-lun-gp-v1-0-127a46efdae9@linux.dev>
 To: "Martin K. Petersen" <mkp@kernel.org>
 Cc: Mike Christie <michael.christie@oracle.com>, linux-scsi@vger.kernel.org, 
  target-devel@vger.kernel.org, linux-kernel@vger.kernel.org, 
  Qiliang Yuan <qiliang.yuan@linux.dev>
 X-Mailer: b4 0.13.0
 
-Creating or removing a LUN through configfs attaches it to, or detaches
-it from, its ALUA target port group, and both helpers wait for an RCU
-grace period afterwards.
+core_tpg_remove_lun() detaches a LUN from its ALUA target port group
+once transport_clear_lun_ref() has drained its I/O, and
+target_detach_tg_pt_gp() then waits for an RCU grace period.
 
-Neither wait protects anything, yet each costs one grace period per
-LUN, which adds up to seconds when exporting or tearing down many LUNs,
-e.g. when targetcli restores a saved configuration.
+Nothing that wait could protect is freed here: the group lives on until
+core_alua_free_tg_pt_gp(), which waits for a grace period of its own
+before freeing it, and the se_lun is freed with call_rcu(). Every LUN
+removed through configfs still pays a grace period for it.
 
-Drop the wait on attach (patch 1) and on detach (patch 2).
+Remove the synchronize_rcu() call.
 
-Adding and removing 256 LUNs of an iSCSI TPG through configfs, five
-rounds alternating with and without the series, takes (median, min-max
-in parentheses):
+Removing 256 LUNs from an iSCSI TPG through configfs, five rounds
+alternating with and without this patch, takes (median, min-max in
+parentheses):
 
-  256 LUNs  before (ms)       after (ms)        change
-  add       3144 (3104-3175)  1379 (1277-1393)    -56%
-  remove    5222 (5165-5244)  3551 (3436-3810)    -32%
+  LUNs  before (ms)       after (ms)        change
+   256  5222 (5165-5244)  3551 (3436-3810)    -32%
 
 Signed-off-by: Qiliang Yuan <qiliang.yuan@linux.dev>
 ---
-Qiliang Yuan (2):
-      scsi: target: alua: Don't wait for a grace period when attaching a LUN
-      scsi: target: alua: Drop the grace period wait from LUN detach
+ drivers/target/target_core_alua.c | 1 -
+ 1 file changed, 1 deletion(-)
 
- drivers/target/target_core_alua.c | 2 --
- 1 file changed, 2 deletions(-)
----
-base-commit: b3dfbde62cf1981c4638939c159dfd087b7a72e9
-change-id: 20261110-bug-target-alua-lun-gp-b410ef8d1144
+diff --git a/drivers/target/target_core_alua.c b/drivers/target/target_core_alua.c
+index 35d36cd36db6c..4e22f988bb83f 100644
+--- a/drivers/target/target_core_alua.c
++++ b/drivers/target/target_core_alua.c
+@@ -1858,7 +1858,6 @@ void target_detach_tg_pt_gp(struct se_lun *lun)
+ 		rcu_assign_pointer(lun->lun_tg_pt_gp, NULL);
+ 	}
+ 	spin_unlock(&lun->lun_tg_pt_gp_lock);
+-	synchronize_rcu();
+ }
+ 
+ static void target_swap_tg_pt_gp(struct se_lun *lun,
 
-Best regards,
 -- 
-Qiliang Yuan <qiliang.yuan@linux.dev>
+2.43.0
 
