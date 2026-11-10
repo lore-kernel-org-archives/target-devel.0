@@ -1,53 +1,119 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=170.10.129.124
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794307997;
-	b=4JN9ZUvKAJYYsYZPH7yY+rEE2b4aj0ko8Ly+wJkjB0AzatZmqBJzZ2aelLmlQXM6ZQkn
-	 +jTY79/KLAM1wRYy5GNwT+p3Kp/kHvLjPyfZ8hdrzeTG7TKBDIuAJv/X6oiCZP0/P2RV1
-	 uQ5rsbSdiHzFxQ8amOosMV3D4w+bl/zWZjduqcvCmkMImywZebzwuHdim0rQrLXItcSei
-	 /t227uGXgHvYZHkKQT7H24qnPWzwjH5flpf88FlV12l+49DsD6PgFV83JvPRSPUGy5FOV
-	 dNCUZomS9tgPpoiOwxYR5LQADiVvbTh0K9SViVZm50OS0C17DsptPeTQjWOuDX29oVw==
+	t=1794314342;
+	b=ByMlyCfNZWnwAOvT+7yaZ04y0Gul0R7EoMwT05MDazljFVcvYEQX09IKXjoecNVhgqte
+	 gjV1TTS93V+0bJgZR0BkiRZySeTZ4n7ffAeLonEiJMaTWa4ju0NUHj1QBiko7MSLgmt96
+	 FQQK9y46MaZmZ3O7v1pJE7whn3QmcqgkZUsUxOYkRi+cZAdmwQ9Br/H1Th0oVgvBWPWj/
+	 Voi5jB8oIOfPtedy8AqwWWbmef/UodVUK8+WJp2ndN614OWRrk81iOc+el4dBOubUPGWP
+	 wKhPHyZFuDi2Upal4dQWoB7nU2aNJF4zg7/kVe7Zs/PVGKJvMdA/Cfcxi3WoCn5uDmA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794307997;
-	h=Received:DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:
-	 References:MIME-Version:Content-Type:Content-Disposition:In-Reply-To;
-	bh=XvZzxhH1tJfaFa9xLjcAjvvdEgxtHDpQlkyGqk3MqEo=;
-	b=iT+F8zSGAhJ4h5R0twvUepSjjEbRAWBuHcMUB+PnTWHvGgrOu5yh/PLSvrqHsj0nq6Wk
-	 3i9pxRPmSoIS+mi5xWNhib5CdmVTrWMHUOSMwvCvfZ94yc6jB2Mem8ekV+n+mzmOwAse/
-	 tfWmB0KNAnHtxnhI95gHY5O0TsPAWmkUq7p/ib6GYgOqDactKkQhnF5vHotHOXBc0lNzM
-	 pHSSXjTW5/8XiWBuMWBPWEMHbTWYQRjMutYG16xjQ+H3GvbOX5G/iua3c4whinC/Xc37q
-	 toaIIYvSmM+5uFDktxXTrqjiYqjUOV8Ezelpt9KjspGNsUdvGIRv9vek7s2YqY3v7Rw==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794314342;
+	h=DMARC-Filter:DKIM-Signature:Received:X-MC-Unique:
+	 X-Mimecast-MFC-AGG-ID:Received:DKIM-Signature:X-Google-DKIM-Signature:
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:
+	 X-Received:Received:Message-ID:Subject:From:To:Cc:Date:In-Reply-To:
+	 References:Content-Type:Content-Transfer-Encoding:User-Agent:
+	 MIME-Version;
+	bh=8B6P+nC3/DhYkZRyIwUpOtQEzwhLB9wHUHWGEVELp1w=;
+	b=hH5oqvX6gYG/LEIpodgOTTy8/4izSY0isUyo6sXw5CzYjSwdJVdFcqc0Dr65t2nLs3Yh
+	 qzPkO1mHMZccGESPJjtb44ILKJjzBJQ/AI8ymk5DWe0vbO/Leg1cwOwfqGfFF0sVfvtk5
+	 LkGfLxFekyvedB/uZQcPv4dZxG/c8yttFao6zweTXUN86rDRvnUwekNfx/y0s/M1lKnOd
+	 CDd7UEiPBfohOX6BnUtL6a7hV7uC33kk6K0Yh418vKyMgSejSc+PuhAz/bN7rqRKl72Tu
+	 qi5Yyiv6TCo2y9dH7koqxwqenBYtrNu2KJs7VfyUNme+81z0za50VxG7T9dEIXBC+VA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=a7rpRKie;
-	arc=none smtp.remote-ip=100.103.45.18
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	dmarc=pass header.from=redhat.com;
+	spf=pass smtp.mailfrom=redhat.com;
+	dkim=pass header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=VQJg7ekj;
+	dkim=pass header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=google header.b=myY2LugO;
+	arc=none smtp.remote-ip=170.10.129.124
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BE87B606A31C;
-	Tue, 10 Nov 2026 10:53:16 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 688AD606A31C
+	for <target-devel@vger.kernel.org>; Tue, 10 Nov 2026 12:39:02 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 688AD606A31C
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=a7rpRKie
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id BE1391F0089F;
-	Tue, 10 Nov 2026 10:53:14 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1794307996;
-	bh=XvZzxhH1tJfaFa9xLjcAjvvdEgxtHDpQlkyGqk3MqEo=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=a7rpRKieOLdLRCHlux/v2v3q1OPL379DSZCfBOKVMnMkNjBc7lUcTyI4IylD7zYmn
-	 OXz9/qvSrCgKw/VX+neh3X8jFxLI9eGwlPc8cabK7Qu7QkbD3iMBsiNV5J8xNO8a1F
-	 niHxvoFUalD8kHu7/XVXvJPPIdBD1A/K1rquiv9KEpA6M/LkSJvVnnF27IrHQYEzfH
-	 gaeH+pHC6jtOt1Os9NchErQn8BIc5GhcWT5YSsorwQOdUdV1wmkVIH1QGDKpZFeA7D
-	 RblFM7R/IUu4zj5K7TPeBIPY5Xfnfyr7RE3k1OCG1aTMAhVDgEO9w4rX+lZdeTGeL4
-	 8tT+cbF61316A==
-Date: Tue, 10 Nov 2026 11:53:10 +0100
-From: Alejandro Colomar <alx+linux-hardening@kernel.org>
-To: Mariia Nikitash <nikitash.mariiaw@gmail.com>
-Cc: mkp@kernel.org, linux-scsi@vger.kernel.org, 
-	target-devel@vger.kernel.org, linux-kernel@vger.kernel.org, morbo@google.com, 
-	justinstitt@google.com, kees@kernel.org, linux-hardening@vger.kernel.org
-Subject: Re: [PATCH] scsi: target: iscsi: Replace strlcat() with snprintf()
-Message-ID: <avL2aQq9oSun177S@devuan>
-References: <20261110093137.37744-1-nikitash.mariiaw@gmail.com>
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=VQJg7ekj;
+	dkim=pass (2048-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=google header.b=myY2LugO
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1794314341;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=8B6P+nC3/DhYkZRyIwUpOtQEzwhLB9wHUHWGEVELp1w=;
+	b=VQJg7ekjwyrKDFGl+vk+EEUkhTInjylkY3tbJyyyoawPyz0WFJw6xc8Mxofo7hTeWHO2u+
+	dU2M37/MXoXD89lRiXQuB7dp46aWf06wgApwrM4p64FYaGZ2bOe2IMCRDoZb14xrv+fga2
+	wwtJ/xeh0KTsp5XU69oOrOxrS959VUc=
+Received: from mail-qt1-f199.google.com (mail-qt1-f199.google.com
+ [209.85.160.199]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-423-_9caTQLHNwWkHkBzN1p_qA-1; Tue, 10 Nov 2026 07:39:00 -0500
+X-MC-Unique: _9caTQLHNwWkHkBzN1p_qA-1
+X-Mimecast-MFC-AGG-ID: _9caTQLHNwWkHkBzN1p_qA_1794314340
+Received: by mail-qt1-f199.google.com with SMTP id d75a77b69052e-5363b06bcb2so43030591cf.2
+        for <target-devel@vger.kernel.org>; Tue, 10 Nov 2026 04:39:00 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=redhat.com; s=google; t=1794314340; x=1794919140; darn=vger.kernel.org;
+        h=mime-version:user-agent:content-transfer-encoding:content-type
+         :references:in-reply-to:date:cc:to:from:subject:message-id:from:to
+         :cc:subject:date:message-id:reply-to:content-type;
+        bh=8B6P+nC3/DhYkZRyIwUpOtQEzwhLB9wHUHWGEVELp1w=;
+        b=myY2LugOZOapQLXruA++AQfKXzuHeWuZNBFUn0528th/tKzDrjD4WTy1FGOQz0o+9Q
+         WLsuZkRgnqM/w9fJZMgyZqiqstkoBURvVWzfpoRLJxQHlgWNG+NAnIpeROIyOBznY/Xg
+         DlLhzxlRjjtAC6hGAPDuuQAFCi2rP8/3Pwee5NKeYLsruPOo5aOKPZllZc8MvtGNKiQ2
+         6grgpM5N83vMQgI78GQvK2HfpBUpM7XPT5VnBoHoCAwadI3kCIGOBTygCzR1NmUhotxo
+         4OPDhtzXKvdWatuLxQ8NOFKGaWlDmgUDp9DoYoOKExE1PkvwRSyFkL1H3xF6mOT/1xxe
+         DPjg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1794314340; x=1794919140;
+        h=mime-version:user-agent:content-transfer-encoding:content-type
+         :references:in-reply-to:date:cc:to:from:subject:message-id:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=8B6P+nC3/DhYkZRyIwUpOtQEzwhLB9wHUHWGEVELp1w=;
+        b=DF090TGYjjJekrO1wzkMfxLXdAjRWnG/v5HY+Vh5wtWUTU1nZ/DDTpkLjF8RO+FCAK
+         XpoQqwHf3ZAxg1cLLL6z9oyo+f/YNU92XA9EBD6dPE0btozO+Fn57cR+AhoxEYzMEFrO
+         NVkk+o7Fe9KWqKozMjBadCEWeJLiO216xobSsksh5aVJZ/lq1a8RYV7W2wMXCgM75zCv
+         NI03VP2aX9TjwCciZbk3t7zYgYSCshZWXtzyCjraTb5ZTNvn6RKTyvKVK7wbMls06Jum
+         A8TqrksLalSKPkxi5M9zGr580gD81XR7E9s3flMXl6ffHA1T7ew2QIEE7wRcXUwjDGc5
+         B8FA==
+X-Forwarded-Encrypted: i=1; AL+hErEkufFAOBy+yX2wU8V7IxzzQKHRgsZTDR9G5EOdJh7TRrOVikotUR+Qt/x89Kv86zJmXje7auMyYDkIy20=@vger.kernel.org
+X-Gm-Message-State: APuU4Z9cwvi3VeG6/BZfxTsC1uUvVs1dBXtDBfqLnnXCb6jCYbE+595U
+	aEhvGGDdguxSTmNSiITeAD1n4ODqcfwoe9TQYyuwBAm2Bmee+w86s3FFQgUzVSU/4faLbACE/3q
+	5wd1QTxPtaq4RHdtWqn4BS3XfcCHG017wp8kKYzgP0jK4Qjhnl3W+gka31U1RsYxwng==
+X-Gm-Gg: AYBFou3nNtXSRbThRUJn0X2E7jLyn2Dvg1KYfa7nI1faiw2l2iQYjMQCtg1ArvM1rkh
+	+8y5ecP6g/hACxmHAGhSWYVtx1iPJr4QVt0d0RYE/1HahmdaNs9WZcvcrGJ+FFRVJLDMd/mJO4F
+	pLHlTyhP15KvRRyIwiT8D7P0J6PE7Pinr4w2CEsXTlJmMlIO5NXCWQMShqqGVQUv6aj02bec/dT
+	bbW9+rFvYwNI5FeaQSWSsbd+O9aEuWsT4GCf/Ex7lpLdzxH5PgXoNWfB+eJXPOfxriAGTX3fVSj
+	cfgGj7oKFChvrm6hfNy7LUYa6fZwmH5igrEkq4FuLkt9FyihpC9S66QtFuJsapF+82+Ge26nyGD
+	L35XFZURB9OXRAIM4bk/F5pul7lccFl+k3S4ZdOdMHe7j9LMIBzL5N65/iCJ7D4Rt+YrWrnWyHv
+	teiYcXPd8AnwFdFbhDCx5100brJK0n5DAbDvzrtgPdI0MHiS0HugEplVthGApazCrfTOM+VaI=
+X-Received: by 2002:a05:622a:343:b0:536:725f:588 with SMTP id d75a77b69052e-5552b93e67bmr33006471cf.76.1794314339392;
+        Tue, 10 Nov 2026 04:38:59 -0800 (PST)
+X-Received: by 2002:a05:622a:343:b0:536:725f:588 with SMTP id d75a77b69052e-5552b93e67bmr33006111cf.76.1794314338725;
+        Tue, 10 Nov 2026 04:38:58 -0800 (PST)
+Received: from loberman-thinkpadp16gen3.rmtusma.csb ([2600:6c65:2440:d8c:aa2b:ddff:fe88:da74])
+        by smtp.gmail.com with ESMTPSA id d75a77b69052e-5550bd33340sm22952721cf.21.2026.11.10.04.38.56
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 10 Nov 2026 04:38:57 -0800 (PST)
+Message-ID: <4a028851191efe6a45f746bc65754a50503c330b.camel@redhat.com>
+Subject: Re: [PATCH 0/2] target: iscsi: fix hanged WRITE_PENDING commands
+From: Laurence Oberman <loberman@redhat.com>
+To: Maurizio Lombardi <mlombard@arkamax.eu>, Dmitry Bogdanov
+	 <d.bogdanov@yadro.com>, Martin Petersen <martin.petersen@oracle.com>, 
+ Maurizio Lombardi <mlombard@redhat.com>, target-devel@vger.kernel.org
+Cc: michael.christie@oracle.com, linux-scsi@vger.kernel.org, linux@yadro.com
+Date: Tue, 10 Nov 2026 07:38:56 -0500
+In-Reply-To: <DMPRS0MF3KC3.1H1C97P5ES18@arkamax.eu>
+References: <20261027180123.13163-1-d.bogdanov@yadro.com>
+	 <DMPRS0MF3KC3.1H1C97P5ES18@arkamax.eu>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.60.2 (3.60.2-3.fc44) 
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Post: <mailto:target-devel@vger.kernel.org>
@@ -57,116 +123,35 @@ List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:target-devel+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="c5b4bwq2tilhrcqr"
-Content-Disposition: inline
-In-Reply-To: <20261110093137.37744-1-nikitash.mariiaw@gmail.com>
 
-
---c5b4bwq2tilhrcqr
-Content-Type: text/plain; protected-headers=v1; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-From: Alejandro Colomar <alx+linux-hardening@kernel.org>
-To: Mariia Nikitash <nikitash.mariiaw@gmail.com>
-Cc: mkp@kernel.org, linux-scsi@vger.kernel.org, 
-	target-devel@vger.kernel.org, linux-kernel@vger.kernel.org, morbo@google.com, 
-	justinstitt@google.com, kees@kernel.org, linux-hardening@vger.kernel.org
-Subject: Re: [PATCH] scsi: target: iscsi: Replace strlcat() with snprintf()
-Message-ID: <avL2aQq9oSun177S@devuan>
-References: <20261110093137.37744-1-nikitash.mariiaw@gmail.com>
-MIME-Version: 1.0
-In-Reply-To: <20261110093137.37744-1-nikitash.mariiaw@gmail.com>
-
-Hi Mariia,
-
-> Date: 2026-11-10 01:31:37-0800
-> From: Mariia Nikitash <nikitash.mariiaw@gmail.com>
->
-> In preparation for removing the deprecated strlcat() API[1], replace
-> the strlcat() call with snprintf() to construct the AuthMethod value
-> directly from param->value.
+On Sun, 2026-11-08 at 11:50 +0100, Maurizio Lombardi wrote:
+> On Tue Oct 27, 2026 at 7:01 PM CET, Dmitry Bogdanov wrote:
+> > ISCSI has some old leftovers in the code that prevents passing the
+> > aborted
+> > command to the target core to make the actual abort. Such commands
+> > hang
+> > until connection is closed.
+> > So remove those leftovers.
+> >=20
+> > Dmitry Bogdanov (2):
+> > =C2=A0 Revert "scsi: target: iscsi: Fix hang for aborted WRITE_PENDING
+> > =C2=A0=C2=A0=C2=A0 commands"
+> > =C2=A0 scsi: target: iscsi: fix hanging WRITE_PENDING commands
+> >=20
+> > =C2=A0drivers/target/iscsi/iscsi_target.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+ | 19 -------------------
+> > =C2=A0drivers/target/iscsi/iscsi_target_erl1.c |=C2=A0 8 --------
+> > =C2=A02 files changed, 27 deletions(-)
 >=20
-> Since buf1 contains unmodified copy of param->value, formatting
-> original value and suffix together preserves the NUL-terminated
-> output, including partial or omitted ",None" suffixes when the
-> 256-byte buffer is too small.
+> Sorry for the late reply, I was on vacation.
 >=20
-> Link: https://github.com/KSPP/linux/issues/370 [1]
-> Signed-off-by: Mariia Nikitash <nikitash.mariiaw@gmail.com>
-> ---
->  drivers/target/iscsi/iscsi_target_tpg.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+> I like this solution and since Laurence tested it and confirmed that
+> it works
+> then I am completely ok with reverting my patch.
 >=20
-> diff --git a/drivers/target/iscsi/iscsi_target_tpg.c b/drivers/target/isc=
-si/iscsi_target_tpg.c
-> index 99772364c88e..aad82a37538f 100644
-> --- a/drivers/target/iscsi/iscsi_target_tpg.c
-> +++ b/drivers/target/iscsi/iscsi_target_tpg.c
-> @@ -624,7 +624,7 @@ int iscsit_ta_authentication(struct iscsi_portal_grou=
-p *tpg, u32 authentication)
->  		none =3D strstr(buf1, NONE);
->  		if (none)
->  			goto out;
-> -		strlcat(buf1, "," NONE, sizeof(buf1));
-> +		snprintf(buf1, sizeof(buf1), "%s," NONE, param->value);
+> Reviewed-by: Maurizio Lombardi <mlombard@redhat.com>
+Hello Mike,=C2=A0
+Gentle ping for an ACK for this so I can move it along into RHEL.
+Thanks as always
+Laurence
 
-This rewrites the string written a few lines above.  It seems rather
-confusing.  I very much prefer strlcat(3) here.  Of course, an
-strscpy_at() would be better, but snprintf(3) seems wrong.
-
-For other readers, here's the same diff with some more context:
-
-	@@ -622,11 +622,11 @@ int iscsit_ta_authentication(struct iscsi_portal_gro=
-up *tpg, u32 authentication)
-		} else {
-			snprintf(buf1, sizeof(buf1), "%s", param->value);
-			none =3D strstr(buf1, NONE);
-			if (none)
-				goto out;
-	-               strlcat(buf1, "," NONE, sizeof(buf1));
-	+               snprintf(buf1, sizeof(buf1), "%s," NONE, param->value);
-			if (iscsi_update_param_value(param, buf1) < 0)
-				return -EINVAL;
-		}
-	=20
-	 out:
-
-So far, NAK by me.
-
-
-Have a lovely day!
-Alex
-
->  		if (iscsi_update_param_value(param, buf1) < 0)
->  			return -EINVAL;
->  	}
-> --=20
-> 2.43.0
->=20
->=20
-
---=20
-<https://www.alejandro-colomar.es>
-
---c5b4bwq2tilhrcqr
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEES7Jt9u9GbmlWADAi64mZXMKQwqkFAmry95AACgkQ64mZXMKQ
-wqnUbA/+Ia9sO6kZ0dpmQ4E0viH2C2QAzQRKSibUxXeS1zti2iFaedYh/Vw3Utht
-a6fXGGjGweK3rKojZBnHOxrUt4w3GE6PWyM2dIocDFMEJ2cZhDF3JCHWR3rrhQT/
-wrDBL0yyD1o6DvVr/aDhbRsqsO1r2DZVnplhlQVn88IK+T/iZEBWLwIfVsHqJK0S
-zLEvcoxI2POaQgmLZy6N+KBQhNVP3/4z/NKwB6DYbh85HfwS6vYQHnyG05d5rQNg
-n82yfjdWGGvr0mmm2Mxqw7rzkfHfS2xosuQlmuTpq+738HRQvYAHqJMBByjFI6Dz
-yBgLfHLOnMSDrmmKJRZJiGg7GT3KS9ei++hs5g9rvmtpKVMO9UPv1pRIwMMXlGBd
-FGl98AGVIR2qU1/fSiQ0hKzFXXHLtPBxr0nAre19m5A4nSmbtJn8s7/l+a1N9cZD
-mFXX12060/dsfShGnvrpK/VghnJ4SJ4SOi2xhTghon8e5VVy7lWWygR5oWbMd36g
-5Ow91ClNM3X5MijgCtGXTHhQpJGH6J0be7qD9uLGNZ5G9wZyeCvQ82f1wMnVwkUV
-0Xt7JYD7px1uV3Y/xROSBBA4jKUZE02jDVXjKpiTOPGlJvmYTJZYX/rFYF8HBiBU
-/9OvzwMJS6qrAZ27UkPIORHOyryskiXJ147e5Wa2m1R16eEcHr8=
-=lpk1
------END PGP SIGNATURE-----
-
---c5b4bwq2tilhrcqr--
