@@ -1,56 +1,56 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=95.215.58.182
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794405536;
-	b=2jtYC5KI3j24uRViXKVTXCbeZiUTnTOMvizwxLW6HwMdq81ZIA9VcQN+qZTtRzMT7MrJ
-	 x4ZTAPZNhOHG0x91/AGo+50VCqgsmfTQhQY91ZZGgun/CIhwhhEUOah7OR0OTb63oItbg
-	 U3oy9amRHiCIwYbPdk9eFDrLtr+ycxDBRAdhuzEsA7YIwfBqb0WyyQnhcIXws/pxrrZMK
-	 9u0m37ExqfxWj1njKoTRQPkB56aG9rok8NeKWkWRs1VZ290nJLUM+3J/heZmHo5eEu6O1
-	 nvWsGETl2A8D+gN5N7cNjR7nCdcYmq2OD36/TFLX+YrBX0nPiM5PjbHfoWsqoNgiGNg==
+	t=1794407252;
+	b=cjwNOXAv2l5Y1zAbrClq9mQs6PzfgOnXssq/wYYbBt1YayGaqfV2ma+7dmwBmD36U3Xx
+	 JCcfQmqcVGEYec/cxYPPnuHs/woyW95mLCZ03TDytZJgCk25YA1H3ebtyj1fE1OgAP75q
+	 25Imd1DVzUwAsoVeaUEBPTfyNp22dXQOVOStY9WO6MG6zEpR7lXe/S1kFt3w1sv0l+Wng
+	 9IpsEDqGjksPCHVMwFd3ZGXcRB1Y26Jc3BYMD//8ZVYiWo9K4cPvQ5Yis0SgEhF31jWid
+	 X2uy7jxpG/yF1jso2QDDSoFqEVJMViVLUJKAZUhTZaqYDPhWXC3u+Q5XMZHse9vDeXg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794405536;
-	h=Received:DKIM-Signature:Message-ID:From:Subject:Reply-To:To:Cc:
-	 In-Reply-To:References:Content-Type:Content-Transfer-Encoding:Date;
-	bh=d/urBojdAE08TyPMaN1zJQuxspH3TfMcrsmwhPXJVDo=;
-	b=BeiLyN7kazzu09aDdUQfHcylJzacBta5E4zH1MIwTcJwX2L/pGaJ4dIQ9dba9ZNcW6o/
-	 kmyku4l66xMGKRQl3/RCmLEjQP9A9R19NbmvMwvxBjAqVxcJXAJZVROqJvrA+NF72vqgE
-	 LZQF0quuGJIgQMNDp7OnnVJ/64OZrbrDDHa3ghvfa6qOHXmmEHqgtLk0cyLAviPZCxOgG
-	 UMd9wp0U5UtRBGdtIjYxcEJbFVKgFExntCUqAk63bxHZSarCwR6tyFW11dSnElUZKFcR7
-	 jzJ9CsIvJqTm8eXObRKzJHpN8tniV+KAjDTahqi+8o0YwYms4tWScAH4s1pJFL69dxw==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794407252;
+	h=DMARC-Filter:X-Envelope-To:DKIM-Signature:X-Envelope-To:Received:
+	 X-Mizu-Trace-ID:X-Migadu-Flow:From:Date:Subject:MIME-Version:
+	 Content-Type:Content-Transfer-Encoding:Message-Id:X-B4-Tracking:To:Cc:
+	 X-Mailer;
+	bh=5OdqLlXVofYhgXwfpFpn5S7e9rSwH2M7lMV1Hw+hRww=;
+	b=ztM6UZGOBnJXxYg+VPX4+uOKAUcjm8i48geenldKJM9nLOnherWPOT/R5paa4Ff15yNr
+	 ha+/0NOaj/vC5q4PhTH/OPFOMMgjyqDx9b3KXR22OUAH50oTois/hy72d5c/z1wzP21zf
+	 iE6i378JVhfKvfpD7LTXIoiYU5Y4foe/o8NVuKdn0kmK8pPJJcUMHJEDiNKwwxXB3O3ed
+	 Ke37j3aFGXMw0Yy5NY9Y9qBkFOkK6QF/V1q07U6GHku93ReLpnDzfeDasu5X3/LrRu6nW
+	 9BVqkai27TLH6qlx/OOopgdyvoZCrO8O7tKHoOmkC61bU19ZWp6uB6J9hqhNctKY+Uw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=T2FCjkNK;
-	arc=none smtp.remote-ip=100.103.45.18
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	dmarc=pass header.from=linux.dev;
+	spf=pass smtp.mailfrom=linux.dev;
+	dkim=pass header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b="NS/DzVdQ";
+	arc=none smtp.remote-ip=95.215.58.182
+Received: from mta1.migadu.com (out-182.mta1.migadu.com [95.215.58.182])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0D4C6606A326;
-	Wed, 11 Nov 2026 13:58:55 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 328B4606A33C
+	for <target-devel@vger.kernel.org>; Wed, 11 Nov 2026 14:27:31 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 328B4606A33C
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.dev
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=T2FCjkNK
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 615EA1F00A05;
-	Wed, 11 Nov 2026 13:58:55 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1794405535;
-	bh=d/urBojdAE08TyPMaN1zJQuxspH3TfMcrsmwhPXJVDo=;
-	h=From:Subject:Reply-To:To:Cc:In-Reply-To:References:Date;
-	b=T2FCjkNKyly5M8d82B9NPwdzgg1/NuP5I5juqn2hqIGRbSJCYar8dWVhTFZ4beN+N
-	 toMj47rp4YaxZtEGhsepkJArrKKPLfphM4P5Adk6jtFM14+smdq7H6ax5R4asgCcvB
-	 hcfAnqfnzKgaAwrGFfoIXhWuv3tieo/jRlyx4jQYhJVwP7wOOGkbmaN7UuEtIWAGZ6
-	 BxrYvj7GicDyTOOC0aaQhkOk0GCnt3qWAHCv5cwtKdCdyDNizPTJvqakA2pB3LifYO
-	 e6FRiUnCWTsiS8tGeN6tWr2feJs/7kdKTUYsf3Hrs/WiskVRmkN1Lo6Lq3V9wWUxsT
-	 mdCZbTnsl+oRw==
-Message-ID: <sashiko-outbox-209114@kernel.org>
-From: sashiko-bot@kernel.org
-Subject: Re: [PATCH] scsi: target: alua: Free target port groups with
- kfree_rcu()
-Reply-To: sashiko-reviews@lists.linux.dev
-To: "Qiliang Yuan" <qiliang.yuan@linux.dev>
-Cc: linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
-In-Reply-To: <20261111-bug-target-alua-free-gp-v1-1-d1e692ae8694@linux.dev>
-References: <20261111-bug-target-alua-free-gp-v1-1-d1e692ae8694@linux.dev>
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
-Date: Wed, 11 Nov 2026 13:58:54 +0000
+	dkim=pass (1024-bit key, unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=NS/DzVdQ
+X-Envelope-To: target-devel@vger.kernel.org
+DKIM-Signature: a=rsa-sha256; bh=n7dKz5VV++RbTugrK9P7KhSNMntn2iLxBmjeZLHK0hc=;
+ c=simple/simple; d=linux.dev;
+ h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
+ t=1794407249; v=1; x=1795012049;
+ b=NS/DzVdQwYZFY/k5KQ10KPQXnEMR4Pn8/ahwNhVmUu1OPjeb+kPJD2ktdQqY8+MpRfB6WPBK
+ 0qn4vozFmRQCSymeuoJIMHKwhU7aQGLqBuIWS3rrX4d92UvY5+zUHIxNTQfVhWajtskSFLbQ6Aw
+ 5Z4WpFSCrPcxrSWdkp5Wx4Rc=
+X-Envelope-To: target-devel@vger.kernel.org
+Received: by smtp.migadu.com with ESMTPS id 2f1b5625be9d2d26;
+	Wed, 11 Nov 2026 14:27:29 +0000
+X-Mizu-Trace-ID: 2f1b5625be9d2d26
+X-Migadu-Flow: FLOW_OUT
+From: Qiliang Yuan <qiliang.yuan@linux.dev>
+Date: Wed, 11 Nov 2026 09:27:19 -0500
+Subject: [PATCH] scsi: target: alua: Hold tg_pt_gp_lock across the RTPG
+ size check
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Post: <mailto:target-devel@vger.kernel.org>
@@ -59,103 +59,83 @@ List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:target-devel+owner@vger.kernel.org>
 Precedence: list
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20261111-bug-target-rtpg-oob-v1-1-1c6b9cfb6831@linux.dev>
+X-B4-Tracking: v=1; b=H4sIAEZ79GoC/x3MMQqAMAxA0atIZgNNh4peRRxajTWLlbSKIN7d4
+ viG/x/IrMIZhuYB5UuypL2C2gbmze+RUZZqsMY6IjIYzojFa+SCWo6IKQV0biEfjO3s3EMtD+V
+ V7v86Tu/7AVymkullAAAA
+To: "Martin K. Petersen" <mkp@kernel.org>
+Cc: Mike Christie <michael.christie@oracle.com>, linux-scsi@vger.kernel.org, 
+ target-devel@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ stable@vger.kernel.org, Qiliang Yuan <qiliang.yuan@linux.dev>
+X-Mailer: b4 0.13.0
 
-Thank you for your contribution! Sashiko AI review found no new issues
-in this patch, but noticed 1 related pre-existing issue it does not
-introduce:
-- [Medium] scsi: target: race condition in core_alua_free_tg_pt_gp() [1]
---
+target_emulate_report_target_port_groups() checks that each target port
+group, with one descriptor per member port, fits in the allocation
+length, and then writes a descriptor for every LUN on the group's list.
 
-commit cbab3de9aa10ecf910c633ef186a6a1775418e09
-Author: Qiliang Yuan <qiliang.yuan@linux.dev>
+The size check reads tg_pt_gp_members without tg_pt_gp_lock, which is
+only taken for the list walk. A LUN attached to the group in between,
+e.g. by a LUN created through configfs, adds a port the check did not
+account for, and its descriptor can be written past cmd->data_length.
 
-scsi: target: alua: Free target port groups with kfree_rcu()
+Take tg_pt_gp_lock before the size check, so that the member count and
+the list walked stay in sync.
 
-This commit replaces synchronize_rcu() and kmem_cache_free() in
-core_alua_free_tg_pt_gp() with kfree_rcu() to avoid synchronous RCU waits
-when deleting target port groups and backstores.
+Fixes: 6b20fa9aaf0c2 ("target: Fix REPORT TARGET PORT GROUPS handling with small allocation length")
+Cc: stable@vger.kernel.org
+Signed-off-by: Qiliang Yuan <qiliang.yuan@linux.dev>
+---
+ drivers/target/target_core_alua.c | 12 ++++++++++--
+ 1 file changed, 10 insertions(+), 2 deletions(-)
 
-> diff --git a/drivers/target/target_core_alua.c b/drivers/target/target_co=
-re_alua.c
-> index 140154d93c430..4ef243ae843bb 100644
-> --- a/drivers/target/target_core_alua.c
-> +++ b/drivers/target/target_core_alua.c
-> @@ -1771,8 +1771,7 @@ void core_alua_free_tg_pt_gp(
->  	}
->  	spin_unlock(&tg_pt_gp->tg_pt_gp_lock);
-> =20
-> -	synchronize_rcu();
-> -	kmem_cache_free(t10_alua_tg_pt_gp_cache, tg_pt_gp);
-> +	kfree_rcu(tg_pt_gp, rcu_head);
->  }
+diff --git a/drivers/target/target_core_alua.c b/drivers/target/target_core_alua.c
+index 140154d93c430..c9413e67b7f3f 100644
+--- a/drivers/target/target_core_alua.c
++++ b/drivers/target/target_core_alua.c
+@@ -166,9 +166,17 @@ target_emulate_report_target_port_groups(struct se_cmd *cmd)
+ 	spin_lock(&dev->t10_alua.tg_pt_gps_lock);
+ 	list_for_each_entry(tg_pt_gp, &dev->t10_alua.tg_pt_gps_list,
+ 			tg_pt_gp_list) {
++		/*
++		 * Hold tg_pt_gp_lock from the size check to the end of the
++		 * descriptor list, so that LUNs joining the group cannot make
++		 * the list longer than the space checked for.
++		 */
++		spin_lock(&tg_pt_gp->tg_pt_gp_lock);
+ 		/* Skip empty port groups */
+-		if (!tg_pt_gp->tg_pt_gp_members)
++		if (!tg_pt_gp->tg_pt_gp_members) {
++			spin_unlock(&tg_pt_gp->tg_pt_gp_lock);
+ 			continue;
++		}
+ 		/*
+ 		 * Check if the Target port group and Target port descriptor list
+ 		 * based on tg_pt_gp_members count will fit into the response payload.
+@@ -178,6 +186,7 @@ target_emulate_report_target_port_groups(struct se_cmd *cmd)
+ 		if ((off + 8 + (tg_pt_gp->tg_pt_gp_members * 4)) >
+ 		     cmd->data_length) {
+ 			rd_len += 8 + (tg_pt_gp->tg_pt_gp_members * 4);
++			spin_unlock(&tg_pt_gp->tg_pt_gp_lock);
+ 			continue;
+ 		}
+ 		/*
+@@ -215,7 +224,6 @@ target_emulate_report_target_port_groups(struct se_cmd *cmd)
+ 		buf[off++] = (tg_pt_gp->tg_pt_gp_members & 0xff);
+ 		rd_len += 8;
+ 
+-		spin_lock(&tg_pt_gp->tg_pt_gp_lock);
+ 		list_for_each_entry(lun, &tg_pt_gp->tg_pt_gp_lun_list,
+ 				lun_tg_pt_gp_link) {
+ 			/*
 
-[Severity: Medium]
-This problem wasn't introduced by this patch, but can the LUN detachment
-loop right above this race with target_detach_tg_pt_gp() [1] and
-leave a freed struct se_lun on default_tg_pt_gp->tg_pt_gp_lun_list?
+---
+base-commit: b3dfbde62cf1981c4638939c159dfd087b7a72e9
+change-id: 20261110-bug-target-rtpg-oob-66d1ab0272c9
 
-drivers/target/target_core_alua.c:core_alua_free_tg_pt_gp() {
-    ...
-	spin_lock(&tg_pt_gp->tg_pt_gp_lock);
-	list_for_each_entry_safe(lun, next,
-			&tg_pt_gp->tg_pt_gp_lun_list, lun_tg_pt_gp_link) {
-		list_del_init(&lun->lun_tg_pt_gp_link);
-		tg_pt_gp->tg_pt_gp_members--;
+Best regards,
+-- 
+Qiliang Yuan <qiliang.yuan@linux.dev>
 
-		spin_unlock(&tg_pt_gp->tg_pt_gp_lock);
-		...
-		spin_lock(&lun->lun_tg_pt_gp_lock);
-		if (tg_pt_gp !=3D dev->t10_alua.default_tg_pt_gp) {
-			__target_attach_tg_pt_gp(lun,
-					dev->t10_alua.default_tg_pt_gp);
-		} else
-			rcu_assign_pointer(lun->lun_tg_pt_gp, NULL);
-		spin_unlock(&lun->lun_tg_pt_gp_lock);
-
-		spin_lock(&tg_pt_gp->tg_pt_gp_lock);
-	}
-	spin_unlock(&tg_pt_gp->tg_pt_gp_lock);
-}
-
-When a non-default target port group is removed through configfs while a
-fabric LUN in that group is being unlinked, core_alua_free_tg_pt_gp()
-drops tg_pt_gp->tg_pt_gp_lock before taking lun->lun_tg_pt_gp_lock while
-lun->lun_tg_pt_gp still points to tg_pt_gp:
-
-CPU0                                   CPU1
-core_alua_free_tg_pt_gp(tg_pt_gp)      target_fabric_port_unlink()
-  spin_lock(&tg_pt_gp->tg_pt_gp_lock)    core_tpg_remove_lun(lun)
-  list_del_init(&lun->lun_tg_pt_gp_link)   target_detach_tg_pt_gp(lun)
-  tg_pt_gp->tg_pt_gp_members--
-  spin_unlock(&tg_pt_gp->tg_pt_gp_lock)
-                                             spin_lock(&lun->lun_tg_pt_gp_l=
-ock)
-                                             __target_detach_tg_pt_gp(...)
-                                             rcu_assign_pointer(
-                                               lun->lun_tg_pt_gp, NULL)
-                                             spin_unlock(&lun->lun_tg_pt_gp=
-_lock)
-  spin_lock(&lun->lun_tg_pt_gp_lock)
-  __target_attach_tg_pt_gp(lun,
-    default_tg_pt_gp)
-  spin_unlock(&lun->lun_tg_pt_gp_lock)
-                                       target_fabric_port_release()
-                                         ...
-                                           kfree(lun)
-                                       target_emulate_report_target_port_gr=
-oups()
-                                         /* walks default_tg_pt_gp list */
-                                         lun->...  <-- use-after-free
-
-Because core_alua_free_tg_pt_gp() does not recheck lun->lun_tg_pt_gp after
-acquiring lun->lun_tg_pt_gp_lock, it re-attaches the detaching LUN to
-default_tg_pt_gp after target_detach_tg_pt_gp() has already cleared it
-(and decremented tg_pt_gp->tg_pt_gp_members a second time).  When port
-teardown subsequently frees the LUN, a dangling entry remains on
-default_tg_pt_gp->tg_pt_gp_lun_list.
-
-[1] https://sashiko.dev/#/bug/linux-8e4ef2cb-206e-4a76-8c9e-458e67913f8b
-
---=20
-Sashiko AI review =C2=B7 https://sashiko.dev/#/patchset/20261111-bug-target=
--alua-free-gp-v1-1-d1e692ae8694@linux.dev?part=3D1
