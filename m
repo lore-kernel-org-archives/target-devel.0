@@ -1,72 +1,58 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=82.195.75.108
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794390418;
-	b=Nhg17AHd9HIsgif4fVjmYtD/xKXR+uvPcs3IYUG3gJChisY2yxpIKMyBa6l0T1/NbsSq
-	 EYYJGywpl7EdxgBl8jYPljIws1lM368Pqk9GPcDVGGI67G44dCXiSZFGmgdVgWoShTCRP
-	 wIrtM6S0f/VLX+QQSIXgFVzoyeoglxgdJRyjtGFjGoZ1SG+Hrr9gjHPlRDNzktmrCt95J
-	 8bBRmZYy2HeXjR+QxNau+0VzK9STPFreHMv90uwyI7klW1CopIxlfUPgEViqIxj1EhRnH
-	 U94oxaU/dZIdfz4QWzSSg1O69Wt6cexCjRZFKveTyhZKPD+rxl+g/HPH8za6UmRWJqw==
+	t=1794403471;
+	b=GYR30pnZDssYqIk2N6eiFBo1uQuYFcB1TXtxJIqVugCCbW5eQStkOatOXH0ClBJeP6WG
+	 3Nn/C7ZU0xhTfrr/6+ZjlPDLaNiBZtiMRf3dAx7GYgxMNEFtYaSt7IUNCEjXJGiL9IsIM
+	 vUfLquLmHqhl/Ct9nvcoLP2n8Hle+OMeap2rIJrdxdEFAEj019IHXyzNgWGFrFa5FpVoK
+	 Vaif/E9erULrBSh7yLzFGb4q8RdRj9hhrV/pj8aaSgAY7qqMcO7hlCPd2fFDlSN9c2w4O
+	 Hmx3f11tWG3QBqlpwCITpoxdU4kdBgYamT20eFwAEyZyU2F0+ZsK2EUMF79YBsO1Riw==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794390418;
-	h=DMARC-Filter:DKIM-Signature:Received:Date:From:To:Cc:Subject:
-	 Message-ID:References:MIME-Version:Content-Type:Content-Disposition:
-	 In-Reply-To:X-Debian-User;
-	bh=g4FJ8o8UQUtyD0eGI0sUCpicqPvdI4Vdc4LMM0bmn0w=;
-	b=Hswx4nOcAxEn2mYXM+ZJr7H/uWd6tZV0QzCT4hYr1fl+14rNU9s+/ViqQ9z1Ugna1oRS
-	 BFkTk1j+MqQiagMQvynOawuKEKyONjBiV18uaMTwiPLVAq7qzB8keqRfSSA42kc6ODfXz
-	 i1+GfJfXQwnp8403YtvM1/TYnjXvY21mSx2W/lDKVBjpVKjMcIfgQdOpTRQe1RmRd7ZaQ
-	 bXcnFeiSpsBlotq3RK0uh3T+hRiWbt4uovHA8I7iYaz1An7qvtsK2GXwM4oWNwVjWkjHF
-	 06u2vbn8KvnfDrbtUbRfIimbv4xggVXvUlwGDZG1XSbiMUrd1DLUsP0sDl3FiaimEdg==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794403471;
+	h=Received:DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:
+	 References:MIME-Version:Content-Type:Content-Disposition:In-Reply-To;
+	bh=uzBaz5jqtl18woVrXcDmQuaoa5Gf6nHDZaCA6adJaRY=;
+	b=iCBpJkfTNpZ8bBwizHs+JFix+4wr7G9KqVs88ZIHkONw6g/6yGGTtQ3G5NrqWUZEDH6F
+	 ZEChI59hLkiE6mZB2b4upC+daVdh39i/oTEo18qyS8kQVcEZso8RoUKCvqN5IAMotI27c
+	 IJhv+yIUob4lXj220r0kuasxGlBabda6r2i3AqBS4ScJK81YhnWAM5r59hkIoPfmSdMeU
+	 B19u3vA53ZFPRvBu4AAvHJObChsD0PJQhDzRZAn9OIM7UPXAE0pGXPjnODpCJE17GbvE8
+	 d5rNK7JAYnVN+p7zuhoZ2ecySNHXl1qXouV04SYa2yL8kwopQyWdyCTHwfBZV8dLn8w==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=debian.org;
-	spf=pass smtp.mailfrom=debian.org;
-	dkim=pass header.d=debian.org header.i=@debian.org header.a=rsa-sha256 header.s=smtpauto.stravinsky header.b=cmZW0raJ;
-	arc=none smtp.remote-ip=82.195.75.108
-Received: from stravinsky.debian.org (stravinsky.debian.org [82.195.75.108])
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b="fr4/J+rb";
+	arc=none smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (prime256v1) server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A60BA606A332;
-	Wed, 11 Nov 2026 09:46:57 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org A60BA606A332
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=debian.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=debian.org
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D47EC606A326;
+	Wed, 11 Nov 2026 13:24:31 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=debian.org header.i=@debian.org header.a=rsa-sha256 header.s=smtpauto.stravinsky header.b=cmZW0raJ
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=debian.org;
-	s=smtpauto.stravinsky; h=X-Debian-User:In-Reply-To:Content-Type:MIME-Version:
-	References:Message-ID:Subject:Cc:To:From:Date:Reply-To:
-	Content-Transfer-Encoding:Content-ID:Content-Description;
-	bh=g4FJ8o8UQUtyD0eGI0sUCpicqPvdI4Vdc4LMM0bmn0w=; b=cmZW0raJpZImC504fK0B0kMd2h
-	XJQXfLj15TrbtRxuoXIll7+dYj88ZVAl2AayT9vhDBlAQ57+Eho/cFEk5It94wIbKS4EH4G+cdutI
-	0K9jgabrgunrLX95HA3KOWeYRz+hLh5iGe5EyD3w5xx8w9MzCtlstOcNUcfrAtIPd3RxiWEjnELaD
-	hbo41pU2e/eygmvhOngKp7971UVKKEY71/mIvuWf0WfaOur34IyUdpGFowB9/oVJFRm81ZxsZDxLw
-	5M54Kif6OKPedXxyOCO9YpK4/4uqCIxZE2p81NHj3kV9mf9cnMGZSmbBCsLntHmPvgWT1OTOymjci
-	CwvzesXA==;
-Received: from authenticated-user
-	by stravinsky.debian.org with esmtpsa (TLS1.3:ECDHE_X25519__RSA_PSS_RSAE_SHA256__AES_256_GCM:256)
-	(Exim 4.96)
-	(envelope-from <leitao@debian.org>)
-	id 1xR4up-00D5nW-2D;
-	Wed, 11 Nov 2026 09:46:51 +0000
-Date: Wed, 11 Nov 2026 01:46:43 -0800
-From: Breno Leitao <leitao@debian.org>
-To: Christian Brauner <brauner@kernel.org>
-Cc: linux-fsdevel@vger.kernel.org, Jann Horn <jannh@google.com>, 
-	Chris Mason <mason@kernel.org>, Josef Bacik <josef@toxicpanda.com>, 
-	Christoph Hellwig <hch@lst.de>, linux-block@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linux-nvme@lists.infradead.org, Alexander Viro <viro@zeniv.linux.org.uk>, 
-	Jan Kara <jack@suse.cz>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, 
-	driver-core@lists.linux.dev, linux-mm@kvack.org, bpf@vger.kernel.org, 
-	linux-security-module@vger.kernel.org, selinux@vger.kernel.org, apparmor@lists.ubuntu.com, 
-	linux-nfs@vger.kernel.org, netdev@vger.kernel.org, fuse-devel@lists.linux.dev, 
-	linux-efi@vger.kernel.org, xen-devel@lists.xenproject.org, ocfs2-devel@lists.linux.dev, 
-	linux-s390@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-usb@vger.kernel.org, 
-	Amir Goldstein <amir73il@gmail.com>, linux-erofs@lists.ozlabs.org, linux-kselftest@vger.kernel.org
-Subject: Re: [PATCH RFC 16/41] configfs: use fc_init_pseudo()
-Message-ID: <avQ5dv0747H-XKmD@gmail.com>
-References: <20261110-work-loop-pseudo-v1-0-4c998976c6c7@kernel.org>
- <20261110-work-loop-pseudo-v1-16-4c998976c6c7@kernel.org>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=fr4/J+rb
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 990891F00A05;
+	Wed, 11 Nov 2026 13:24:30 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1794403471;
+	bh=uzBaz5jqtl18woVrXcDmQuaoa5Gf6nHDZaCA6adJaRY=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=fr4/J+rbVpzt6DQkkQiR6yzcftvRYJwzkFC/K0BNN1VTaQU+A0Q04os/ez+QhIduw
+	 bBnlfKh7kS9w73r/mlNHsjgUAuiz90TS99PGTqxa0FOzbGlq3m6qTTlOUwItArVBiz
+	 tZC+S3fsZd0pO2QSvH/gzfdJkA2nXxTp5KoWI0jUbsoItWliafGB4NymWjbLX4LDy6
+	 bcxqjr1uGyBC84g0UNd59CodBCcMfWBA9xa/K7ZaCwyh767lCEtookjhQLgJ3oppdU
+	 aG65hs+MQNO2QMpHMiRSgBYlcKjg0LBbhC6C95ldQdXDBswmopdRgpUypiZyS/9ink
+	 +8KUWrchviyvw==
+Date: Wed, 11 Nov 2026 15:24:26 +0200
+From: Leon Romanovsky <leon@kernel.org>
+To: Yehyeong Lee <yhlee@isslab.korea.ac.kr>
+Cc: Sagi Grimberg <sagi@grimberg.me>, Max Gurtovoy <mgurtovoy@nvidia.com>,
+	Jason Gunthorpe <jgg@ziepe.ca>,
+	"Martin K . Petersen" <martin.petersen@oracle.com>,
+	Mike Christie <michael.christie@oracle.com>,
+	linux-rdma@vger.kernel.org, target-devel@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v8 0/6] IB/isert: fix the device removal use-after-free
+Message-ID: <20261111132426.GR8635@unreal>
+References: <20261104040318.1844865-1-yhlee@isslab.korea.ac.kr>
+ <20261104142043.GG478286@unreal>
+ <CAM+FBJen6v58uZPvSTfSG--9r9LzwAp1PBWbWK7RUFM89qmMJA@mail.gmail.com>
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Post: <mailto:target-devel@vger.kernel.org>
@@ -78,14 +64,23 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20261110-work-loop-pseudo-v1-16-4c998976c6c7@kernel.org>
-X-Debian-User: leitao
+In-Reply-To: <CAM+FBJen6v58uZPvSTfSG--9r9LzwAp1PBWbWK7RUFM89qmMJA@mail.gmail.com>
 
-On Tue, Nov 10, 2026 at 10:14:32AM +0100, Christian Brauner wrote:
-> Initialize configfs as a pseudo filesystem. This raises SB_I_PSEUDO and
-> also SB_I_NOEXEC and SB_I_NODEV. configfs never holds executables or
-> device nodes.
+On Fri, Nov 06, 2026 at 08:26:49PM +0900, Yehyeong Lee wrote:
+> Hi Leon,
 > 
-> Signed-off-by: Christian Brauner (Amutable) <brauner@kernel.org>
+> Sorry for the flood of versions. I should have waited for review instead
+> of reposting every time the bot flagged something. I'll stop here and
+> won't send another version unless someone asks for one.
+> 
+> For what it's worth, each version was tested on soft-RoCE with KASAN,
+> racing device removal against connect, login and teardown. I don't have
+> iSER hardware, so none of it has run on a real HCA.
+> 
+> If it helps, I can send 1/6 and 2/6 on their own, without the stable
+> tag, and leave the rest until someone can test it on hardware. If you'd
+> rather drop the series, that's fine too.
 
-Acked-by: Breno Leitao <leitao@debian.org>
+You should get Acked by from isert maintainers.
+
+Thanks
