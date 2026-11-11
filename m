@@ -1,66 +1,95 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=199.89.1.16
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.216.54
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794358498;
-	b=06u86CG0iJRFGKaw2fglMI6xX0BHipGozFu1LlY7MNLiFBC5muP8NFxuXwz/+CEVXK7W
-	 H9uE76P29nr1gG+KOZjowt3JdNz5zUcttlTNZlTPvp/m/8DTj1QPmf+q7MIRwCmh26E+q
-	 rTl0wOiPwg9EQnC0zAaf+Cbri0KmciomzvH8XW5O4Z+IZz057uJK6s9hA///yJ/utlehU
-	 g11e4JnKkJ23HZLNtp7uiwWJ8EMP4cabzoctnQhKZu6ugxAnFaZU0RZCNF+rPJU1Rrl3p
-	 A8mrb2Csei6+FWfsQDn9QO7PGsoNtqRSTt/j9qw5nBCICCu/UTYMXAlmj6INkzgNFRg==
+	t=1794366404;
+	b=TJonz5xC0u4+L3jsCsjO4TYGYbNaNzvVaaoDtNxfV0JfbxmYHiQm2cj/k7u13Tuu+wF2
+	 Xd2uq+VsKAYM5DpQeBGSKfLHJg9+sb4UnNsc4jmrCe36hptaJJg//QDCKMQCih5dZON6H
+	 Fu0plKhWVgHYZJoXONZTf7fx8p7HuiKF0UiR7nOvEkdCDlEPGV9vln1Pl2XXb0ybNhQSE
+	 T7bS3Qoatow2wo5VFmQIfVgyV7+Yit6jyx/Z3vlWYgEo1XuXRvQuNOBZOjvK9t9SZnYZg
+	 41EKt/G3p+rBIPzt0RM/uqv/pG1BTwbapBct/4MWiRJqu/fZjsgrD2mWfmVQExnCm/g==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794358498;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Virus-Scanned:Received:
-	 Received:Message-ID:Date:MIME-Version:User-Agent:Subject:To:Cc:
-	 References:Content-Language:From:In-Reply-To:Content-Type:
-	 Content-Transfer-Encoding;
-	bh=bQwp89LGZ8zRmajtcyvmVGS2udRo2pxMuP3YlaRU85U=;
-	b=gvNwe+YohHfzhgfcW3nwfvIyACKpfUwPtejx/hA8CZfb3ixMMK70x7hyr9EJTYGrDk/c
-	 y47YBdragR4HgjI+xd0aPVSReGnRsTCDccvsqANHMrjaUPJY4Vr6KnHP+qK89cQVJs33f
-	 PErNkIeG3pH6B2ne3XQM/SJXcyy22Tj6pHKId94HfAsxXcwZBk5P9uI13ccLZXTO7BUL2
-	 CvLiro3MgSp/WB+Bb0Hd1V9U8MnbcVjyqUgKPseAy8n9ogW/9DXKA+xuI4xu+rXCw5AJZ
-	 l/of1Ss+WfFh5mos8l+WwgzwMAnnIvE0GhLZg/cSl2MpTPuYIwCOkczs3O902beu+xw==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794366404;
+	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
+	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:
+	 MIME-Version:Content-Transfer-Encoding;
+	bh=mLhyYGCVTORdd4WihP4IIQfVXI++QSCchObfVqbadWA=;
+	b=j37Qqt3rHWc8kj4m+a0i4d4rOTRev6kQoP29hECWHjajEbwdTD4yBqsycw+WHysD5QMn
+	 dAJFadfa1XYExr8V9HK6AeVqH3HL4yyKgawRC+ymTF7UGkAfBhbDvG//h7PPcnU3niDRP
+	 8cEOrvEl7IjGY2HAnby8eHcHfoSOtpwya7bGctxLZ67i+bh7CVON26ugn9Ml0lgkc2rdI
+	 Mq7FDcIi2yj+kGBpBBYC3rimFyvfhSQUSHOQBjgU7opSKnDTW+ZLyyS0/bj7wPGr4hPsH
+	 OOHdBP6FKrYYuiHP4y/aL0xHxrP+iMLChg6VgvJlZrXxvsWKIZ8SnL9+XcXeAB1FBrQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=acm.org;
-	spf=pass smtp.mailfrom=acm.org;
-	dkim=pass header.d=acm.org header.i=@acm.org header.a=rsa-sha256 header.s=mr01 header.b="h/GBLPsV";
-	arc=none smtp.remote-ip=199.89.1.16
-Received: from 013.lax.mailroute.net (013.lax.mailroute.net [199.89.1.16])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	dmarc=pass header.from=gmail.com;
+	spf=pass smtp.mailfrom=gmail.com;
+	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=W7W0MsWh;
+	arc=none smtp.remote-ip=209.85.216.54
+Received: from mail-pj1-f54.google.com (mail-pj1-f54.google.com [209.85.216.54])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E4FAD606A31C;
-	Wed, 11 Nov 2026 00:54:57 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org E4FAD606A31C
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=acm.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=acm.org
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6C014606A31C
+	for <target-devel@vger.kernel.org>; Wed, 11 Nov 2026 03:06:44 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 6C014606A31C
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=acm.org header.i=@acm.org header.a=rsa-sha256 header.s=mr01 header.b=h/GBLPsV
-Received: from localhost (localhost [127.0.0.1])
-	by 013.lax.mailroute.net (Postfix) with ESMTP id 4jPQ692hBrzlgyGs;
-	Wed, 11 Nov 2026 00:54:57 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=acm.org; h=
-	content-transfer-encoding:content-type:content-type:in-reply-to
-	:from:from:content-language:references:subject:subject
-	:user-agent:mime-version:date:date:message-id:received:received;
-	 s=mr01; t=1794358494; x=1796950495; bh=bQwp89LGZ8zRmajtcyvmVGS2
-	udRo2pxMuP3YlaRU85U=; b=h/GBLPsVfaLw43/+HNjek3kKM5Z6PcqaZCEaN36V
-	h2WBzD50AHpX0TpPU37rZXghPQ5mPvcmxTyJaApxlhgEfx8axwWhVVY/XeZPdxQL
-	TAbwhzrspNNoAadI+tKHhRPqF5hbXaoeXHwQD604imeu1nbKuW54zcSsrfsyffaO
-	+30p1FW3j45e1EzM1sFYDvD5v3AhFvoLku9ZuWIeVms4/6TGSIx4vlCWaQ9ZA9xJ
-	spZ63vfuPjJXVXRPqopC5FnmX9G3ETTvBOfenuwfu5Eeu5fYGr6D+e960NqwVMoe
-	cQjNtthLzMUU3BwXnlNnR/XtS/Z2KKUNsdmpqJR/g/sQuA==
-X-Virus-Scanned: by MailRoute
-Received: from 013.lax.mailroute.net ([127.0.0.1])
- by localhost (013.lax [127.0.0.1]) (mroute_mailscanner, port 10029) with LMTP
- id Cu5h4u51i4Gm; Wed, 11 Nov 2026 00:54:54 +0000 (UTC)
-Received: from [IPV6:2a00:79e0:2ed2:d:28e8:10eb:f1c8:4883] (unknown [104.135.182.43])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	(Authenticated sender: bvanassche@acm.org)
-	by 013.lax.mailroute.net (Postfix) with ESMTPSA id 4jPQ6658CXzlffvf;
-	Wed, 11 Nov 2026 00:54:54 +0000 (UTC)
-Message-ID: <2e748067-f733-4edc-b71b-540de4bc3d26@acm.org>
-Date: Tue, 10 Nov 2026 16:54:52 -0800
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=W7W0MsWh
+Received: by mail-pj1-f54.google.com with SMTP id 98e67ed59e1d1-3b10ca4e3f9so1568001a91.0
+        for <target-devel@vger.kernel.org>; Tue, 10 Nov 2026 19:06:44 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20260707; t=1794366404; x=1794971204; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=mLhyYGCVTORdd4WihP4IIQfVXI++QSCchObfVqbadWA=;
+        b=W7W0MsWhl2pdpNVYjWLOyyPFheedfMFbCq2aybaSoFL5RextMQgVc6pOy/1WqmlFDC
+         K0TPARUDnzD3ilY7LHrBTMS+oRCi0LKl1GOYON41ft9nx3sGcLgCr2hfXJLs15eAaBJq
+         SWv5ExgvJDJZQJwicIW/PRABJsVsET3o6my4ONLHK3o2KbKrHUkmwIOeYIxp78YSNXqN
+         XPjkS5kjqi7LOivq2fbzhJNsBq3wT0SIumqqiIqk3qVDaOCMiji/Zm8lnydN2S+CK4bR
+         bF5jRkco1p8NJgeeqW8Ahy6T5OlbhmIJ7n9rMUqvdKqHKozwmPyY7Zgs9QJigdXuRhoP
+         4yZw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1794366404; x=1794971204;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to:content-type;
+        bh=mLhyYGCVTORdd4WihP4IIQfVXI++QSCchObfVqbadWA=;
+        b=YhFF9kEXRzbBqOmjR12meSXCCnzWzaetHPWkymVBislHDpJ4AccLCfAdhYs2ddCyDq
+         8+cYYkunehLIUDPUHvoRCRfRkUsD8O3B+oVkTIBZDMRavvAYkerZP3sQ6CEzESBscI3s
+         lIA1TohysBBnBJX3AFiiAAkTytPK9w6SF8l5ulCcg3qs9HCJtCy5xEfgBzHPiW/b8rwR
+         sYB0t4MhMoRXLLKyo9XXToa/5OTLyVhEilO4z3QDyEbIndu4sw3kXUOt4YR5gEPzSFb8
+         gDsAe5tmNN5lQyJhXZxZPI7LZDfoOfurHTJIJKdyf9vHA3Hr3+FW/RVUulfeXgL9AC4x
+         Vqbw==
+X-Forwarded-Encrypted: i=1; AL+hErENVw0panRAl9Prf6olMsy9LwA2lguBFRN5hmU1uL/K4S9PAakXl+jqwSV0X/izF7oLP4ZdIK+83b169N0=@vger.kernel.org
+X-Gm-Message-State: APuU4Z+4OhqzyWbmTseW3Bq+gp0zWM1iDJ47fRT1ZHh3MLm4EKsK53b6
+	nIJ3DZ9wJxGRvmxaO5eeAej1AqLR8/PqqEa2Fyb6Pz9ggd8qJ/M6QnMXRKgy5jbxxMMa1g==
+X-Gm-Gg: AYBFou3/J7pdyE2Nj/S/qs1Mfqp/vfhYTvaGazY1Wl7sYz2hQ2uTmRpdmgvm+G2eOlA
+	LmCd0pZYCFpNkFZUFAvp3jp4jk5UJhXCR271gufPGmqZ+ZXTxLjf6ghG+H7YqdyIjbHnyPdyhRE
+	57eA37206sZdxw3JkcIpMbJnNDyty/uZJRDCWZG6Vi1XfnufAG9UWXJ6hX+uf1Ly0qCGEF/U+Kt
+	xLgY5K+96OwHI1eMB2BSXCxoVtbqWLeJpX/joJQIeb/wx3eb1boR2gSaVXHrurSVKk4YnUxtDjx
+	2+q6yjEPU5HMuphw5lUxmqHdw2WDeIeoaFzFmuZU3b6lCZgXIJQ20UYBqjAEgo2BAENYQyDOl4I
+	Jtjfs4J+TVgGeRvv05knhjbJCMftzK6Fn3CTkg0KLTVBH+PwqcgVtZFv+L5WS7HwOsx26QUnMV7
+	yK5Y9cCRozBe9vcYauAwhuB3ZZIn+hgwuyvLbv8vzX0DqIiVxawacXIxxpc8aYuQkYlWJ9XipUL
+	BDTAhXpAWNHthoeN6TffdVJ1h2ePeNGU1ZydxnfHEcPYmEXja0rQqQlGS/hh/zbm8SbClhlQL90
+	U/NzzqyxwHIWG+Y1uCchJEvjntA3c36zk4k58Tu43Q==
+X-Received: by 2002:a17:90b:2584:b0:3ac:ffb8:1809 with SMTP id 98e67ed59e1d1-3b182f3eec3mr934352a91.39.1794366403744;
+        Tue, 10 Nov 2026 19:06:43 -0800 (PST)
+Received: from localhost.localdomain ([183.62.176.219])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3b181f9873csm667757a91.1.2026.11.10.19.06.40
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 10 Nov 2026 19:06:43 -0800 (PST)
+From: yong liu <pkfxxxing@gmail.com>
+To: "Martin K. Petersen" <mkp@kernel.org>
+Cc: linux-scsi@vger.kernel.org,
+	target-devel@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	security@kernel.org
+Subject: [PATCH v2] scsi: target: Disable protection processing for zero-block commands
+Date: Wed, 11 Nov 2026 11:05:43 +0800
+Message-ID: <20261111030544.1216434-1-pkfxxxing@gmail.com>
+X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20261109092744.822646-2-pkfxxxing@gmail.com>
+References: <20261109092744.822646-1-pkfxxxing@gmail.com> <20261109092744.822646-2-pkfxxxing@gmail.com>
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Post: <mailto:target-devel@vger.kernel.org>
@@ -70,81 +99,57 @@ List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:target-devel+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2] RDMA/srpt: Limit read data transfers to the command
- length
-To: liuyong <pkfxxxing@gmail.com>
-Cc: Jason Gunthorpe <jgg@ziepe.ca>, Leon Romanovsky <leon@kernel.org>,
- linux-rdma@vger.kernel.org, target-devel@vger.kernel.org,
- linux-kernel@vger.kernel.org, security@kernel.org
-References: <20261110030809.913063-1-pkfxxxing@gmail.com>
- <20261110030809.913063-2-pkfxxxing@gmail.com>
- <20261110052827.963143-1-pkfxxxing@gmail.com>
-Content-Language: en-US
-From: Bart Van Assche <bvanassche@acm.org>
-In-Reply-To: <20261110052827.963143-1-pkfxxxing@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 
-On 11/9/26 9:28 PM, liuyong wrote:
- > SRPT builds RDMA contexts from the initiator's buffer descriptors before
- > parsing the CDB. The resulting RDMA WRITE requests can exceed
- > cmd->data_length after target core shortens the command or when an
- > indirect descriptor's buffers exceed its advertised total length.
+A READ(10) with its TRANSFER LENGTH field set to zero on a PI-enabled
+LUN can select TARGET_PROT_DIN_STRIP while leaving cmd->prot_length at
+zero. transport_generic_new_cmd() then allocates an empty protection
+scatterlist, causing a target-side Oops, which can also lead to
+use-after-free during subsequent iSCSI connection cleanup. A logged-in
+iSCSI initiator can trigger this on a FILEIO LUN with protection
+information enabled.
 
-Agreed that both cases need to be addressed. For the second case,
-srpt_get_desc_tbl() should reject SRP_CMD requests for which the sum
-of the direct descriptor lengths does not match the total length in
-the indirect buffer descriptor instead of building RDMA contexts for
-an inconsistent descriptor table. That is a protocol violation by the
-initiator and it is better to catch it while parsing the request than
-when sending the response.
+After validating PROTECT, reset the protection operation, type and
+checks for zero-block commands in sbc_check_prot(). This avoids the
+empty allocation and prevents backends and fabrics from selecting PI
+processing without a protection payload. Preserve the existing
+data-length adjustment for commands carrying PI over the wire.
 
- > +		/* Do not expose uninitialized data beyond cmd->data_length. */
- > +		for (wr = first_wr; wr != &send_wr; wr = wr->next) {
- > +			int j;
- > +
- > +			if (wr->opcode != IB_WR_RDMA_WRITE)
- > +				continue;
- > +			for (j = 0; j < wr->num_sge && data_len; j++) {
- > +				struct ib_sge *sge = &wr->sg_list[j];
- > +
- > +				sge->length = min(sge->length, data_len);
- > +				data_len -= sge->length;
- > +			}
- > +			wr->num_sge = j;
- > +			if (!j)
- > +				wr->sg_list = NULL;
- > +		}
+The issue was discovered and fixed by Qihoo 360's Tulongfeng multi-agent
+system.
 
-The work requests and SGEs returned by rdma_rw_ctx_wrs() are owned by
-the RDMA R/W API. This loop relies on several implementation details
-of that API: that data is transferred with IB_WR_RDMA_WRITE work
-requests, that the remote address of each work request has been
-computed in advance, that the work requests occur in data order and
-that the work requests and SGE arrays may be modified by the caller.
-Any future change in drivers/infiniband/core/rw.c that invalidates one
-of these assumptions would silently reintroduce the information leak.
+Fixes: 5835812f13e5 ("target: ensure se_cmd->t_prot_sg is allocated when required")
+Cc: stable@vger.kernel.org
+Signed-off-by: yong liu <pkfxxxing@gmail.com>
+---
+Changes in v2 (addressing sashiko-bot's protection-state review):
+- Replace the allocation-only guard with a zero-block protection state fix
+  in sbc_check_prot(), so backends and fabrics do not select PI processing
+  without a protection payload.
+- Preserve PROTECT validation and the existing data-length adjustment.
 
-The irdma issue mentioned in the patch description shows another
-problem with this approach: it causes work requests to be posted that
-the RDMA R/W API never generates and hence that RDMA drivers have not
-been tested with. If irdma does not handle num_sge == 0 correctly for
-RDMA WRITE requests then that should be fixed in the irdma driver
-rather than worked around in SRPT. Additionally, there is no guarantee
-that other RDMA drivers handle such requests correctly.
+Developed against f66469d9905b39d2c260a15d7d6db450f4db67c1 (7.4-rc1).
 
-Please consider the following approach instead:
-- Reject inconsistent indirect descriptor tables in
-   srpt_get_desc_tbl().
-- In srpt_queue_response(), zero the part of the data buffer beyond
-   cmd->data_length, e.g. with sg_zero_buffer(), if the data buffer is
-   larger than cmd->data_length.
+ drivers/target/target_core_sbc.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-This is simpler, does not depend on RDMA R/W API internals or RDMA
-driver behavior, only adds overhead for commands with a residual and
-is easy to backport.
+diff --git a/drivers/target/target_core_sbc.c b/drivers/target/target_core_sbc.c
+index 21f5cb86d7..560e62cef7 100644
+--- a/drivers/target/target_core_sbc.c
++++ b/drivers/target/target_core_sbc.c
+@@ -721,6 +721,12 @@ sbc_check_prot(struct se_device *dev, struct se_cmd *cmd, unsigned char protect,
+ 	if (sbc_set_prot_op_checks(protect, fabric_prot, pi_prot_type, is_write, cmd))
+ 		return TCM_INVALID_CDB_FIELD;
+ 
++	if (!sectors) {
++		cmd->prot_op = TARGET_PROT_NORMAL;
++		cmd->prot_checks = 0;
++		pi_prot_type = TARGET_DIF_TYPE0_PROT;
++	}
++
+ 	cmd->prot_type = pi_prot_type;
+ 	cmd->prot_length = dev->prot_length * sectors;
+ 
+-- 
+2.43.0
 
-Thanks,
-
-Bart.
