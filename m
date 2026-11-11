@@ -1,56 +1,58 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=95.215.58.182
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=213.95.11.211
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794407252;
-	b=cjwNOXAv2l5Y1zAbrClq9mQs6PzfgOnXssq/wYYbBt1YayGaqfV2ma+7dmwBmD36U3Xx
-	 JCcfQmqcVGEYec/cxYPPnuHs/woyW95mLCZ03TDytZJgCk25YA1H3ebtyj1fE1OgAP75q
-	 25Imd1DVzUwAsoVeaUEBPTfyNp22dXQOVOStY9WO6MG6zEpR7lXe/S1kFt3w1sv0l+Wng
-	 9IpsEDqGjksPCHVMwFd3ZGXcRB1Y26Jc3BYMD//8ZVYiWo9K4cPvQ5Yis0SgEhF31jWid
-	 X2uy7jxpG/yF1jso2QDDSoFqEVJMViVLUJKAZUhTZaqYDPhWXC3u+Q5XMZHse9vDeXg==
+	t=1794408969;
+	b=dIeCR5Pmu5nR2W0foX84y04hiF1cH0zgc2L08vhdnKpt9QjWKt2WuE1pBBCdttveBweF
+	 Gmz6Plc2c63OHmFAD/aAf/BxmhQBV++/mxPFHBvDQbPDnPCA3B6WZPDmLfrcIRstHEdSB
+	 q8sOFGODOmuFSQYa1V/mTtECo215f2s4KDUMqocR7UzdSz/G9PqUeytxZthmFHPcCIDv8
+	 DJA4ajtmMR4mV/LcNwX2Fi4cLwkn5HQBlrGWY3T622VTPU3PgORj8594H48Ssn4LMDB7b
+	 zOb+6X2otgK46B5s/ZX0LpuL3m1qJpFRD/DUO8E9VCBm0dMfwf9r3XnBQm29Y5r2Jxw==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794407252;
-	h=DMARC-Filter:X-Envelope-To:DKIM-Signature:X-Envelope-To:Received:
-	 X-Mizu-Trace-ID:X-Migadu-Flow:From:Date:Subject:MIME-Version:
-	 Content-Type:Content-Transfer-Encoding:Message-Id:X-B4-Tracking:To:Cc:
-	 X-Mailer;
-	bh=5OdqLlXVofYhgXwfpFpn5S7e9rSwH2M7lMV1Hw+hRww=;
-	b=ztM6UZGOBnJXxYg+VPX4+uOKAUcjm8i48geenldKJM9nLOnherWPOT/R5paa4Ff15yNr
-	 ha+/0NOaj/vC5q4PhTH/OPFOMMgjyqDx9b3KXR22OUAH50oTois/hy72d5c/z1wzP21zf
-	 iE6i378JVhfKvfpD7LTXIoiYU5Y4foe/o8NVuKdn0kmK8pPJJcUMHJEDiNKwwxXB3O3ed
-	 Ke37j3aFGXMw0Yy5NY9Y9qBkFOkK6QF/V1q07U6GHku93ReLpnDzfeDasu5X3/LrRu6nW
-	 9BVqkai27TLH6qlx/OOopgdyvoZCrO8O7tKHoOmkC61bU19ZWp6uB6J9hqhNctKY+Uw==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794408969;
+	h=DMARC-Filter:Received:Date:From:To:Cc:Subject:Message-ID:References:
+	 MIME-Version:Content-Type:Content-Disposition:In-Reply-To:User-Agent;
+	bh=GonZG2wwIvN+gNPTSiAAkhawJ65Nfia9tR3JjSU8YK0=;
+	b=mVUqUUIl9I68CTSs6VL+CmZl25CaJwiSxBF1BYoOHkt13ChzaAW4QKy6rUVqCnLXCU1G
+	 CcwzDG4Y1fj5DikasrTKF8XXLIaYo5/MI9swsLvYTeWhqqcqhPby9DpGnlZ8FzMHREBHO
+	 Qjez13aus+YFug1G97yA5GUApLVxx/0kiMPmCX0BSlsR3cAeSsUQ8cNpTZCEgICIvf8UU
+	 wo/LjeplYRy98hXHA7/cKV157AXYfkXt61g7v51MMlOa0kWyYS1ZUEdoAdVFlwdng3cI2
+	 eHICJce41eA6QmfvU/kzq5Hj/jXmFahalRyBPUBUzFxJ4nBpQ8wCrhXiAHzcOMFi1Yg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=linux.dev;
-	spf=pass smtp.mailfrom=linux.dev;
-	dkim=pass header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b="NS/DzVdQ";
-	arc=none smtp.remote-ip=95.215.58.182
-Received: from mta1.migadu.com (out-182.mta1.migadu.com [95.215.58.182])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	dmarc=pass header.from=lst.de;
+	spf=pass smtp.mailfrom=lst.de;
+	arc=none smtp.remote-ip=213.95.11.211
+Received: from verein.lst.de (verein.lst.de [213.95.11.211])
+	(using TLSv1.2 with cipher ECDHE-ECDSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 328B4606A33C
-	for <target-devel@vger.kernel.org>; Wed, 11 Nov 2026 14:27:31 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 328B4606A33C
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.dev
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=NS/DzVdQ
-X-Envelope-To: target-devel@vger.kernel.org
-DKIM-Signature: a=rsa-sha256; bh=n7dKz5VV++RbTugrK9P7KhSNMntn2iLxBmjeZLHK0hc=;
- c=simple/simple; d=linux.dev;
- h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
- t=1794407249; v=1; x=1795012049;
- b=NS/DzVdQwYZFY/k5KQ10KPQXnEMR4Pn8/ahwNhVmUu1OPjeb+kPJD2ktdQqY8+MpRfB6WPBK
- 0qn4vozFmRQCSymeuoJIMHKwhU7aQGLqBuIWS3rrX4d92UvY5+zUHIxNTQfVhWajtskSFLbQ6Aw
- 5Z4WpFSCrPcxrSWdkp5Wx4Rc=
-X-Envelope-To: target-devel@vger.kernel.org
-Received: by smtp.migadu.com with ESMTPS id 2f1b5625be9d2d26;
-	Wed, 11 Nov 2026 14:27:29 +0000
-X-Mizu-Trace-ID: 2f1b5625be9d2d26
-X-Migadu-Flow: FLOW_OUT
-From: Qiliang Yuan <qiliang.yuan@linux.dev>
-Date: Wed, 11 Nov 2026 09:27:19 -0500
-Subject: [PATCH] scsi: target: alua: Hold tg_pt_gp_lock across the RTPG
- size check
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DDCB9606A324;
+	Wed, 11 Nov 2026 14:56:07 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org DDCB9606A324
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=lst.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=lst.de
+Received: by verein.lst.de (Postfix, from userid 2407)
+	id 4C15C68B05; Wed, 11 Nov 2026 15:55:56 +0100 (CET)
+Date: Wed, 11 Nov 2026 15:55:55 +0100
+From: Christoph Hellwig <hch@lst.de>
+To: Christian Brauner <brauner@kernel.org>
+Cc: linux-fsdevel@vger.kernel.org, Jann Horn <jannh@google.com>,
+	Chris Mason <mason@kernel.org>, Josef Bacik <josef@toxicpanda.com>,
+	Christoph Hellwig <hch@lst.de>, linux-block@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-nvme@lists.infradead.org,
+	Alexander Viro <viro@zeniv.linux.org.uk>, Jan Kara <jack@suse.cz>,
+	linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
+	driver-core@lists.linux.dev, linux-mm@kvack.org,
+	bpf@vger.kernel.org, linux-security-module@vger.kernel.org,
+	selinux@vger.kernel.org, apparmor@lists.ubuntu.com,
+	linux-nfs@vger.kernel.org, netdev@vger.kernel.org,
+	fuse-devel@lists.linux.dev, linux-efi@vger.kernel.org,
+	xen-devel@lists.xenproject.org, ocfs2-devel@lists.linux.dev,
+	linux-s390@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	linux-usb@vger.kernel.org, Amir Goldstein <amir73il@gmail.com>,
+	linux-erofs@lists.ozlabs.org, linux-kselftest@vger.kernel.org,
+	stable@vger.kernel.org
+Subject: Re: [PATCH RFC 01/41] loop: refuse backing files that aren't open
+ for reading
+Message-ID: <20261111145555.GA9996@lst.de>
+References: <20261110-work-loop-pseudo-v1-0-4c998976c6c7@kernel.org> <20261110-work-loop-pseudo-v1-1-4c998976c6c7@kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Post: <mailto:target-devel@vger.kernel.org>
@@ -60,82 +62,15 @@ List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:target-devel+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20261111-bug-target-rtpg-oob-v1-1-1c6b9cfb6831@linux.dev>
-X-B4-Tracking: v=1; b=H4sIAEZ79GoC/x3MMQqAMAxA0atIZgNNh4peRRxajTWLlbSKIN7d4
- viG/x/IrMIZhuYB5UuypL2C2gbmze+RUZZqsMY6IjIYzojFa+SCWo6IKQV0biEfjO3s3EMtD+V
- V7v86Tu/7AVymkullAAAA
-To: "Martin K. Petersen" <mkp@kernel.org>
-Cc: Mike Christie <michael.christie@oracle.com>, linux-scsi@vger.kernel.org, 
- target-devel@vger.kernel.org, linux-kernel@vger.kernel.org, 
- stable@vger.kernel.org, Qiliang Yuan <qiliang.yuan@linux.dev>
-X-Mailer: b4 0.13.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20261110-work-loop-pseudo-v1-1-4c998976c6c7@kernel.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 
-target_emulate_report_target_port_groups() checks that each target port
-group, with one descriptor per member port, fits in the allocation
-length, and then writes a descriptor for every LUN on the group's list.
+The fix itself looks good:
 
-The size check reads tg_pt_gp_members without tg_pt_gp_lock, which is
-only taken for the list walk. A LUN attached to the group in between,
-e.g. by a LUN created through configfs, adds a port the check did not
-account for, and its descriptor can be written past cmd->data_length.
+Reviewed-by: Christoph Hellwig <hch@lst.de>
 
-Take tg_pt_gp_lock before the size check, so that the member count and
-the list walked stay in sync.
-
-Fixes: 6b20fa9aaf0c2 ("target: Fix REPORT TARGET PORT GROUPS handling with small allocation length")
-Cc: stable@vger.kernel.org
-Signed-off-by: Qiliang Yuan <qiliang.yuan@linux.dev>
----
- drivers/target/target_core_alua.c | 12 ++++++++++--
- 1 file changed, 10 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/target/target_core_alua.c b/drivers/target/target_core_alua.c
-index 140154d93c430..c9413e67b7f3f 100644
---- a/drivers/target/target_core_alua.c
-+++ b/drivers/target/target_core_alua.c
-@@ -166,9 +166,17 @@ target_emulate_report_target_port_groups(struct se_cmd *cmd)
- 	spin_lock(&dev->t10_alua.tg_pt_gps_lock);
- 	list_for_each_entry(tg_pt_gp, &dev->t10_alua.tg_pt_gps_list,
- 			tg_pt_gp_list) {
-+		/*
-+		 * Hold tg_pt_gp_lock from the size check to the end of the
-+		 * descriptor list, so that LUNs joining the group cannot make
-+		 * the list longer than the space checked for.
-+		 */
-+		spin_lock(&tg_pt_gp->tg_pt_gp_lock);
- 		/* Skip empty port groups */
--		if (!tg_pt_gp->tg_pt_gp_members)
-+		if (!tg_pt_gp->tg_pt_gp_members) {
-+			spin_unlock(&tg_pt_gp->tg_pt_gp_lock);
- 			continue;
-+		}
- 		/*
- 		 * Check if the Target port group and Target port descriptor list
- 		 * based on tg_pt_gp_members count will fit into the response payload.
-@@ -178,6 +186,7 @@ target_emulate_report_target_port_groups(struct se_cmd *cmd)
- 		if ((off + 8 + (tg_pt_gp->tg_pt_gp_members * 4)) >
- 		     cmd->data_length) {
- 			rd_len += 8 + (tg_pt_gp->tg_pt_gp_members * 4);
-+			spin_unlock(&tg_pt_gp->tg_pt_gp_lock);
- 			continue;
- 		}
- 		/*
-@@ -215,7 +224,6 @@ target_emulate_report_target_port_groups(struct se_cmd *cmd)
- 		buf[off++] = (tg_pt_gp->tg_pt_gp_members & 0xff);
- 		rd_len += 8;
- 
--		spin_lock(&tg_pt_gp->tg_pt_gp_lock);
- 		list_for_each_entry(lun, &tg_pt_gp->tg_pt_gp_lun_list,
- 				lun_tg_pt_gp_link) {
- 			/*
-
----
-base-commit: b3dfbde62cf1981c4638939c159dfd087b7a72e9
-change-id: 20261110-bug-target-rtpg-oob-66d1ab0272c9
-
-Best regards,
--- 
-Qiliang Yuan <qiliang.yuan@linux.dev>
+But i wonder if we want a thin wrapper around ->read_iter/_write_iter
+to do this check so that it matches the normal read/write path?
 
