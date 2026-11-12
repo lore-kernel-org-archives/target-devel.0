@@ -1,80 +1,98 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=66.163.188.212
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.82.41
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794448237;
-	b=0MdefKij4mawKDGrXfF98jdsV1+BJckzJkJxOq9tgGH1vNOh7jinLXMxUIkjtTWRwyuh
-	 1TCdz4JknJ6hVa1ps/YufPLTh6sq0hJUyHvo57/3V1IpbGk6cunyZrurbUrzHkessiiW2
-	 //VY10tsxxHZYTXMkc+eKe3coZg4RBdPzGXRV/o8L5g7vfbIfHC/S8pjzmRjOvodak9ft
-	 UjKhQUSUZRsOvkkU+hxPpDla2qXev2o8RqmAWwTRt70WU2DqQ3g1PSPPMeGjTcNuz47Vv
-	 fKovmoRWYJn4aJOlYg6P7V1Ds65KlsbZkv5/zglm5+om7O7E8zAB5kUK0ZtYpC4ngKQ==
+	t=1794476554;
+	b=R66OJIW4pKnb8TqQ97ek6WXPCbyFePV3djRJHfK3nNSWXzZIyCtr28Qh5VtDYcGblPON
+	 fCqArENUlXKtBNhY9QPFMEE2zCTJKH4At+OoAAyfQvaeFP3YxtAkH04eFCsve47vYW0+i
+	 LEmMkWHaEukxf8YXG4qySNyVGQ0fo3ZMGVMxG275dQaXr6s0RvcmeaLVDWiJG66kklwTm
+	 1BjJoRWjtMbSliGykt/R3WD0wqz7vgDU2ShUcBVM0orOaPMOC/IOQZ7og7M3hvL3Zj/2f
+	 inl7UDlhV5315VdD/gl89bDKNSPizetcxFqZ50/F3fybHGO9VVZbQXrVPB9tFfDePWQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794448237;
-	h=DMARC-Filter:DKIM-Signature:X-SONIC-DKIM-SIGN:X-YMail-OSG:X-Sonic-MF:
-	 X-Sonic-ID:Received:Received:Message-ID:Date:MIME-Version:User-Agent:
-	 Subject:To:Cc:References:Content-Language:From:In-Reply-To:
-	 Content-Type:Content-Transfer-Encoding:X-Mailer;
-	bh=O8h9fybdyu+Al7CdWlfRBQ6LgqQutaBSF+Rc2HGjCVE=;
-	b=EVJm7PLYEaRFW2dOoK5uwOUCdGx1LrNQrSv673CWyQDlDF/qK21/l0om0asWijgO6VVi
-	 wj4Hayz1Q6PxTkghTGMhpQS16/sMtKh1/GPcm92RfX08YD+UkahKpaJjyZwRYnuQ6ieUp
-	 Qu4+Y/2UyMhulwZT3grq9DZg4IXsmDAzJ+EzLpy3ZAkEn+BfotjkwVkOv70aBqeOUMI/t
-	 I3jDr27/LhIUwszxSqzwZqQ/KHN0/ENUB2s8fVg0CoppRuhm3ZgmI5FACbTE/hlVSTB1W
-	 LacQlYNJIK1cC4hlokBGoisJRPHWRm9Em8bULxQ0jp9owV8WkCqPl2DV1axBxhmj0DQ==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794476554;
+	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
+	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:
+	 MIME-Version:Content-Transfer-Encoding;
+	bh=GTBA18JOWQoqxmchbhKPxOkv4PhMrzj8DppFkmldNNY=;
+	b=L7pO/wHUb2VbKhHNHbkGq6Jguj6OzioBmkuiKL0rNqBpIGovycniCZyt01ng7JmFC5gn
+	 tNg44O15ST64vy59IXNcI7Cf9yb8nosF4h88Z04y2zgWMs6soYzyzKnVLi18mctwa9flp
+	 2HFAWiXRaaS7qrh0Cq3hkYks1emTMtWBcDJvmxmHAhD8BfGLVdLGB3gBVMcuOf3nxEe0E
+	 Pz+Ud8u89rEij4Ug72SdHo7xcja4xbGFvHb+r1VSY2UzZPVH4GSh5MhF3TGqqMgz4B++f
+	 NOD7NM5Ko6dDIzvEJPDLmMeMnNavHP6mktWykbKXqr+tls11n8sAB7sGlhGg+DAGLAA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=schaufler-ca.com;
-	spf=pass smtp.mailfrom=schaufler-ca.com;
-	dkim=pass header.d=yahoo.com header.i=@yahoo.com header.a=rsa-sha256 header.s=s2048 header.b=F+m434hx;
-	arc=none smtp.remote-ip=66.163.188.212
-Received: from sonic311-31.consmr.mail.ne1.yahoo.com (sonic311-31.consmr.mail.ne1.yahoo.com [66.163.188.212])
+	dmarc=pass header.from=gmail.com;
+	spf=pass smtp.mailfrom=gmail.com;
+	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=rAPFnoHI;
+	arc=none smtp.remote-ip=74.125.82.41
+Received: from mail-dl1-f41.google.com (mail-dl1-f41.google.com [74.125.82.41])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AEACF606A32A
-	for <target-devel@vger.kernel.org>; Thu, 12 Nov 2026 01:50:36 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org AEACF606A32A
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=schaufler-ca.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=schaufler-ca.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A1E07606A32A
+	for <target-devel@vger.kernel.org>; Thu, 12 Nov 2026 09:42:33 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org A1E07606A32A
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=yahoo.com header.i=@yahoo.com header.a=rsa-sha256 header.s=s2048 header.b=F+m434hx
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yahoo.com; s=s2048; t=1794448235; bh=O8h9fybdyu+Al7CdWlfRBQ6LgqQutaBSF+Rc2HGjCVE=; h=Date:Subject:To:Cc:References:From:In-Reply-To:Content-Type:From:Subject:Reply-To:Content-Type; b=F+m434hxnazo+znIsDN87b1q6q2BjDXrSK85l4sPO4/7/Nv6ouklEMGBpfrTHUnO8eGiNQoV5Bbw/uB3JZACliQBg8PtdTRYRP97HHZoegx3ArYwH69kAdVaUPkV7WcyNd89YKs91cZCwmWeziNsUM+FCRLahqzZW3a6Ku8pvIiJlMO/7XaKbdkzRicymfmmSk9XFsFNG+fkHI8UO70pZ1hFT9v2XQiwRrAslvpHUFbDR+3rpTT4Ikh/N/oSBL0qRMnhxDrBkdI0Mmku6tTsyJWpgcJjSTSvBuepznmh0kGiP8yElqSHRAm6ov8qvVTBbZJZj+71HtVfmpD+WAp7XA==
-X-SONIC-DKIM-SIGN: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yahoo.com; s=s2048; t=1794448235; bh=cB6ms4YZu3OSr7Oj5Ktyy9vRYllWqlKKBSjCDtAOhd3=; h=X-Sonic-MF:Date:Subject:To:From:From:Subject; b=Wh5tO+A7k6l9RAB9CmF+7nFPpV+s7vwQOvHRCpB836zmpk+EmZdiT1obFQYb3eEYUV/ZZrDMNSGrpqiSFrVBvEAP1+BcX3bVXL8AkZe5aM0djERGyxVy+oivb40ItIA89tHRP/kW5BzO7GaPGZrOTfFkDQF1HHnKQVH/ifoH5PYTL/BXjLkbPViq5JKecTMlRIryhz3iU6NkOHkP1F3oliaijdeTD+Tk00HCA4w802Q1PFZvsZSndMk6hlb4A1wMRPh3z4tVeu12oZckS5JIJR1ywCFknBKWBE+hVxojbZ57Qr3RCaKJrua5vLBD1s/SnsdmRZ+/JLOhUlVDaAQyJw==
-X-YMail-OSG: zqmnDtkVM1n5t6ueog55b_vkFHSYM5E1qoECEJywzBr3UwiKAfUIVI_o6w7R9SH
- CQ1t93f4qyBpZEcVGjU2OBO9C0Of8.lRAD_UtcVdUMSf6_GiG98G7rNXb1ZhUGsyYLDyJE5oLG69
- MPpknxdoviNcfunvMa.q1ATsxUiRNZaaYFEtaSi7o3ARz3uzFbYwa4zXUFVTxVNR1M4yEm8E_vMu
- CX3lc6b1b0MWbnmh3DAeGebLmTpZwI12LuF9QH7MRRpV.Y7YkiPkkooycQl42qWPa_ZCsKSCVnTi
- cfYjzn7ZtEqmGYVjYEY1kEbVCA4JoS5GMMDKMoO39G5YhBugROnX2jrgGh0AwdwAby30.ZBxmd.l
- S62hS2hlPvIDoPxGhzS2whxCcIZrt8XbiUGRsBq2lfu8t9x.TIubZ4wIiRqzfDYoZIwioLDCjm6k
- .cljRFJEOnSix_ImX_sSyVP7eQAAEJ1GsHeUHb7atzAIHDlw0lV7YT_EQZaDbjuCghjYyGwMa7FJ
- LxdRDFOXlr05WMcbROqV0a4sd0J7UyT01rGVa2p8mqlfg_ZPSk1p0.zKLMJDr5A1o8n0sxe4LbiR
- qbREBgT6XAwECEJNbNHKO1YTM4iOmevp8GvnGDd6MDNapigfFoPwfu59SMy7zYd9LO3Z8_0VkIJt
- aPlGTgcyxBF.v1wQggIdb30_WaSmydGJlcGPdQ03irHq2wrwxiCoQO6IJUZEr0jypo3mUQnAGyDG
- k9vUUntKtCsyi.w0t_vFjR1T1M3Z6Xk5RLKDL9njS7LNW.CupQSEmNQ1GkX7kSwPFQP21HwmyMsp
- i9SdJowJ0s5y.bw2SrHxrP7sM6YbNToNL5ZVELMODpe5VuCBtDWl7VcCxYMmahr5455.ZE_hGmHs
- LrmFJx1uQ46OcZ2Ii956498sukETOy0INQsrtoq.ypS01I6QTO8GSI7rVFeq81ZNfcHhvUGJ06ME
- B8yJmeeVBase_8cBDx_Yk7y0xRppCWZz9S9bNwiHzQcmhSHJ99JaTf4E0zOIsgLWqU5tZh4wLZKp
- MnYneLIuBkBNwjBcYTuKXcpCwff8fTcsfan2g9ag6_HRqbKvb3lqTrnQRPIG.IGMBIXdu4D1HB2r
- Ygn65JHFmN1QF2ROBGshwilsGajQNSqHXHgx.co9RO5Evfjv8vx67t__1ew7rn3sc1C.7W_m4N4M
- cSR8SYdV43PcknGSee9yB1x8pWannWLYRUROzisZnoPLwDPX1S0a5pIeYojUo9jnHaAdfaOw5IJs
- bc0nB3tQZQ.0b782FrYX_n_pf05DxifKK1hrJ0OqXSo23BlRt.p63_4auT8X4tq9HTs9fxQLg0OA
- ydi2BtTIKopjFdQtWH0NOUC1U6_wILbgtZfZnlVsbVhHJ7Tk.UZGmAVff_vQl8b4id5D4T9jwtS9
- 8nKfk1Ghey2tqeZDF9SgVACRH_x6kJa81R1e4J_83TMyBY4Ays_MTt39YbFzXRfBMRqG0I92h9IS
- Xl4i4wMK_gUqmjpP0P_oaDsTzptxLp7NMOmOY3T81w3i60pQpmuYMvggEU3dv.ebRC4Brat.KcXq
- ZyjrZ4BouQUvapbNSNNP1Y253sBId7Ys37DryRT0fCsyFp6LIN0DYA1xElaICSH34S2v84muDGZe
- .CGRnjEo0Q2679LeUfRrG7eDmdHtGbtXa02kyQjntuOc7VrR9y8jRUHqkLiiITgSdxH1QGB5PWuQ
- ARpFP1xjX3OHKFGeQd7o8WX3xDhKeppcWAPJEhIosno79RY0IQ4.4JX7WCaXgDYbj6BL4okuPPnu
- 9CEiWKr_A1oRBHcXo_t2XyX1N2Jd1tPqjLAB1WY0vIGe1SVdGRdRloM6.RT24mU1pbFP4DjeRn1w
- _aXrAymHoztvd7BVNk78MI6f1URU2iBFJ6msmP6JgXQac5cfrtvlS9yn2eohnwEPfv__IKNy26n1
- mYs7i0yOvj6LH9jEvBJfejsFOAeuf8LBdL.MbTk8ZZiVorhzaxO81Zf4PRAQwZfM29CLtP5dAKbb
- klVicXy3HgsPrMZiM94qTb2yOlO2WSLEgrPS_2Vx31FNEHJNJpuKXHkfgTtKgjLPmpCr4Taq44yO
- KB8vbaoDybAHzNwFN22pWQG3NDp.x8aciLmMT8fUQgwMgW8NlLKb6ErL7ChYlwsHUhzhzMbUfvnT
- 2bA6QlHpoN4OcRsGeb2ygbIpUCMhvL1tqClAnkg41oGlCJa3crNRCKKeXXqZBarf9KzLHJa8i581
- 0YgHHROuHzbtZ8GRm6ggBoLbsrITMfTGKIshO9uwpGYYxl6nVscbC6LtZUsxlV5iP8t8XsYi.ga0
- EDsRWYHlK
-X-Sonic-MF: <casey@schaufler-ca.com>
-X-Sonic-ID: 4e6572e0-628c-4102-8309-f6caa349ac8e
-Received: from sonic.gate.mail.ne1.yahoo.com by sonic311.consmr.mail.ne1.yahoo.com with HTTP; Thu, 12 Nov 2026 01:50:35 +0000
-Received: by hermes--production-gq1-fd7994565-9vhlr (Yahoo Inc. Hermes SMTP Server) with ESMTPA ID 15d81e1a8a6348ae9dcd84771e3b8196;
-          Thu, 12 Nov 2026 01:50:33 +0000 (UTC)
-Message-ID: <41617b0a-90d9-484e-a143-78e2a92e872c@schaufler-ca.com>
-Date: Wed, 11 Nov 2026 17:50:30 -0800
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=rAPFnoHI
+Received: by mail-dl1-f41.google.com with SMTP id a92af1059eb24-15dd124bbe7so6423933c88.1
+        for <target-devel@vger.kernel.org>; Thu, 12 Nov 2026 01:42:33 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20260707; t=1794476553; x=1795081353; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=GTBA18JOWQoqxmchbhKPxOkv4PhMrzj8DppFkmldNNY=;
+        b=rAPFnoHIsbGNfDSv9jotfyB0/qKorAoRbkeKBXmB4EXsH71j8nZ1gKX8EOOos0Sowt
+         WDxjVN3kjS2r4mbBevm5WsXOc/d/bok51BYDgqsVa1SxuIdSevDfTE/fgPr2mRw99Spw
+         TSDq+g8KcP8aH8EOAoEF61W/kplwlov9Vcf25USfDpPti3KUNDk8Zk38SPTUboK0EJhs
+         uSY5iWq21wueHBK46vJ6pxoPYuKVxCMdBSDiN6b8NPHNTlfGYjFa2grMGeWkNRUTXQ5v
+         6VTXJ7BSpGQah8nckly4oIA3MipYmkUywvxpTbqnTpc5VU2O02xDnxX4ze9CvPc+dNxi
+         RT9w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1794476553; x=1795081353;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to:content-type;
+        bh=GTBA18JOWQoqxmchbhKPxOkv4PhMrzj8DppFkmldNNY=;
+        b=VLe6NG8wQfNlUZQcovR4vHwOXRcnsMTxRUOh7FmSnL0yIPAIbdMKOHTWwlbVk5LItF
+         7QnnH4TxHs/Yqe39Zqh17rnKu9xQnKTEl+LyOrQK9xfYOylURatOoP4OWd/1EJ+vttsN
+         A+nQSbGP6MbmWXqITfxCPpXqmIJt7yOa9nddkDKf1Z/9xL70XAElXWqMJMVHEgtK2nH6
+         Mp5Y8s92Yb+MNHtmM/wm7KyVIgDbdbQHBZlS8nCUDp0hB1uZR7d6K7m1rQrw+40vfxRy
+         JWaecaARx/o1V4geUn9cfZp8mYHGsg+UNR/qGkkDYhQTW5s67AkoMyXa96E2qyF6t6rS
+         TWIg==
+X-Forwarded-Encrypted: i=1; AL+hErHmGOIlMFsbIr0XmQhdDP6UbjGcBITIlDTPEtB9rDd0cTHXKGlrgOf8gMsr+1dC99BW4SuJ47y19zq0OMc=@vger.kernel.org
+X-Gm-Message-State: APuU4Z+VPUOo4fqpou1BQR89XX0CRwswKvfeZxfU0h6f0Unow0lErkk1
+	AEaY7+WJoxQ0ErFAh9ytq4jL+Z1QQvT8RhknyZgZ5TixgvrVmzZGkISX
+X-Gm-Gg: AYBFou37Gqxl53vBBNAmIfalKCxMsZKwatnM0nvweD4E95GoeNbOgnOT1Ynoqbgo0DD
+	gvmK3ACUKqOa4GJrmlxJuYhPQZ2eRwKa9dMaduFINceuRXlKqneARUzJ4mRdTBL/utGmms+f1CJ
+	dVmm2AJkPIN1obKJEgFqn1kX/b/2rKKwlaiSDjIAXMs6aV7ZVyHFe4Jm3lGTdEXsGfR+kLqoYHZ
+	Tw+wkPG2dKDTPE3rJtchclrL9Byz/i3NdgHFgq1B8+s8u81PUY12z/FYbl29Ml57va6o0ITchyj
+	tDIzvylwXaz3VMFLa4sWLMbpE2Bi8PCiCDwQUAFSCfOgJIx8wUH+SxSIM6MFBLlV5GMGUvBaQP7
+	LHcQWLNEe5oV81W4qPFbrGncAU+mFUYa9NW9WerXovpW7iI2llTGv/mdJc88UW3nk/PUNXy6nu8
+	nY+1qUpsODcVvfhNk3enTx+5WFl10nrTZbtjTniSsRFSzMnBS9Phx+vc9nT+ug13/Rf8Hx6YA7p
+	2bTlML4rjzGFS1dLMj+SDZDG/sw1L/NVR2YLKfQUW+2x74KSJ3ZkscqqQEeb1rIpbPh3h9APY/R
+	3ITEVVMgOzUFyvqUgUN1cDfLhUH1//1OLu4uBLI=
+X-Received: by 2002:a05:7023:888:b0:1a7:78a3:bda8 with SMTP id a92af1059eb24-1b3c0324732mr4909368c88.27.1794476552314;
+        Thu, 12 Nov 2026 01:42:32 -0800 (PST)
+Received: from localhost.localdomain ([223.104.79.0])
+        by smtp.gmail.com with ESMTPSA id a92af1059eb24-1b3b5b20c55sm22293829c88.8.2026.11.12.01.42.28
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 12 Nov 2026 01:42:31 -0800 (PST)
+From: liuyong <pkfxxxing@gmail.com>
+To: Bart Van Assche <bvanassche@acm.org>
+Cc: Yong Liu <pkfxxxing@gmail.com>,
+	Jason Gunthorpe <jgg@ziepe.ca>,
+	Leon Romanovsky <leon@kernel.org>,
+	linux-rdma@vger.kernel.org,
+	target-devel@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	security@kernel.org
+Subject: [PATCH v4] RDMA/srpt: Prevent uninitialized read buffer disclosure
+Date: Thu, 12 Nov 2026 17:41:36 +0800
+Message-ID: <20261112094138.1390409-1-pkfxxxing@gmail.com>
+X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20261111065342.1282709-1-pkfxxxing@gmail.com>
+References: <20261110030809.913063-1-pkfxxxing@gmail.com> <20261110030809.913063-2-pkfxxxing@gmail.com> <20261110052827.963143-1-pkfxxxing@gmail.com> <20261111065342.1282709-1-pkfxxxing@gmail.com>
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Post: <mailto:target-devel@vger.kernel.org>
@@ -84,68 +102,186 @@ List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:target-devel+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [apparmor] [PATCH RFC 19/41] smack: use fc_init_pseudo() for
- smackfs
-To: Christian Brauner <brauner@kernel.org>, linux-fsdevel@vger.kernel.org
-Cc: linux-efi@vger.kernel.org, Jan Kara <jack@suse.cz>,
- Amir Goldstein <amir73il@gmail.com>, linux-nvme@lists.infradead.org,
- fuse-devel@lists.linux.dev, linux-mm@kvack.org,
- target-devel@vger.kernel.org, linux-kselftest@vger.kernel.org,
- Chris Mason <mason@kernel.org>, Christoph Hellwig <hch@lst.de>,
- linux-s390@vger.kernel.org, linux-erofs@lists.ozlabs.org,
- linux-scsi@vger.kernel.org, xen-devel@lists.xenproject.org,
- driver-core@lists.linux.dev, Jann Horn <jannh@google.com>,
- selinux@vger.kernel.org, apparmor@lists.ubuntu.com,
- Josef Bacik <josef@toxicpanda.com>, linux-block@vger.kernel.org,
- ocfs2-devel@lists.linux.dev, Alexander Viro <viro@zeniv.linux.org.uk>,
- linux-nfs@vger.kernel.org, netdev@vger.kernel.org,
- linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-security-module@vger.kernel.org, bpf@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, Casey Schaufler <casey@schaufler-ca.com>
-References: <20261110-work-loop-pseudo-v1-0-4c998976c6c7@kernel.org>
- <20261110-work-loop-pseudo-v1-19-4c998976c6c7@kernel.org>
-Content-Language: en-US
-From: Casey Schaufler <casey@schaufler-ca.com>
-In-Reply-To: <20261110-work-loop-pseudo-v1-19-4c998976c6c7@kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Mailer: WebService/1.1.26943 mail.backend.jedi.jws.acl:role.jedi.acl.token.atz.jws.hermes.yahoo
+Content-Transfer-Encoding: 8bit
 
-On 11/10/2026 1:14 AM, Christian Brauner via AppArmor wrote:
-> Initialize smackfs as a pseudo filesystem. This raises SB_I_PSEUDO and
-> also SB_I_NOEXEC and SB_I_NODEV. smackfs never holds executables or
-> device nodes.
->
-> Signed-off-by: Christian Brauner (Amutable) <brauner@kernel.org>
+From: Yong Liu <pkfxxxing@gmail.com>
 
-Please include me at least as a CC on Smack patches.
-I ain't dead yet. Nonetheless,
+SRPT allocates read buffers and creates RDMA contexts from the
+initiator's descriptors before parsing the CDB. When target core reduces
+cmd->data_length, a backend such as rd_mcp fills only the shorter
+length, but the prebuilt RDMA transfer still sends the full buffer.
+Control CDB handlers can also leave bytes within cmd->data_length
+unwritten, while target core only clears the first SG entry of these
+preallocated buffers. Both cases can disclose stale target kernel memory
+to a remote initiator with access to the LUN.
 
-Acked-by: Casey Schaufler <casey@schaufler-ca.com>
+Reject indirect descriptor tables whose direct descriptor lengths do not
+sum to the advertised total before allocating RDMA contexts. Also
+initialize commands rejected during descriptor parsing so the BUSY
+response path has valid callbacks and a command reference.
 
-> ---
->  security/smack/smackfs.c | 2 ++
->  1 file changed, 2 insertions(+)
->
-> diff --git a/security/smack/smackfs.c b/security/smack/smackfs.c
-> index a72bc7fabea9..4a56bbeaeca3 100644
-> --- a/security/smack/smackfs.c
-> +++ b/security/smack/smackfs.c
-> @@ -25,6 +25,7 @@
->  #include <linux/magic.h>
->  #include <linux/mount.h>
->  #include <linux/fs_context.h>
-> +#include <linux/pseudo_fs.h>
->  #include "smack.h"
->  
->  #define BEBITS	(sizeof(__be32) * 8)
-> @@ -2880,6 +2881,7 @@ static const struct fs_context_operations smk_context_ops = {
->   */
->  static int smk_init_fs_context(struct fs_context *fc)
->  {
-> +	fc_init_pseudo(fc);
->  	fc->ops = &smk_context_ops;
->  	return 0;
->  }
->
+Save the original buffer length and zero the entire control read buffer
+before command execution. For data READs, zero any tail beyond
+cmd->data_length before posting the existing RDMA transfers. Synchronize
+each mapped SG list for device access in the response path.
+
+The issue was discovered by Qihoo 360's Tulongfeng multi-agent system.
+
+Fixes: b99f8e4d7bcd ("IB/srpt: convert to the generic RDMA READ/WRITE API")
+Fixes: 8b8807b9e982 ("scsi: RDMA/srpt: Fix handling of command / TMF submission failure")
+Cc: stable@vger.kernel.org
+Suggested-by: Bart Van Assche <bvanassche@acm.org>
+Signed-off-by: Yong Liu <pkfxxxing@gmail.com>
+---
+Changes in v4 (addressing the three issues reported by sashiko-bot):
+- Zero the entire original control read buffer before command execution.
+  Limit tail zeroing to data READs and synchronize mapped SG lists in
+  the RDMA submission loop.
+- Use Yong Liu in the author and Signed-off-by fields.
+- Add the Fixes tag for the descriptor-parsing BUSY path initialization.
+
+Developed against f66469d9905b39d2c260a15d7d6db450f4db67c1 (7.4-rc1).
+
+ drivers/infiniband/ulp/srpt/ib_srpt.c | 48 +++++++++++++++++++++++++++
+ drivers/infiniband/ulp/srpt/ib_srpt.h |  2 ++
+ 2 files changed, 50 insertions(+)
+
+diff --git a/drivers/infiniband/ulp/srpt/ib_srpt.c b/drivers/infiniband/ulp/srpt/ib_srpt.c
+index 43c3ff1ad8..0ec230950b 100644
+--- a/drivers/infiniband/ulp/srpt/ib_srpt.c
++++ b/drivers/infiniband/ulp/srpt/ib_srpt.c
+@@ -41,6 +41,7 @@
+ #include <linux/kthread.h>
+ #include <linux/string.h>
+ #include <linux/delay.h>
++#include <linux/dma-mapping.h>
+ #include <linux/atomic.h>
+ #include <linux/inet.h>
+ #include <rdma/ib_cache.h>
+@@ -1115,8 +1116,10 @@ static int srpt_get_desc_tbl(struct srpt_recv_ioctx *recv_ioctx,
+ 	} else if (((srp_cmd->buf_fmt & 0xf) == SRP_DATA_DESC_INDIRECT) ||
+ 		   ((srp_cmd->buf_fmt >> 4) == SRP_DATA_DESC_INDIRECT)) {
+ 		struct srp_indirect_buf *idb = srpt_get_desc_buf(srp_cmd);
++		u64 total_len = 0;
+ 		int nbufs = be32_to_cpu(idb->table_desc.len) /
+ 				sizeof(struct srp_direct_buf);
++		int i;
+ 
+ 		if (nbufs >
+ 		    (srp_cmd->data_out_desc_cnt + srp_cmd->data_in_desc_cnt)) {
+@@ -1128,6 +1131,11 @@ static int srpt_get_desc_tbl(struct srpt_recv_ioctx *recv_ioctx,
+ 			return -EINVAL;
+ 		}
+ 
++		for (i = 0; i < nbufs; i++)
++			total_len += be32_to_cpu(idb->desc_list[i].len);
++		if (total_len != be32_to_cpu(idb->len))
++			return -EINVAL;
++
+ 		*data_len = be32_to_cpu(idb->len);
+ 		return srpt_alloc_rw_ctxs(ioctx, idb->desc_list, nbufs,
+ 				sg, sg_cnt);
+@@ -1304,6 +1312,7 @@ static struct srpt_send_ioctx *srpt_get_send_ioctx(struct srpt_rdma_ch *ch)
+ 	WARN_ON_ONCE(ioctx->recv_ioctx);
+ 	ioctx->n_rdma = 0;
+ 	ioctx->n_rw_ctx = 0;
++	ioctx->buf_len = 0;
+ 	ioctx->queue_status_only = false;
+ 	/*
+ 	 * transport_init_se_cmd() does not initialize all fields, so do it
+@@ -1597,9 +1606,13 @@ static void srpt_handle_cmd(struct srpt_rdma_ch *ch,
+ 			pr_err("0x%llx: parsing SRP descriptor table failed.\n",
+ 			       srp_cmd->tag);
+ 		}
++		target_init_cmd(cmd, ch->sess, &send_ioctx->sense_data[0],
++				scsilun_to_int(&srp_cmd->lun), 0,
++				cmd->sam_task_attr, dir, 0);
+ 		goto busy;
+ 	}
+ 
++	send_ioctx->buf_len = data_len;
+ 	rc = target_init_cmd(cmd, ch->sess, &send_ioctx->sense_data[0],
+ 			     scsilun_to_int(&srp_cmd->lun), data_len,
+ 			     cmd->sam_task_attr, dir, TARGET_SCF_ACK_KREF);
+@@ -1613,6 +1626,11 @@ static void srpt_handle_cmd(struct srpt_rdma_ch *ch,
+ 			       GFP_KERNEL))
+ 		return;
+ 
++	/* Control CDB handlers may leave part of the response untouched. */
++	if (cmd->data_direction == DMA_FROM_DEVICE &&
++	    !(cmd->se_cmd_flags & SCF_SCSI_DATA_CDB))
++		sg_zero_buffer(sg, sg_cnt, send_ioctx->buf_len, 0);
++
+ 	target_submit(cmd);
+ 	return;
+ 
+@@ -2866,6 +2884,26 @@ static u8 tcm_to_srp_tsk_mgmt_status(const int tcm_mgmt_status)
+ 	return SRP_TSK_MGMT_FAILED;
+ }
+ 
++static void srpt_zero_read_tail(struct srpt_send_ioctx *ioctx)
++{
++	u32 data_len = ioctx->cmd.data_length;
++	int i;
++
++	for (i = 0; i < ioctx->n_rw_ctx; i++) {
++		struct srpt_rw_ctx *ctx = &ioctx->rw_ctxs[i];
++		struct scatterlist *sg;
++		unsigned int j;
++
++		for_each_sg(ctx->sg, sg, ctx->nents, j) {
++			u32 skip = min(data_len, sg->length);
++
++			data_len -= skip;
++			if (skip < sg->length)
++				sg_zero_buffer(sg, 1, sg->length - skip, skip);
++		}
++	}
++}
++
+ /**
+  * srpt_queue_response - transmit the response to a SCSI command
+  * @cmd: SCSI target command.
+@@ -2907,9 +2945,19 @@ static void srpt_queue_response(struct se_cmd *cmd)
+ 	if (ioctx->cmd.data_direction == DMA_FROM_DEVICE &&
+ 	    ioctx->cmd.data_length &&
+ 	    !ioctx->queue_status_only) {
++		if ((cmd->se_cmd_flags & SCF_SCSI_DATA_CDB) &&
++		    ioctx->buf_len > cmd->data_length)
++			srpt_zero_read_tail(ioctx);
++
+ 		for (i = ioctx->n_rw_ctx - 1; i >= 0; i--) {
+ 			struct srpt_rw_ctx *ctx = &ioctx->rw_ctxs[i];
+ 
++			/* Make CPU writes and zeroed data visible to the RDMA device. */
++			if (!ib_uses_virt_dma(sdev->device))
++				dma_sync_sg_for_device(sdev->device->dma_device,
++						       ctx->sg, ctx->nents,
++						       DMA_TO_DEVICE);
++
+ 			first_wr = rdma_rw_ctx_wrs(&ctx->rw, ch->qp,
+ 					ch->sport->port, NULL, first_wr);
+ 		}
+diff --git a/drivers/infiniband/ulp/srpt/ib_srpt.h b/drivers/infiniband/ulp/srpt/ib_srpt.h
+index 506c11b843..78bba74148 100644
+--- a/drivers/infiniband/ulp/srpt/ib_srpt.h
++++ b/drivers/infiniband/ulp/srpt/ib_srpt.h
+@@ -204,6 +204,7 @@ struct srpt_rw_ctx {
+  * @rdma_cqe:    RDMA completion queue element.
+  * @state:       I/O context state.
+  * @cmd:         Target core command data structure.
++ * @buf_len:     Original SRP data buffer length.
+  * @sense_data:  SCSI sense data.
+  * @n_rdma:      Number of work requests needed to transfer this ioctx.
+  * @n_rw_ctx:    Size of rw_ctxs array.
+@@ -223,6 +224,7 @@ struct srpt_send_ioctx {
+ 	struct ib_cqe		rdma_cqe;
+ 	enum srpt_command_state	state;
+ 	struct se_cmd		cmd;
++	u32			buf_len;
+ 	u8			n_rdma;
+ 	u8			n_rw_ctx;
+ 	bool			queue_status_only;
+-- 
+2.43.0
+
