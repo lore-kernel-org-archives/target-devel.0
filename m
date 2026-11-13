@@ -1,83 +1,83 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.210.177
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.215.182
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794559231;
-	b=uxMkRNtvMk1/VEXLWzs0JnUZfmVGnxrXVuS4UFlLudq9m2jOBB1UgB1mu0Az1n5mxIfR
-	 zYHsvue1XF/+NiK88nCem5Tkbn2LZdYgZO/QYBy2jZ0ywhEes0sjK8/Owit6e1Jpfc1hl
-	 xIPEAzOz0JI17I9aPh/cpI2tUhvSGyjvxhlgddngx37KtEdOphpkH62Dm1VHe8G+8fAa6
-	 6sA2OEq9LHAc3ARHy4QPH49Mm0IP2lAEOszCCO0AvBgyOWYwGkx68nEKZxZTcLG3vwhBW
-	 AjuCr4XKMtuHoPLaljokIQEs1dPRLhUKrwbWV5THQ6Ow4+wMNaJSnRDsSzChr8lcPbg==
+	t=1794559235;
+	b=wOvjM/cMhlkeOltzeCUnNBrJOCbKVkipE5wDvv8pMMSxqJ40kcRqHJf2nN9+rEn41KWH
+	 iOhLKJS0RW8kZeNg0pmu/9ZjL6XpTS2Q/rmN8VBNIdFdfP8+i5OiseMVwvlk1bk9P1tKu
+	 3MAHbp3L/VlO71F8Ur/24cmyfOWjlmWZ1DDmnN1Uho+izzex6CGJzPw0SKPlqaLexGqKK
+	 ad0u1ik4tJVUmwecOSNM3CculJYlSewvhDW+zS335n9cqkI/YJb+GRRfn5NFZHgED3X4g
+	 wAM+BvxJdpwa0zeOiIfjpkPaYBl1XSDuODiQpd/tRAxoKpiFo3n2v0Slsy9GkypP8tQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794559231;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794559235;
 	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
 	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
 	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:
 	 MIME-Version:Content-Transfer-Encoding;
-	bh=6HjmYTtzj67gEj1W3Fr4INGR7fSq4j0RNLKw8boe0iU=;
-	b=CvyxoUQhvydMx6Fjgqulxi9hyFiQWsWf2thz9ujxOc1DSzwN3QVX2WRPEVXXLOCK3rN3
-	 u6aj4Hce4jlIKlrvW6h0MQCGWfphqz0EVA1mzzsgKV9NmJr79WuH4tcd3qYvhMk01IKnZ
-	 /Ez/Mhfp0xTvfOqvjxpftdEXCwqcYaMHM6gnkiG7IusYSNvRz5pT+zVXFt8C2vBoV+nmQ
-	 xTsYsFhQInvTUuSgcUX51CYH5eqUBrZ9QiSDU7hQEnKDtfn41w8op948kMIQbj5tTnH64
-	 rC9RcG6I/k2RItheFlozetCAqrS+xomMf9Ulaq4eBI3R4eq9lXkvMaB8Ly24CffPlEQ==
+	bh=BBnWWtBKdgI2TAwNesV0oCYOVTkjWDyFP80ZcpwkwoA=;
+	b=WleOSZeDEdA/OoEtEuw4ldsC8T2BNyG8EhccyYIAEekC9Dm1cvdctplwoGs3urBiHtKo
+	 7q4XbEIxhoWK9ZhZ/hoN+t0GbIaM382l+tShhGnih0n8fT1y1P/Ex/MKCoYD+JuZghjT5
+	 higjQVVQwdPktKrz69xU0eTz78W3xPS3SopByEIG4g/jqGam1ms8OqW2WgizC+2t78vIl
+	 ayICDF2f2vv9P9xt0pSpWLJpy09ZPXEYHo0zgeJzjddda9zDw6KIL2w3xSap0RNbzoJ/F
+	 f+OSELV2A70nLGZaCrda+m5VMDYskzmzBjuF+z4mjA3q4SXAiQmXIVWMpLFG0pqKKkg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=gmail.com;
 	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=HFQ3NMFD;
-	arc=none smtp.remote-ip=209.85.210.177
-Received: from mail-pf1-f177.google.com (mail-pf1-f177.google.com [209.85.210.177])
+	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b="gV4GU//8";
+	arc=none smtp.remote-ip=209.85.215.182
+Received: from mail-pg1-f182.google.com (mail-pg1-f182.google.com [209.85.215.182])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 50769606A8B5
-	for <target-devel@vger.kernel.org>; Fri, 13 Nov 2026 08:40:31 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 50769606A8B5
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2AF5D60A2600
+	for <target-devel@vger.kernel.org>; Fri, 13 Nov 2026 08:40:35 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 2AF5D60A2600
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=HFQ3NMFD
-Received: by mail-pf1-f177.google.com with SMTP id d2e1a72fcca58-8b29b83fdf1so280654b3a.2
-        for <target-devel@vger.kernel.org>; Fri, 13 Nov 2026 00:40:31 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=gV4GU//8
+Received: by mail-pg1-f182.google.com with SMTP id 41be03b00d2f7-cd8ba7c2694so262993a12.1
+        for <target-devel@vger.kernel.org>; Fri, 13 Nov 2026 00:40:35 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1794559231; x=1795164031; darn=vger.kernel.org;
+        d=gmail.com; s=20260707; t=1794559234; x=1795164034; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=6HjmYTtzj67gEj1W3Fr4INGR7fSq4j0RNLKw8boe0iU=;
-        b=HFQ3NMFD/HeHqYJQZncUggUrOcMsaYsc6YJAUjDIsCZEZ99XBDbk8eKvWDF+Gnnrcd
-         svJJ+NI70TLXlxc0n1QkUdGBFgOEAeAAGvKfgKVnZl+v92VHhDFwUFx4TBLOXVvLojUP
-         LEeHLydP4SIxStMQasLl51rfhBqfGqbnVX/t31+VgC2V3srZjG78WS+xEx032q57Teu6
-         Hwf4POH4kZXxDBFsy75EYAKphlXWF//aw+m68zUh5aRduOGg9nW4UfkfnUh2xIVQ42Nq
-         UwxFv/yTP1Yf95db/kKvzRb8Yjd52tHxSyekeJBtDKAzgsZJobPigb34M/u+Vl2afuEP
-         iaQw==
+        bh=BBnWWtBKdgI2TAwNesV0oCYOVTkjWDyFP80ZcpwkwoA=;
+        b=gV4GU//8b5UXX3fB1poHfcWwaF8yDwgTfBZ4FxVwCSyE/RGh9w7pN/L5D3TScLNDi/
+         2Hj1ADK0phlUcLRUVdPQusQbLg1Xp7NyLGLcWQSxKZIaPr8x/OlUnwChIPoPIYSYCMXO
+         atg6k6g1mVkciyLuzJEAg9vUaqGj0+Zg2TvFqWVw4hkbfVOTKHHwBeNG15jcsimGwakG
+         yNuxR2g5R1lScr84PeUGpjCWwF1rNWq44FVyeKuZp+A3puhg8VWswtnqHZwRa1Ur0z9Q
+         T1TzaiGy2U/3HBaK2ZwVhrT8EyOR5WWO/si+Pq73UfiBk/6+dJwzYqw59ZR+ZDsyMXC3
+         G47w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794559231; x=1795164031;
+        d=1e100.net; s=20260707; t=1794559234; x=1795164034;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=6HjmYTtzj67gEj1W3Fr4INGR7fSq4j0RNLKw8boe0iU=;
-        b=kQSEPhGsxwKEWJpsvrMb5W3AYjLcapGoDE7wlt0Tbc5pOFlXLKO60eji2kvrkObEwK
-         4LnEmnPt3NBPeby8YnJd4aP7SyJzo3bppD94rl6E8gt6mnj+IpI73ptiWRllrILFgzJM
-         ZLjyVhwL2e4TrOxp0lp4ubNMFIx+QyTIYFg3lR8QRP4i3YzcbwrvuZMjZJS4GPSPvuT5
-         l5b7mym0eUjm6RWWJ2xJOLH5+x/gA1z8ZCgExEBpxUE5ePsBNbDBKSSYeQ3bILLThf95
-         j7tiER2V2jO0AdbmAxCoWNsV8pOjZk1d/Vd7seovZX3Wp9WJ6EX0fGBlhozyMaDp49Rx
-         W3xA==
-X-Forwarded-Encrypted: i=1; AL+hErGXHCcgGqVBbBLFCFuFYayudFmikFMiGc8C3nRvradtuVZWe5vsBZ/aisSVXY4D++Fu075C4KvHR7GH8tY=@vger.kernel.org
-X-Gm-Message-State: APuU4Z8JSQf22ZWRgtb5Zi3NtI+BTa6JXGfyZY2R8wLjcVd7zJQWBm87
-	bXHs9NiZFDU+ENjKwWB/wyNpg5Z6fnnDPp0/lAAtYj7LMNUd//DIEWpO
-X-Gm-Gg: AYBFou2MYknmlB2Pj1HFrHDhpqeYG5uOPX0J3y1VWnTXVmFX5xNGxB2PjGZb8lp/Xjp
-	Bu390IeeaOmM/0mQAkFqbokyWzne3QQ+3RbMdqPi60ANmNRtOphptAUIH2KiyjzQg8gNm35rJt2
-	lF07V3RUAMjzKJg/Iw8UruOL477sb3bhasX3RAU39IOpH8W8Mz8pKVtdgseoIzylYO3PBhy+kic
-	3hhm5susVsmgg+n3vxfOhFCr/HOUsvXU5JAqXBGcLbD3WOpdujtOOgUDQqTMJypSf/KKkQPFxQb
-	cl8yhSruWIc5megYQWBicS/TbRMiEFLpyfs3VhcNNoAhtW5YH/rPax1wlHUJyIyVgPWfIxqvbtT
-	PH6xj2iri0VcwTWjfD/mlgAj5yvQD9x6JiGI/t/+1RSCzJdRWvHAO6c2nAXwnu1MSrAU2nshEey
-	vWpqoKFVL7+2CSuw79P/wcVGB5hYXrovDpaECXOYAkZzmkNm75Rwrg+XaPMPnI+qMg47Bs+CRQH
-	+Ote8RVN+QPqc1p1tuqlH9MX9bdpvckivk7CLIM+2qTtiRSSd+iqBHJezFi6d6bdibFLZRjBLUA
-	5MwsL83YFhYWIGO5MtCgwKKjFjkK2dU3AWdwsJZc5g==
-X-Received: by 2002:a17:90b:4410:b0:3ad:818f:3da2 with SMTP id 98e67ed59e1d1-3b1b0b9a342mr1279723a91.63.1794559230508;
-        Fri, 13 Nov 2026 00:40:30 -0800 (PST)
+        bh=BBnWWtBKdgI2TAwNesV0oCYOVTkjWDyFP80ZcpwkwoA=;
+        b=HEnTd4hUo2skfwcGuh8cEUczyys2MHb6gbk1snZSx6zuWa9AYKsTeVjzTwJet//EjC
+         eQFDPOYulCxlB8iB+N/JK9av8XIE7WYBenhGDBg66UTDd7Pb9tvTwmhuJ7BfnQYhdQkU
+         QaUyZCCSd2VxCXIqXRe6UhR1p4e539KfFLdsjuquLAKq6CjkWth8UjAGfi7Nmqaz32Mc
+         SP1hdPUPevEUtqul4irCwnXXUqAVFPwoSvnPPD/OTdmcJyL0p87MWIX+wzlUKczcqnrb
+         YugQtcnYapT8/e9F13XZr+Mixt7sDloCXkbtjPkMwM/QiOV2m8P9sd2tcSa+ukTHG3Sm
+         I5+g==
+X-Forwarded-Encrypted: i=1; AL+hErF2LZtpZPGcqS7U8Y17du9k6rZf4YFK7iuGYS+D193PjcdWnn2dvwp+TXaUO9bZdGvZVaprTrAqNe3MKlM=@vger.kernel.org
+X-Gm-Message-State: APuU4Z8SpNfXEvOR/wTT94Enl5uzW0tRdR00t2AhcCAyTe/2GPn9AtME
+	hU+uj8rxy2QYUTlTMNL/i+unrf3Je1A5OdsgP0DBdQ6J6v9CCXv0ZBvx
+X-Gm-Gg: AYBFou3d8FZF0uPvzg2NUs+VhSLApBin9JjMUlXkSDmgJOi3iudeIzW9IPGIu/yKcPj
+	5QoS0OwCRtZWhKRPUCQkzL2moiHTz9ivrYYMKDH8pcDMXc+8WbUqpy7DsKWZdLFBJNexCrkFzUz
+	LNbNZu3F/zpM6/Wyo0Fk5Dz7ETmYsuMC7S3YWrfLEpKvt/6FxzOvCm4UKC84qMrSYiHyHB0uner
+	sIsuvAPo1j6AaAovbsWmD5QWBbrLbZ8Erks9JEMo6kFyUyszyGT4FZhPESzSB//h25u9/CDo1tY
+	PgzrB1fOfaBqbX4s0DGCHc0/jJxj4hO+Y1l7L7VLPkjTtYk4oDW40oIWS7J/CzAa3pph+o0EVcR
+	FMWzrbzGf8qtx6CosUgp244cLYm8kTYhbIfOZK1zGMlG/c1KV0qKzcEhgoBwWvQIVcjQe0HVITN
+	TOmEvfOcDInrC13ywUJF2EjlXjEekDAWv3KJCR+vCpMHpZMBiGHPJQpK+Hz3Odx1ZO+3nOy6qhm
+	Ok9kWRvB72FvnT+/H2y27NevdCeHjFLV6tWDk5v7PJCZg1ILCqOU/JSUWU2d9fEPzi3PKR4/yYQ
+	HHr28P1jCc77fzpUHBJ6IChEWqMNH7+hFbCJr8lYYw==
+X-Received: by 2002:a17:90b:56cb:b0:3b0:a9de:9880 with SMTP id 98e67ed59e1d1-3b1b0a3c5e9mr1581124a91.33.1794559234473;
+        Fri, 13 Nov 2026 00:40:34 -0800 (PST)
 Received: from localhost.localdomain ([183.62.176.219])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3b1b25a365asm1264855a91.1.2026.11.13.00.40.26
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3b1b25a365asm1264855a91.1.2026.11.13.00.40.30
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 13 Nov 2026 00:40:29 -0800 (PST)
+        Fri, 13 Nov 2026 00:40:34 -0800 (PST)
 From: Yong Liu <pkfxxxing@gmail.com>
 To: Bart Van Assche <bvanassche@acm.org>,
 	"Martin K. Petersen" <mkp@kernel.org>
@@ -88,9 +88,9 @@ Cc: Jason Gunthorpe <jgg@ziepe.ca>,
 	target-devel@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
 	security@kernel.org
-Subject: [PATCH v5 2/3] scsi: target: Clear all control read scatterlist entries
-Date: Fri, 13 Nov 2026 16:38:41 +0800
-Message-ID: <20261113083848.1517595-3-pkfxxxing@gmail.com>
+Subject: [PATCH v5 3/3] RDMA/srpt: Prevent uninitialized read buffer disclosure
+Date: Fri, 13 Nov 2026 16:38:42 +0800
+Message-ID: <20261113083848.1517595-4-pkfxxxing@gmail.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20261113083848.1517595-1-pkfxxxing@gmail.com>
 References: <20261110030809.913063-1-pkfxxxing@gmail.com> <20261110030809.913063-2-pkfxxxing@gmail.com> <20261110052827.963143-1-pkfxxxing@gmail.com> <20261111065342.1282709-1-pkfxxxing@gmail.com> <20261112094138.1390409-1-pkfxxxing@gmail.com> <92a82300-a454-4ee5-a191-0ce5a2ee58c7@acm.org>
@@ -106,58 +106,108 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-__target_submit() only clears the first scatterlist entry of a control
-read buffer supplied by a fabric driver. Control CDB handlers can leave
-response bytes untouched, so later entries can retain stale kernel data
-that is returned to the initiator.
+SRPT allocates read buffers and creates RDMA contexts from the initiator's
+descriptors before parsing the CDB. When target core shortens
+cmd->data_length, a backend such as rd_mcp fills only the shorter length,
+but the prebuilt RDMA transfer still sends the full buffer. This can
+disclose stale target kernel memory to a remote initiator with access to
+the LUN.
 
-Clear every supplied scatterlist entry before command execution. Use
-sg_zero_buffer() so entries spanning multiple pages are handled as well.
-Keep clearing the full entries, including any part beyond data_length,
-as the existing code does for the first entry.
+Reject indirect descriptor tables whose direct descriptor lengths do not
+sum to the advertised total, and log the mismatch before allocating RDMA
+contexts. Save the original buffer length and zero the tail beyond
+cmd->data_length through the chained command scatterlist before posting
+RDMA transfers. This applies to both data and control READ commands.
 
-Fixes: 944981c7e106 ("target: Add control CDB READ payload zero work-around")
+The issue was discovered by Qihoo 360's Tulongfeng multi-agent system.
+
+Fixes: b99f8e4d7bcd ("IB/srpt: convert to the generic RDMA READ/WRITE API")
 Cc: stable@vger.kernel.org
 Suggested-by: Bart Van Assche <bvanassche@acm.org>
 Signed-off-by: Yong Liu <pkfxxxing@gmail.com>
 ---
- drivers/target/target_core_transport.c | 19 ++++++-------------
- 1 file changed, 6 insertions(+), 13 deletions(-)
+ drivers/infiniband/ulp/srpt/ib_srpt.c | 17 +++++++++++++++++
+ drivers/infiniband/ulp/srpt/ib_srpt.h |  2 ++
+ 2 files changed, 19 insertions(+)
 
-diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
-index 927861c30a..267f5e2cc8 100644
---- a/drivers/target/target_core_transport.c
-+++ b/drivers/target/target_core_transport.c
-@@ -1633,23 +1633,16 @@ static int __target_submit(struct se_cmd *cmd)
- 	core_alua_check_nonop_delay(cmd);
+diff --git a/drivers/infiniband/ulp/srpt/ib_srpt.c b/drivers/infiniband/ulp/srpt/ib_srpt.c
+index 127f256c6e..fc530ddf48 100644
+--- a/drivers/infiniband/ulp/srpt/ib_srpt.c
++++ b/drivers/infiniband/ulp/srpt/ib_srpt.c
+@@ -1115,8 +1115,10 @@ static int srpt_get_desc_tbl(struct srpt_recv_ioctx *recv_ioctx,
+ 	} else if (((srp_cmd->buf_fmt & 0xf) == SRP_DATA_DESC_INDIRECT) ||
+ 		   ((srp_cmd->buf_fmt >> 4) == SRP_DATA_DESC_INDIRECT)) {
+ 		struct srp_indirect_buf *idb = srpt_get_desc_buf(srp_cmd);
++		u64 total_len = 0;
+ 		int nbufs = be32_to_cpu(idb->table_desc.len) /
+ 				sizeof(struct srp_direct_buf);
++		int i;
  
- 	if (cmd->t_data_nents != 0) {
--		/*
--		 * This is primarily a hack for udev and tcm loop which sends
--		 * INQUIRYs with a single page and expects the data to be
--		 * cleared.
--		 */
-+		/* Control CDB handlers may leave response bytes untouched. */
- 		if (!(cmd->se_cmd_flags & SCF_SCSI_DATA_CDB) &&
- 		    cmd->data_direction == DMA_FROM_DEVICE) {
--			struct scatterlist *sgl = cmd->t_data_sg;
--			unsigned char *buf = NULL;
-+			struct scatterlist *sg;
-+			unsigned int i;
- 
--			BUG_ON(!sgl);
-+			BUG_ON(!cmd->t_data_sg);
- 
--			buf = kmap_local_page(sg_page(sgl));
--			if (buf) {
--				memset(buf + sgl->offset, 0, sgl->length);
--				kunmap_local(buf);
--			}
-+			for_each_sg(cmd->t_data_sg, sg, cmd->t_data_nents, i)
-+				sg_zero_buffer(sg, 1, sg->length, 0);
+ 		if (nbufs >
+ 		    (srp_cmd->data_out_desc_cnt + srp_cmd->data_in_desc_cnt)) {
+@@ -1128,6 +1130,14 @@ static int srpt_get_desc_tbl(struct srpt_recv_ioctx *recv_ioctx,
+ 			return -EINVAL;
  		}
+ 
++		for (i = 0; i < nbufs; i++)
++			total_len += be32_to_cpu(idb->desc_list[i].len);
++		if (total_len != be32_to_cpu(idb->len)) {
++			pr_err("SRP descriptor lengths total %llu does not match advertised length %u\n",
++			       total_len, be32_to_cpu(idb->len));
++			return -EINVAL;
++		}
++
+ 		*data_len = be32_to_cpu(idb->len);
+ 		return srpt_alloc_rw_ctxs(ioctx, idb->desc_list, nbufs,
+ 				sg, sg_cnt);
+@@ -1304,6 +1314,7 @@ static struct srpt_send_ioctx *srpt_get_send_ioctx(struct srpt_rdma_ch *ch)
+ 	WARN_ON_ONCE(ioctx->recv_ioctx);
+ 	ioctx->n_rdma = 0;
+ 	ioctx->n_rw_ctx = 0;
++	ioctx->buf_len = 0;
+ 	ioctx->queue_status_only = false;
+ 	/*
+ 	 * transport_init_se_cmd() does not initialize all fields, so do it
+@@ -1607,6 +1618,7 @@ static void srpt_handle_cmd(struct srpt_rdma_ch *ch,
+ 		goto busy;
  	}
  
++	send_ioctx->buf_len = data_len;
+ 	rc = target_init_cmd(cmd, ch->sess, &send_ioctx->sense_data[0],
+ 			     scsilun_to_int(&srp_cmd->lun), data_len,
+ 			     cmd->sam_task_attr, dir, TARGET_SCF_ACK_KREF);
+@@ -2914,6 +2926,11 @@ static void srpt_queue_response(struct se_cmd *cmd)
+ 	if (ioctx->cmd.data_direction == DMA_FROM_DEVICE &&
+ 	    ioctx->cmd.data_length &&
+ 	    !ioctx->queue_status_only) {
++		if (ioctx->buf_len > cmd->data_length)
++			sg_zero_buffer(cmd->t_data_sg, cmd->t_data_nents,
++				       ioctx->buf_len - cmd->data_length,
++				       cmd->data_length);
++
+ 		for (i = ioctx->n_rw_ctx - 1; i >= 0; i--) {
+ 			struct srpt_rw_ctx *ctx = &ioctx->rw_ctxs[i];
+ 
+diff --git a/drivers/infiniband/ulp/srpt/ib_srpt.h b/drivers/infiniband/ulp/srpt/ib_srpt.h
+index 506c11b843..78bba74148 100644
+--- a/drivers/infiniband/ulp/srpt/ib_srpt.h
++++ b/drivers/infiniband/ulp/srpt/ib_srpt.h
+@@ -204,6 +204,7 @@ struct srpt_rw_ctx {
+  * @rdma_cqe:    RDMA completion queue element.
+  * @state:       I/O context state.
+  * @cmd:         Target core command data structure.
++ * @buf_len:     Original SRP data buffer length.
+  * @sense_data:  SCSI sense data.
+  * @n_rdma:      Number of work requests needed to transfer this ioctx.
+  * @n_rw_ctx:    Size of rw_ctxs array.
+@@ -223,6 +224,7 @@ struct srpt_send_ioctx {
+ 	struct ib_cqe		rdma_cqe;
+ 	enum srpt_command_state	state;
+ 	struct se_cmd		cmd;
++	u32			buf_len;
+ 	u8			n_rdma;
+ 	u8			n_rw_ctx;
+ 	bool			queue_status_only;
 -- 
 2.43.0
 
