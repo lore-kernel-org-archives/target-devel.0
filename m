@@ -1,93 +1,56 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.210.180
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794673185;
-	b=pFE2JdHeFsl0fFkUa8J0Qb4tmhGtdGfDl076UA8A2rCQGtECVckt2Yp/QNOoV7w1bEpJ
-	 qkaaLjPWqwXTFnHwY9D6NPqyNrBjqwWUIyDzNIR7SG0NusQnTjY5E2xbMoxrt4kuFs1t5
-	 8BX79NZBdtdrIl5nia0IlFghtjIQgfAYpVv0eyCQh5djxXlhvryZBQ/YXI470I759QoDA
-	 jYDBK1heQK3EuiRVQjL+2N2mB5FIfCTamVIZSr+UibVjerHVSAOs1P8r/uCuuhRW5AkT5
-	 VbVPeyfF+4cvvaCk9adXpgVvJ825Nnl9HS9ukWkptMT/H8dici/Dj1RwjUnUcMhf+pg==
+	t=1794674677;
+	b=HQ3sNcyjvosptdtZd8k7OT5yHwlJJfQcYe8MwZNli6cv3pq4FeK2SFJfB3IaAMf0pxTT
+	 0A3w1M3sf81UTCtB+nHHl/f7pS6HN0JuNEfcokJZP7gxam93RLInpOoDhjze/4JfDfKJq
+	 6SQt8WzcvUHjd2OIEoIhJn8c4blXjhGQMVFUjijsKbYPAAHwenDiO1aAAO7mlupchnnJ5
+	 uHPxrSQ6xgSJYNRMxWymBDMhGlcpjoIwuSsp6d1dj5aONBNZhdDZQs1/GtSNkQS96nnjJ
+	 WPWhaNh9PLThaRohA2/aKqWdVq1kLdcJAcooITobqeTGAs1d21IvO7vaZ9uE+BHNXMg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794673185;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:MIME-Version:
-	 Content-Transfer-Encoding;
-	bh=XDtYjphGVkc/uulVWko7CeJe+AuX4KnYa+TPlDxQrlo=;
-	b=rLlKOgJJcnTMEgl1yYa+/Qhz9ODpgsvMDi58XJrhd69AT9sT+klx7jW3D0VSyPHFc8sc
-	 DenVZ6ikWrFRPWdc4iFlr0pakKT16559qxiCmrBqMz15FFezs4SJhGveuD7a4XHwr5Lvx
-	 OmNaigT3PNZs2XAzT6cSlRNog2QovV0HLZwsTxqfhKcfPA8na6cfVSaOVr5pVXDgNHdVk
-	 ObGT8WT4m4WCa70kvrPI388weq0xIFyFEJaYLfzi0nr5WqrlPWp1/QnprFGYZfxetbL3h
-	 iQecHBbETaDM1rJnaqdEiHkFK0Fd6mUrW5bIt4H13A6Ql07SYEUD3Y1XPQSbjpeT/2g==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794674677;
+	h=Received:DKIM-Signature:Message-ID:From:Subject:Reply-To:To:Cc:
+	 In-Reply-To:References:Content-Type:Content-Transfer-Encoding:Date;
+	bh=pbh8AtwTyjhRrlmKQ6swY9DkeM3L8ZOy3RmWBEu+nRg=;
+	b=WR3V3gNxqdep87HT1AHwZTLLGMRQtd3YQ8nKxZrFA7m3yfYe7OVV5kjfBbdPjfyd3756
+	 VXfFB+vxxTNlq16eIm3KUj0vLfGxZVlSgqaUu7L76lETVZx/mrJviA02Frx0umA8ydZ5M
+	 IJvHayepX1eUhXnXKB4JEf4LDssjTwR3GgxBML4P2KngNJ5H4qnJZd/8T9Vu1c5Hc9IrN
+	 k5/znxIxfXrSZEO0y4imS9QRWlKlT7hb1g70s+n65htlXecmLrIBqhiZoSLkqQstnV26I
+	 9l4JA8vOjk86IxK9z/TAY9QqFTIV33w4ljL9XOTjsyFnX5dAQJ5yfEU5mudoE+/zLRA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=fail header.from=isslab.korea.ac.kr;
-	spf=none smtp.mailfrom=isslab.korea.ac.kr;
-	dkim=pass header.d=isslab-korea-ac-kr.20260707.gappssmtp.com header.i=@isslab-korea-ac-kr.20260707.gappssmtp.com header.a=rsa-sha256 header.s=20260707 header.b=AUea9Ojr;
-	arc=none smtp.remote-ip=209.85.210.180
-Received: from mail-pf1-f180.google.com (mail-pf1-f180.google.com [209.85.210.180])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=iotS4cj0;
+	arc=none smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 00635606A329
-	for <target-devel@vger.kernel.org>; Sat, 14 Nov 2026 16:19:43 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 00635606A329
-Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=isslab.korea.ac.kr
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=isslab.korea.ac.kr
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8B0B2606A329;
+	Sat, 14 Nov 2026 16:44:37 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=isslab-korea-ac-kr.20260707.gappssmtp.com header.i=@isslab-korea-ac-kr.20260707.gappssmtp.com header.a=rsa-sha256 header.s=20260707 header.b=AUea9Ojr
-Received: by mail-pf1-f180.google.com with SMTP id d2e1a72fcca58-8a0880a46e7so888536b3a.1
-        for <target-devel@vger.kernel.org>; Sat, 14 Nov 2026 08:19:43 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=isslab-korea-ac-kr.20260707.gappssmtp.com; s=20260707; t=1794673183; x=1795277983; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=XDtYjphGVkc/uulVWko7CeJe+AuX4KnYa+TPlDxQrlo=;
-        b=AUea9OjrvSRKc4FdV0DiS3YzPJggCkPgz1KqGJWjwcBIl6QFsVCNJ8QFOJdXaCUjqU
-         2uSLa8KkUuRE9/4o8RqDHHH999DG5LoNaszRyBPHGWLKwyYvkGv8Sz/PfzSItMVUCYwe
-         ZuKKtBnzLZV6TJwFHZNr0/eCAamTYBhbm+gpNIsZuafr1GH43BAURcCiH2UIhVwHMsKX
-         ilZfHrFvNZZs+//1rqzaSjB2O1KgWXffXUa/gOv8dslD8SokyUl9nYjVWTwJwl5EA/cf
-         HW6QuAwoUl1KUGy6fr1i9Zlff09ipnldeqrE985MclKckBdHyBdj6dGxl0mUlb9kDG7i
-         kP0w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794673183; x=1795277983;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=XDtYjphGVkc/uulVWko7CeJe+AuX4KnYa+TPlDxQrlo=;
-        b=yv2hfHIUcy/n6urgB2+m9P3p4MEhZ8d8xGhUrHV6BXsu4aqipKY0o+ZxeSU0zvJrXM
-         iLEQ92fWnI9wmkyKxn5R3QWooIaftt/9yYcq9u6+P1GRZOutRu/5hN+kHJ2SYE98V2Im
-         pWkoB/bPWgfL+UEYND2NXH19yZ+dZtZc2O81yQtR249sNF4KVUiEekEt7kCv/k7bgCbJ
-         KuiP5cG2i4m1TJ4BubeTj4f8WCkayjOfDagS3X5M1keigeHk2M1rpjFhEyvnEJerho7a
-         IQgWFnO5Xl+0/yP6poHmLy4EQvg0h6TfAv/v65nBzaPDrcaz3dZQlU8sTfg8lXBfCwmv
-         e2RA==
-X-Forwarded-Encrypted: i=1; AL+hErH7Af1bFYSQjzBcOndgYhpfVlnQxbV9MwuvOEq9TgoLBVDtRnX9TVGomCw4xjo88EPFeQbHWPohClbtnXk=@vger.kernel.org
-X-Gm-Message-State: APuU4Z9wqSgiPT5LXHEzPlsk3VNPa6XQpYYYQKTo7+QkIC8JJi+99gAo
-	bPIrmBpxiBU2MK3+ZKPDruPIFb5obx6rZ5Uv7ehHWAqK0tsEppomc97aDRaY8gYwvjk=
-X-Gm-Gg: AYBFou3Zw/x5RFtAFsRUev9ow8G/X9v/Uxo5Iz4nyV0F7K8yqTaJ9n6VFqf4G9Pso2N
-	giYTRR9GKFuuNFVPDAAJqK4v+lR6J+QcSlEzN1DntGmlpKbAXapJJJXqDpeKEfFOo2DRN2mGTZf
-	P0xJdpLUtgWgehMnNA6fGJButlalWhtQ5XMUncdvJzzs/W13pCuw57IPnsxTikpJV6ZyycT6fhv
-	zM9PbmPJAWlmrzUkEX1fUX+IdSPmeBhKwwMs5chsHk+Z2Dv86wjtRqWJwI9HalQNtGiud5VyQVn
-	losResOyEByA0fJCdUpEUJQX+4ql6sD7cnDzJ9jUJ+dl4Uaak9ScQos0tgXQz4NXjngeIHS7pyW
-	sjsz/W3QRaHmfEe1XtDYQqrcsgwfUPu/tyG8Pxnm5uY0vijeH7xc1Uur+sRejeGnKeHqetEAFG+
-	O8xs4moRi+891Vjixq9+r5Cd2oHcyE2lu7Mn+WqIgvK8C1jP0Q5BfqtRT4/zN3v93arQQawaHo9
-	mGjW4nKecx80H71ZWnLqtrbHNBKq/LODHPbmK89ybVGtjh/hdjT8y/jHOxdpQ7U1ebTWeoCMHxu
-	TGfj74Y6nxiERe5Da2NZDbyiA5lDXMEIpvN8DtPFjpyflB0K1VTcGI5903q4rvZl9fwg2vYTkQJ
-	0r+qwaScetLJrX/v1IjQnXX0U9jYRPpLMO5G91mj/FwlKxU4PVaetwr6hhzg=
-X-Received: by 2002:a05:6a00:991:b0:89e:70fb:9da with SMTP id d2e1a72fcca58-8bd58c0e209mr5993888b3a.0.1794673183031;
-        Sat, 14 Nov 2026 08:19:43 -0800 (PST)
-Received: from yhlee-960QFG.Davolink ([2406:5900:1044:110c:bfe1:56d2:91a4:93d9])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-8bed12a818asm2198159b3a.17.2026.11.14.08.19.39
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 14 Nov 2026 08:19:42 -0800 (PST)
-From: Yehyeong Lee <yhlee@isslab.korea.ac.kr>
-To: mkp@kernel.org
-Cc: michael.christie@oracle.com,
-	target-devel@vger.kernel.org,
-	linux-scsi@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH] scsi: target: iscsi: do not reject the command on a Data-Out overflow
-Date: Sun, 15 Nov 2026 01:19:31 +0900
-Message-ID: <20261114161931.941441-1-yhlee@isslab.korea.ac.kr>
-X-Mailer: git-send-email 2.43.0
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=iotS4cj0
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E3D611F000C4;
+	Sat, 14 Nov 2026 16:44:36 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1794674677;
+	bh=pbh8AtwTyjhRrlmKQ6swY9DkeM3L8ZOy3RmWBEu+nRg=;
+	h=From:Subject:Reply-To:To:Cc:In-Reply-To:References:Date;
+	b=iotS4cj09mmnXWK+hviMuPo2ERFCAqJ85d0ItPSAo7uBvA49m1goB11scNASl4dt9
+	 +U9nqkjUCHoBhekXrE8H6slWbLE/kEXLQdGnoCerNT02ewrJq8Agq1PRHqLk3npYK0
+	 Uz66ad4oTyTO9N+vZ0yBdA932LQ04tK6cDhJli1Fa9ByYFgl64lKwOrQ0xX3wcleEI
+	 Fp6Nt2el+dTOtFGIIEemeq4DIiN7mSTZSvflAR5cw9573gdKulWsznFQVlx30Iizf3
+	 Q7mgB62hwFyNZ2ECNvUuun+QGRoV3rjKzT+2uicnYd1I7xNMSpPJ6/o1GLTClEEkch
+	 Dp/KAg7F4KUOQ==
+Message-ID: <sashiko-outbox-214783@kernel.org>
+From: sashiko-bot@kernel.org
+Subject: Re: [PATCH] scsi: target: iscsi: do not reject the command on a
+ Data-Out overflow
+Reply-To: sashiko-reviews@lists.linux.dev
+To: "Yehyeong Lee" <yhlee@isslab.korea.ac.kr>
+Cc: target-devel@vger.kernel.org, linux-scsi@vger.kernel.org
+In-Reply-To: <20261114161931.941441-1-yhlee@isslab.korea.ac.kr>
+References: <20261114161931.941441-1-yhlee@isslab.korea.ac.kr>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+Date: Sat, 14 Nov 2026 16:44:36 +0000
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Post: <mailto:target-devel@vger.kernel.org>
@@ -96,120 +59,75 @@ List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:target-devel+owner@vger.kernel.org>
 Precedence: list
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
 
-__iscsit_check_dataout_hdr() answers a Data-Out whose offset plus length
-exceeds the command's EDTL with iscsit_reject_cmd(), which queues the
-Reject on the offending command and then drops its reference:
+Thank you for your contribution! Sashiko AI review found 1 potential
+issue to consider:
+- [Critical] scsi: target: iscsi: NULL deref in isert_post_recv() via
+  iscsit_add_reject()
+--
 
-	cmd->i_state = ISTATE_SEND_REJECT;
-	iscsit_add_cmd_to_response_queue(cmd, conn, cmd->i_state);
-	/*
-	 * Perform the kref_put now if se_cmd has already been setup by
-	 * scsit_setup_scsi_cmd()
-	 */
-	if (do_put) {
-		pr_debug("iscsi reject: calling target_put_sess_cmd >>>>>>\n");
-		target_put_sess_cmd(&cmd->se_cmd);
-	}
+commit b4583fae14731c9492a924f04662a5a7049c19bd
+Author: Yehyeong Lee <yhlee@isslab.korea.ac.kr>
 
-For a command that has already completed that put is the last reference.  A
-WRITE that failed before it consumed its data - because the LUN does not
-exist, or the LBA is out of range - stays on conn->conn_cmd_list until the
-initiator's ExpStatSN acknowledges it in iscsit_ack_from_expstatsn(), which
-Data-Out PDUs never reach.  So iscsit_release_cmd() runs on a command that
-is still on that list and still queued for the tx thread, and the command's
-tag goes back to se_sess->sess_tag_pool.  The tx thread then builds the
-queued Reject from the released command and sets ISTATE_SENT_STATUS in it,
-and the next PDU from the initiator frees it a second time.
+scsi: target: iscsi: do not reject the command on a Data-Out overflow
 
-Two PDUs on a session that may write are enough:
+This commit changes __iscsit_check_dataout_hdr() to reject an overflowing
+Data-Out PDU with iscsit_add_reject() instead of iscsit_reject_cmd() so
+that the command's reference is not dropped while it remains on
+conn_cmd_list.
 
-	WRITE(10), EDTL 512, to a LUN that is not mapped  -> CHECK CONDITION
-	Data-Out, same ITT, Offset 512, DataSegmentLength 1, no payload
+> diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/i=
+scsi_target.c
+> index 03d618cd76721..884c9678b4ed9 100644
+> --- a/drivers/target/iscsi/iscsi_target.c
+> +++ b/drivers/target/iscsi/iscsi_target.c
+> @@ -1485,7 +1485,12 @@ __iscsit_check_dataout_hdr(struct iscsit_conn *con=
+n, void *buf,
+>  		pr_err("DataOut Offset: %u, Length %u greater than iSCSI Command EDTL =
+%u, protocol error.\n",
+>  		       be32_to_cpu(hdr->offset), payload_length,
+>  		       cmd->se_cmd.data_length);
+> -		return iscsit_reject_cmd(cmd, ISCSI_REASON_BOOKMARK_INVALID, buf);
+> +		/*
+> +		 * Reject the PDU, not the command: iscsit_reject_cmd() would
+> +		 * drop its last reference while it is on conn_cmd_list.
+> +		 */
+> +		return iscsit_add_reject(conn, ISCSI_REASON_BOOKMARK_INVALID,
+> +					 buf);
+>  	}
+> =20
+>  	if (cmd->unsolicited_data) {
 
-Declaring a DataSegmentLength that is not sent keeps the connection in
-sync, so the session stays up and the second free arrives with the next
-command; if the connection does drop first, it comes from
-iscsit_release_commands_from_conn() instead.  On a KASAN + PROVE_LOCKING +
-DEBUG_LIST guest, 5 boots out of 5:
+[Severity: Critical]
+Does this cause a NULL pointer dereference in isert_post_recv() on iSER
+connections when an unsolicited Data-Out PDU overflows the command's EDTL?
 
-  WARNING: drivers/target/iscsi/iscsi_target_util.c:658 at iscsit_release_cmd+0x2e0/0x390, CPU#0: iscsi_trx/140
-  CPU: 0 UID: 0 PID: 140 Comm: iscsi_trx Not tainted 7.4.0-rc2-00563-g97d73c825122 #1 PREEMPT(lazy)
-  Call Trace:
-   <TASK>
-   target_release_cmd_kref+0x3ea/0x9f0
-   target_put_sess_cmd+0x48/0x60
-   iscsit_add_reject_from_cmd+0x164/0x3c0
-   iscsit_check_dataout_hdr+0x1c1/0x360
-   iscsit_get_rx_pdu+0x5da/0x35d0
-   iscsi_target_rx_thread+0x132/0x2f0
-   kthread+0x2ce/0x3b0
-   ret_from_fork+0x52e/0x780
-   ret_from_fork_asm+0x1a/0x30
-   </TASK>
-  ---[ end trace 0000000000000000 ]---
+isert_handle_iscsi_dataout() calls iscsit_check_dataout_hdr() ->
+__iscsit_check_dataout_hdr().  iscsit_add_reject() allocates a fresh
+command with iscsit_allocate_cmd() rather than isert_allocate_cmd(),
+leaving the transport-private struct isert_cmd zeroed with rx_desc,
+iscsit_cmd, and conn all NULL, and returns -1 so
+isert_handle_iscsi_dataout() returns without reposting the incoming
+rx_desc.
 
-  refcount_t: underflow; use-after-free.
-  WARNING: lib/refcount.c:37 at refcount_warn_saturate+0xad/0xe0, CPU#0: iscsi_trx/140
-  CPU: 0 UID: 0 PID: 140 Comm: iscsi_trx Tainted: G        W           7.4.0-rc2-00563-g97d73c825122 #1 PREEMPT(lazy)
-  Call Trace:
-   <TASK>
-   transport_generic_free_cmd+0x296/0x2d0
-   iscsit_free_cmd+0xa0/0x180
-   iscsit_ack_from_expstatsn+0x31c/0x6c0
-   iscsit_process_scsi_cmd+0xd4/0x300
-   iscsit_get_rx_pdu+0x118c/0x35d0
-   iscsi_target_rx_thread+0x132/0x2f0
-   kthread+0x2ce/0x3b0
-   ret_from_fork+0x52e/0x780
-   ret_from_fork_asm+0x1a/0x30
-   </TASK>
-  ---[ end trace 0000000000000000 ]---
+When the TX thread processes the queued ISTATE_SEND_REJECT response via
+isert_response_queue() -> isert_put_reject() -> isert_post_response(), it
+passes that NULL isert_cmd->rx_desc to isert_post_recv():
 
-KASAN stays quiet because iscsit_release_cmd() ends in target_free_tag()
-and commands are reused from the session tag pool instead of being freed to
-the slab, so the second free lands on whichever command owns that tag.
+drivers/infiniband/ulp/isert/ib_isert.c:isert_post_response() {
+	ret =3D isert_post_recv(isert_conn, isert_cmd->rx_desc);
+	...
+}
 
-Reject the PDU instead, with iscsit_add_reject(), which is what the
-DataSegmentLength check in iscsit_check_dataout_hdr() a few lines below
-already does for the same kind of protocol error: it builds the Reject from
-a command of its own and leaves the offending command, and its reference,
-where they are.
+drivers/infiniband/ulp/isert/ib_isert.c:isert_post_recv() {
+	if (!rx_desc->in_use) {
+	...
+}
 
-The put was added to this path by commit 3e1c81a95f0d77 ("iscsi-target:
-Refactor RX PDU logic + export request PDU handling"), where it ran after
-wait_for_completion(&cmd->reject_comp), that is after the tx thread had
-sent the Reject; commit ba159914086f06 ("iscsi-target: Fix
-iscsit_add_reject* usage for iser") removed that wait, so the release can
-now also race the Reject that is still queued.
+This dereferences rx_desc when it is NULL, leaks the original receive
+descriptor, and leaves isert_cmd->iscsit_cmd and isert_cmd->conn NULL for
+isert_send_done() and isert_do_control_comp().
 
-Fixes: 3e1c81a95f0d77 ("iscsi-target: Refactor RX PDU logic + export request PDU handling")
-Cc: stable@vger.kernel.org
-Signed-off-by: Yehyeong Lee <yhlee@isslab.korea.ac.kr>
----
- drivers/target/iscsi/iscsi_target.c | 7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/iscsi_target.c
-index 124ff269b8e759..b101f1e7376d4e 100644
---- a/drivers/target/iscsi/iscsi_target.c
-+++ b/drivers/target/iscsi/iscsi_target.c
-@@ -1485,7 +1485,12 @@ __iscsit_check_dataout_hdr(struct iscsit_conn *conn, void *buf,
- 		pr_err("DataOut Offset: %u, Length %u greater than iSCSI Command EDTL %u, protocol error.\n",
- 		       be32_to_cpu(hdr->offset), payload_length,
- 		       cmd->se_cmd.data_length);
--		return iscsit_reject_cmd(cmd, ISCSI_REASON_BOOKMARK_INVALID, buf);
-+		/*
-+		 * Reject the PDU, not the command: iscsit_reject_cmd() would
-+		 * drop its last reference while it is on conn_cmd_list.
-+		 */
-+		return iscsit_add_reject(conn, ISCSI_REASON_BOOKMARK_INVALID,
-+					 buf);
- 	}
- 
- 	if (cmd->unsolicited_data) {
--- 
-2.43.0
-
+--=20
+Sashiko AI review =C2=B7 https://sashiko.dev/#/patchset/20261114161931.9414=
+41-1-yhlee@isslab.korea.ac.kr?part=3D1
