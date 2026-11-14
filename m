@@ -1,56 +1,107 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.210.179
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794674677;
-	b=HQ3sNcyjvosptdtZd8k7OT5yHwlJJfQcYe8MwZNli6cv3pq4FeK2SFJfB3IaAMf0pxTT
-	 0A3w1M3sf81UTCtB+nHHl/f7pS6HN0JuNEfcokJZP7gxam93RLInpOoDhjze/4JfDfKJq
-	 6SQt8WzcvUHjd2OIEoIhJn8c4blXjhGQMVFUjijsKbYPAAHwenDiO1aAAO7mlupchnnJ5
-	 uHPxrSQ6xgSJYNRMxWymBDMhGlcpjoIwuSsp6d1dj5aONBNZhdDZQs1/GtSNkQS96nnjJ
-	 WPWhaNh9PLThaRohA2/aKqWdVq1kLdcJAcooITobqeTGAs1d21IvO7vaZ9uE+BHNXMg==
+	t=1794686757;
+	b=wlYsyjxqoI/ss09aKiRRr9F2iRc6Vo81CYZZUifWIvG23jv8Gw9Lwhx83jRdfxUYiuDl
+	 d6Ad2iz+pBJGKjmjgk4v0a2+VNh8nDnB1Ao1K547QNAxGzuqJiCNhCqavwUS6A5Ut3wOm
+	 9yHQts/D9JtLM29a/uRqCq7Q1Hpk/zfTt9VCoAwChXmtBgUJI89SRC1E3P90Ua8w2UKrP
+	 QUNchSfswULOC+6Oku/EmTnFzFZWIOrOUptOwxirChbU19j+M09smDb1/Lo/XGd/f/59s
+	 xa/Q2JYChXvB7BUPBcz9eki43RcEVKaC0Atq8kgmL7qd4iLL8jf9zmRXPUMy86q5dOA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794674677;
-	h=Received:DKIM-Signature:Message-ID:From:Subject:Reply-To:To:Cc:
-	 In-Reply-To:References:Content-Type:Content-Transfer-Encoding:Date;
-	bh=pbh8AtwTyjhRrlmKQ6swY9DkeM3L8ZOy3RmWBEu+nRg=;
-	b=WR3V3gNxqdep87HT1AHwZTLLGMRQtd3YQ8nKxZrFA7m3yfYe7OVV5kjfBbdPjfyd3756
-	 VXfFB+vxxTNlq16eIm3KUj0vLfGxZVlSgqaUu7L76lETVZx/mrJviA02Frx0umA8ydZ5M
-	 IJvHayepX1eUhXnXKB4JEf4LDssjTwR3GgxBML4P2KngNJ5H4qnJZd/8T9Vu1c5Hc9IrN
-	 k5/znxIxfXrSZEO0y4imS9QRWlKlT7hb1g70s+n65htlXecmLrIBqhiZoSLkqQstnV26I
-	 9l4JA8vOjk86IxK9z/TAY9QqFTIV33w4ljL9XOTjsyFnX5dAQJ5yfEU5mudoE+/zLRA==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794686757;
+	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
+	 Date:From:To:Cc:Subject:In-Reply-To:References:MIME-Version:
+	 Content-Type:Content-Disposition:Message-ID:User-Agent;
+	bh=SncZUWGrBOxT9WurRufkDIe8hGFcWm37DANGybHY+fQ=;
+	b=lMGL6/DOkg/b3SgIdTSV5z/5EP89iR+5U26Ib49Z0zClzhCtWvZwiivEvPvWGUX3f1Bx
+	 NlnoxOZoE0ioJ2g6arz+p999Q+qvzcIe7qYWHzmabKJLZt9y072mfltqjnATDudmcAIry
+	 FpMdfYY8t17N0D/d07XsDfpcnU5mpqTjxUjy+V+ZY+hOa1UspgRnrmYKijYjmK0ujznZh
+	 g4R53NTfpxLYAJ7K9O9RJKQVCLAGukdvZs1Id01wIT7GYzZIkBlU679YFsjDyFQ+dlDhh
+	 gbLO4q1QPAwZEvaVZyWb4kWbIgiYEiL2X39rksSo6jlcGfB+TuDG4V6Lw3D0XRjunjg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=iotS4cj0;
-	arc=none smtp.remote-ip=100.103.45.18
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	dmarc=pass header.from=chrisdown.name;
+	spf=pass smtp.mailfrom=chrisdown.name;
+	dkim=pass header.d=chrisdown.name header.i=@chrisdown.name header.a=rsa-sha256 header.s=google header.b=ZNpsvJMi;
+	arc=none smtp.remote-ip=209.85.210.179
+Received: from mail-pf1-f179.google.com (mail-pf1-f179.google.com [209.85.210.179])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8B0B2606A329;
-	Sat, 14 Nov 2026 16:44:37 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A7378606A336
+	for <target-devel@vger.kernel.org>; Sat, 14 Nov 2026 20:05:56 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org A7378606A336
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=chrisdown.name
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=chrisdown.name
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=iotS4cj0
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E3D611F000C4;
-	Sat, 14 Nov 2026 16:44:36 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1794674677;
-	bh=pbh8AtwTyjhRrlmKQ6swY9DkeM3L8ZOy3RmWBEu+nRg=;
-	h=From:Subject:Reply-To:To:Cc:In-Reply-To:References:Date;
-	b=iotS4cj09mmnXWK+hviMuPo2ERFCAqJ85d0ItPSAo7uBvA49m1goB11scNASl4dt9
-	 +U9nqkjUCHoBhekXrE8H6slWbLE/kEXLQdGnoCerNT02ewrJq8Agq1PRHqLk3npYK0
-	 Uz66ad4oTyTO9N+vZ0yBdA932LQ04tK6cDhJli1Fa9ByYFgl64lKwOrQ0xX3wcleEI
-	 Fp6Nt2el+dTOtFGIIEemeq4DIiN7mSTZSvflAR5cw9573gdKulWsznFQVlx30Iizf3
-	 Q7mgB62hwFyNZ2ECNvUuun+QGRoV3rjKzT+2uicnYd1I7xNMSpPJ6/o1GLTClEEkch
-	 Dp/KAg7F4KUOQ==
-Message-ID: <sashiko-outbox-214783@kernel.org>
-From: sashiko-bot@kernel.org
-Subject: Re: [PATCH] scsi: target: iscsi: do not reject the command on a
- Data-Out overflow
-Reply-To: sashiko-reviews@lists.linux.dev
-To: "Yehyeong Lee" <yhlee@isslab.korea.ac.kr>
-Cc: target-devel@vger.kernel.org, linux-scsi@vger.kernel.org
-In-Reply-To: <20261114161931.941441-1-yhlee@isslab.korea.ac.kr>
-References: <20261114161931.941441-1-yhlee@isslab.korea.ac.kr>
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
-Date: Sat, 14 Nov 2026 16:44:36 +0000
+	dkim=pass (1024-bit key) header.d=chrisdown.name header.i=@chrisdown.name header.a=rsa-sha256 header.s=google header.b=ZNpsvJMi
+Received: by mail-pf1-f179.google.com with SMTP id d2e1a72fcca58-8b5e5e64494so1463749b3a.1
+        for <target-devel@vger.kernel.org>; Sat, 14 Nov 2026 12:05:56 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=chrisdown.name; s=google; t=1794686756; x=1795291556; darn=vger.kernel.org;
+        h=user-agent:message-id:content-disposition:content-type:mime-version
+         :references:in-reply-to:subject:cc:to:from:date:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=SncZUWGrBOxT9WurRufkDIe8hGFcWm37DANGybHY+fQ=;
+        b=ZNpsvJMizOoFFuviUq3R3I7xBszXKHR6f+dU2Lhp8+AdJOsuucW/Jpjz4DKxOc01P8
+         7Bf2gXYBYorSyL2ypHSps7l13uEx7uOW/BQ3oCjgyM7fn4nszFId/ZhifmOhhkUhMak/
+         Krv6vg2ZKrT882kZ97nfZeCj+rR5WiJ1p/wW0=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1794686756; x=1795291556;
+        h=user-agent:message-id:content-disposition:content-type:mime-version
+         :references:in-reply-to:subject:cc:to:from:date:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=SncZUWGrBOxT9WurRufkDIe8hGFcWm37DANGybHY+fQ=;
+        b=tS/M6a6vbnY8sF2QVMQ51BvPxJ2zcNrdRNbY1bxobCGXv3oYJwzfAL4M3MSbCS17rH
+         QrdeXX5Of+yDm/HBL24Cp432CptS1QyQ7SASC+g2671M7WwnjbwqZ6AZryghKRY0tINv
+         KbeDGYiEnlTogknq/LtrUc4s0skjQgjunan1deTJQRPj+Ke/Deva7g6RDZ60SMY01HBT
+         lUoJRxnu3LLXFp90k9kH9MlV0JjRhefvCMYO8I//K1BjY9iMzI+C8kzzFMdV0iRljVRN
+         2hGLE7ePTiMK2YjiBbOPxokjXU8n5lAGTay4+N04IgvMx++FFUVyNpmIp2ebHQFuiftD
+         4RIQ==
+X-Forwarded-Encrypted: i=1; AL+hErEU2X+AGaXf+RogIjZ17vuSKANLCR2wHhxofOhpqfy59nceVUjYRZd0KM7s4yC0OQiLoLs5PULXTEYQaQk=@vger.kernel.org
+X-Gm-Message-State: APuU4Z+DvDZcS5onc2blh37Wu9BcI/eLGtj4vjsj9aGRCXED89lMrhvp
+	n4dFyZp+NxPxD6+NsINOleTfjy6jfN3z+R3yoSS6J/CuwREMT66NZ1jeLe/DfC3xQpA=
+X-Gm-Gg: AYBFou0aNxX/ZvcdBxZ586OnvrSq93gzLm2pqi5BODov6XzXQ6unh6nJ14dPoyF7d+S
+	VC4rp6y9/3E8RvPyXqJXjfUvx5uOQ20Hw+XTziluJC8PNWh0OKUK4kYpKUU7MmDaNyv19GkmwOW
+	n7zNPIDok11Ea2u8j9hew44YwpE+1aTuYmK9hpcM0HnV/ybiVmYbA3Jpvcsk9seegtpcdwbZ2Oz
+	jQJ42sZeMKP0bNUmoFx6Pk9uwosDPemH6xytitJT2R2y0zCRriZA71XPyQO4/WgC6QMswYp4ED5
+	cWL9fiEaqyTVzv+F27yQcX7hv109qBf/VIbJ4mBt8DoMqsHfHM3Nncx+MD3vv5e+nWnwGimhlo9
+	8R63iJEjmFV7R52VgMQEK2ql2m6frjWbpD81sYe9kwhcnKjG39OHadSdaVYBGGQWOBzNNZ6BHc1
+	6eUaC/b/EhMua07uiSGIvX+yystk9Cj6EXiqprLSUEx791iTZZ2Ylj2o4t5FXs/9b2fQGdAzIgR
+	sZRSdbo68UcE6X/AvW+uQj0SHXce5J2i3wewYjeGw8ao979SZL7MUYOsF+pMzXRND8OlMcWZM8H
+	kCNDVwpodWNXVnGiv8F8q177/aTWAyDX1asebBpiXrMlLuADBpeMBsq/4DGYNiiqNQCObthwQh5
+	EcMjY489q2TRZcP4wuRcItEGKamRfdvVvzQWeo2tuFUAdCCVvjzZFy6ZgcX5UH/xDips/ao1RF3
+	QjDIcLFKLes3tAt5ehwcBjC0MRJ7AB+b4lyrA2x+tsdXEOz8Wc0uVE0Pz7
+X-Received: by 2002:a05:6a21:748b:b0:3e3:37ff:3795 with SMTP id adf61e73a8af0-3f7a4dbfbbfmr5517650637.7.1794686756009;
+        Sat, 14 Nov 2026 12:05:56 -0800 (PST)
+Received: from [172.22.0.2] ([64.16.22.130])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-8bed12a8172sm2271197b3a.13.2026.11.14.12.05.52
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sat, 14 Nov 2026 12:05:54 -0800 (PST)
+Date: Sat, 14 Nov 2026 12:05:50 -0800
+From: Chris Down <chris@chrisdown.name>
+To: Christian Brauner <brauner@kernel.org>
+Cc: linux-fsdevel@vger.kernel.org, Jann Horn <jannh@google.com>,
+	Chris Mason <mason@kernel.org>, Josef Bacik <josef@toxicpanda.com>,
+	Christoph Hellwig <hch@lst.de>, linux-block@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-nvme@lists.infradead.org,
+	Alexander Viro <viro@zeniv.linux.org.uk>, Jan Kara <jack@suse.cz>,
+	linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
+	driver-core@lists.linux.dev, linux-mm@kvack.org, bpf@vger.kernel.org,
+	linux-security-module@vger.kernel.org, selinux@vger.kernel.org,
+	apparmor@lists.ubuntu.com, linux-nfs@vger.kernel.org, netdev@vger.kernel.org,
+	fuse-devel@lists.linux.dev, linux-efi@vger.kernel.org,
+	xen-devel@lists.xenproject.org, ocfs2-devel@lists.linux.dev,
+	linux-s390@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	linux-usb@vger.kernel.org, Amir Goldstein <amir73il@gmail.com>,
+	linux-erofs@lists.ozlabs.org, linux-kselftest@vger.kernel.org,
+	stable@vger.kernel.org, Alexander Mikhalitsyn <alex@amutable.com>,
+	Breno Leitao <leitao@debian.org>, Casey Schaufler <casey@schaufler-ca.com>,
+	Chuck Lever <cel@kernel.org>, Sashiko <sashiko-bot@kernel.org>
+Subject: Re: [PATCH RFC v2 00/42] fs: don't use pseudo filesystem files as
+	storage
+In-Reply-To: <20261114-work-loop-pseudo-v2-0-98639a2286fb@kernel.org>
+References: <20261114-work-loop-pseudo-v2-0-98639a2286fb@kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Post: <mailto:target-devel@vger.kernel.org>
@@ -59,75 +110,28 @@ List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:target-devel+owner@vger.kernel.org>
 Precedence: list
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Disposition: inline
+Message-ID: <20261114120550.0c9e73aa12a3072c@chrisdown.name>
+User-Agent: Mutt/2.4.3 (cc9e3943) (2026-10-09)
 
-Thank you for your contribution! Sashiko AI review found 1 potential
-issue to consider:
-- [Critical] scsi: target: iscsi: NULL deref in isert_post_recv() via
-  iscsit_add_reject()
---
+Hi Christian,
 
-commit b4583fae14731c9492a924f04662a5a7049c19bd
-Author: Yehyeong Lee <yhlee@isslab.korea.ac.kr>
+Patches 1-11, 13-16, 18-26, 28, 31, 32, 34-37 and 39-42 look good to me,
+so for those please feel free to add:
 
-scsi: target: iscsi: do not reject the command on a Data-Out overflow
+Reviewed-by: Chris Down <chris@chrisdown.name>
 
-This commit changes __iscsit_check_dataout_hdr() to reject an overflowing
-Data-Out PDU with iscsit_add_reject() instead of iscsit_reject_cmd() so
-that the command's reference is not dropped while it remains on
-conn_cmd_list.
+I've also tested 5, 6, 34-37, 41 and 42. The selftests all pass with the
+series applied, and a uid 0 without capabilities can no longer change
+/sys/kernel/reboot/mode through a loop device. So for those, please also
+feel free to add:
 
-> diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/i=
-scsi_target.c
-> index 03d618cd76721..884c9678b4ed9 100644
-> --- a/drivers/target/iscsi/iscsi_target.c
-> +++ b/drivers/target/iscsi/iscsi_target.c
-> @@ -1485,7 +1485,12 @@ __iscsit_check_dataout_hdr(struct iscsit_conn *con=
-n, void *buf,
->  		pr_err("DataOut Offset: %u, Length %u greater than iSCSI Command EDTL =
-%u, protocol error.\n",
->  		       be32_to_cpu(hdr->offset), payload_length,
->  		       cmd->se_cmd.data_length);
-> -		return iscsit_reject_cmd(cmd, ISCSI_REASON_BOOKMARK_INVALID, buf);
-> +		/*
-> +		 * Reject the PDU, not the command: iscsit_reject_cmd() would
-> +		 * drop its last reference while it is on conn_cmd_list.
-> +		 */
-> +		return iscsit_add_reject(conn, ISCSI_REASON_BOOKMARK_INVALID,
-> +					 buf);
->  	}
-> =20
->  	if (cmd->unsolicited_data) {
+Tested-by: Chris Down <chris@chrisdown.name>
 
-[Severity: Critical]
-Does this cause a NULL pointer dereference in isert_post_recv() on iSER
-connections when an unsolicited Data-Out PDU overflows the command's EDTL?
+I've replied separately to 17 and 33.
 
-isert_handle_iscsi_dataout() calls iscsit_check_dataout_hdr() ->
-__iscsit_check_dataout_hdr().  iscsit_add_reject() allocates a fresh
-command with iscsit_allocate_cmd() rather than isert_allocate_cmd(),
-leaving the transport-private struct isert_cmd zeroed with rx_desc,
-iscsit_cmd, and conn all NULL, and returns -1 so
-isert_handle_iscsi_dataout() returns without reposting the incoming
-rx_desc.
+Thanks!
 
-When the TX thread processes the queued ISTATE_SEND_REJECT response via
-isert_response_queue() -> isert_put_reject() -> isert_post_response(), it
-passes that NULL isert_cmd->rx_desc to isert_post_recv():
-
-drivers/infiniband/ulp/isert/ib_isert.c:isert_post_response() {
-	ret =3D isert_post_recv(isert_conn, isert_cmd->rx_desc);
-	...
-}
-
-drivers/infiniband/ulp/isert/ib_isert.c:isert_post_recv() {
-	if (!rx_desc->in_use) {
-	...
-}
-
-This dereferences rx_desc when it is NULL, leaks the original receive
-descriptor, and leaves isert_cmd->iscsit_cmd and isert_cmd->conn NULL for
-isert_send_done() and isert_do_control_comp().
-
---=20
-Sashiko AI review =C2=B7 https://sashiko.dev/#/patchset/20261114161931.9414=
-41-1-yhlee@isslab.korea.ac.kr?part=3D1
+Chris
