@@ -1,95 +1,56 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.216.50
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794745202;
-	b=SP20l8tMi1vi0GKMITba6fnWncMNTRUHqZHN88MbUKFOl30URteFiQcol/CRolPudPu0
-	 otP0gsI/yVbpDwoE+YsdRLN5W9xArTlf01ech/c+kGcp2gj9PqSUl7rxeS2hfdmrGp5wP
-	 yFSqWkUQjr/XQa00KYTdPuVC/D9xvFcuDMSZl5suWbAm6zJ+DHSOEnepBlbjQmlVjbLyX
-	 QZMzfBIV/yx5fU71g50aMLicRE6Ir0lxGWxI+hARqp6afYIg2mqb6jMYKmnI18MJihOSl
-	 WTMTwbWayhl7Mx/B0YhwguPvCz1BbruGOLqtXYp1RdWjlIDy+W5n7n1hVl3O4Qd7u2Q==
+	t=1794746560;
+	b=JdUNlMyAfV5/lpHLF+szAJCmR7Vadll4Jq/DpRN5ilrmVzBwqfoFk8RrTds4m1at9GCC
+	 9EOheAvQzzwfnubnQ7SA2IAoMPG/uxzfPDEO4kCQW0FrSUFny/IY8cWzmgLLSxYcQeJOE
+	 VRZRLSqKBnhzccO9RsO4pb2d6xjAs0XZU/pU55QFouot415l+pL9TdSJ8NiRRMtnPSATa
+	 TSo+kTm/QPazTWNwyUBVzCXsQtcU789GyPsgSrzetkRwY0cZP7VcSWsclQ/BxqipSh/I9
+	 1kQUJGeHrNY9jNiQICqLjbiSCO0auvweTAvbTJTDXEGVwYVcANRjjoMFq+YVWcye+Rg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794745202;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:MIME-Version:
-	 Content-Transfer-Encoding;
-	bh=vMtDV7rOGp9GHf0YCHtgLarvT5GW2vxnwIEbixUsoT4=;
-	b=YWXqeKiIkQl9VNDmf6JUJmBo2K63ksl/p9SxG7PEEY5vtI6qYmQef4H0xI1uW7UofTOd
-	 j3Sb3MCHt8yxy6SOIoTslLgZy6Bir4Ew3GXYBzSwKdKXqoZ7cW5M9CnuBimr/OmVVHZnP
-	 qm7J4ULxKPorxvCOE/rOcbo9rgwS66gaR6cbAHKnUMOfHs6VgE7L+RLKBDNzEUE9rMqPx
-	 /JxkRrEoNotMMecr6wZ6Avc4qsyc/X/J+SiLyxaJfI4ECadIJcPJA3DwVN9tmJVExETVX
-	 iaN1OG8lzwfJ/to9LhqaZN8kJA2jgipCvWn5NjRF4yBhxlXnKUlccul5992Tn/Lj3jg==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794746560;
+	h=Received:DKIM-Signature:Message-ID:From:Subject:Reply-To:To:Cc:
+	 In-Reply-To:References:Content-Type:Content-Transfer-Encoding:Date;
+	bh=4Z+4567/QWUOqxO9Q+A6yXUFz2TTKjM5ijC4fu+iGq0=;
+	b=Ja9BW/emhGCWsfUjggcHJqCk2RsBg0GSnlcHuLiY7dOIWj/hnbTeW1NcRXwMcLvkg1cs
+	 3fN2ZWukVr0AR7h6oPC10IT3zMYGKKvi46/jtoJROVZqKIMIQn46EAGbNRcSwItq3ceTg
+	 DiwpewN7ooucNmK5v7a9WvOcILEtjXi2dXBGvinF3AA/6ge2NBkBMILaRCG26kmNVLiHG
+	 jjQ1TMM4VSE6P61FLlyX1H4b+2rQhcfE6YJZe06D6VUVmjtBcbBJwVcGlFOxOt1IFSTIp
+	 sFErRb2FDAbdnIL5fLRtYmo+r7Z7cfdQcvzZSu9Kc0ogVO1a/O7LnaH8Y1tZoQe7FsQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=fail header.from=isslab.korea.ac.kr;
-	spf=none smtp.mailfrom=isslab.korea.ac.kr;
-	dkim=pass header.d=isslab-korea-ac-kr.20260707.gappssmtp.com header.i=@isslab-korea-ac-kr.20260707.gappssmtp.com header.a=rsa-sha256 header.s=20260707 header.b=e8FODNei;
-	arc=none smtp.remote-ip=209.85.216.50
-Received: from mail-pj1-f50.google.com (mail-pj1-f50.google.com [209.85.216.50])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b="B3cTwy/4";
+	arc=none smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2B0D9606A31A
-	for <target-devel@vger.kernel.org>; Sun, 15 Nov 2026 12:20:00 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 2B0D9606A31A
-Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=isslab.korea.ac.kr
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=isslab.korea.ac.kr
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E9768606A32D;
+	Sun, 15 Nov 2026 12:42:39 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=isslab-korea-ac-kr.20260707.gappssmtp.com header.i=@isslab-korea-ac-kr.20260707.gappssmtp.com header.a=rsa-sha256 header.s=20260707 header.b=e8FODNei
-Received: by mail-pj1-f50.google.com with SMTP id 98e67ed59e1d1-3b37951a397so608292a91.0
-        for <target-devel@vger.kernel.org>; Sun, 15 Nov 2026 04:20:00 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=isslab-korea-ac-kr.20260707.gappssmtp.com; s=20260707; t=1794745200; x=1795350000; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=vMtDV7rOGp9GHf0YCHtgLarvT5GW2vxnwIEbixUsoT4=;
-        b=e8FODNeitMi8AkmSLQb+kOB+CQNYthu7VoVGdkmiYZ97b35+1SPwbACfCdEGL1sk4e
-         ut1YLlAH7suj9MzxuNUcGxnvaFrSfPHvJrLKGZwDtGTRGjVneQe7P72a2hxI5LXmuLUz
-         LFQVN9LPrl7PZKiYzWAHzGJHnDVFglYZZUY669BPvfDSBQoAGFdoUVWHcD0JTta4VX80
-         CM4xCMeh6ecKHfg497xmesD5kwIdiYssww/ilnzv1MSqRigsoUVUHMaGLutehwxoPMGv
-         0H1momRZLLE5l9+5mspzCgZXG/gQD/t5LysciU6ziwCG+8GUh0xAnF7m1aUN7L8yTZZs
-         dhKw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794745200; x=1795350000;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=vMtDV7rOGp9GHf0YCHtgLarvT5GW2vxnwIEbixUsoT4=;
-        b=HdFdw9UPqSYucdLWlMas/ob5e43ph++nqBZ0kjTJmpWFaaCzfZGu3z4O7M/FB2M0e9
-         zbSkj3jwB0wKsSe0qAeMzHBePgnD2Anb+b3txadknqY0LRPFI7ZUYpu6BPjBn59wY3Ay
-         /tfUFFV+qxMeavmXuxcSaKMUloljKgYfE2D3noPCirdEoHma6HVHTPRgi4oaqTOILv8f
-         8fO89C0w/WYdvjn/GsbyJxj1PsWYWBUiN/t530eSLx3c44q0RZ5w8/f2EcLlubG/xXvu
-         1SMVguCfcIBuA6nEAUGMjZnnWqGbZ1bN60PrggTs4f2pWkzF2GHiw1JY2gsrT5SezOqI
-         UsXg==
-X-Forwarded-Encrypted: i=1; AL+hErGUYEk+ZuQL8Rj77uMjacKOg9Eyxe8HZ05Rt1WIDKAL4lNyQmjb1qmRqd+sEKDNxT4zX1ccCxKJrYYCyn0=@vger.kernel.org
-X-Gm-Message-State: APuU4Z8LKJuvA3Es0qoqeI2wBTeEzn2T6SvmLkIoAYZ+cDjsKBs7LesN
-	XviYCnremosM4lxvkfoHSbHSPVAKBiL/l89IugSUf0VJPIalJoN9eYFAnPKP1ftCiUYFPMav2Oq
-	3FHeD74c=
-X-Gm-Gg: AYBFou1/WEubUfQClqjk/g5YWBNHVu1pkTqidJzQBmiGgQUuEV2d/xLxfPVAVR2MuHA
-	h94WESQN6zbHaeydaUVhNPDAGqov/dLX8ns/6KpbGDzXyTjQTLuPIhocJj62NJ9J/e5EMwF7mJB
-	TrloVqPE1QuDlWHCfIJOotup413fttNJgbnLPnHrZOsSLD6MfefvddurPDB0/j16+SMoqy+jTsI
-	DblTO58sm4JjrjKtd4elK49JzYcHmUpTJIaGD+yVehH0uVT5fdR/qj/1EOLvTRld8JV1KtrLJuv
-	MS4JDzTDdmYWwL8PIIk1YzS+33D0RHa9gsv5SWaYmcIoJhPVsHUCM4/EUjG0DmYmF3NG9JrwSga
-	rkXgsp05KpGleXUOh6uQNMnwy4lsDDjJVzDCeyDiY/lF6qAfhQ0FDanCVNF+fu9nSV1l4ECgXlL
-	IwfL8Qe9F5gY2tj0JXuDPxgOUOHIxfjvu+UA+uYy7Tp6koY85Ii8B3XQAYo9Qu0ZKH2LvCPDAuy
-	hppY4Gl/9EnV5O+EMe3plAGEvj+fFHEt+/qObYZs+7l/UGcVco8oKaEFLfblgkew5XCCEabTMck
-	+u7wDK0XfXDbz78Tm5jytTATa//IHTaFyLBX15JQQa8KuLMpoyCgZWmPpA4mcwOn02k6FwtGOyj
-	HkYR1ByXu9h49xxk2KSpEU3F03ZgZD7Ab/A1+/CsJjeazGgHUtDb1uZsESBI=
-X-Received: by 2002:a17:90b:4b10:b0:3b0:cc6f:1046 with SMTP id 98e67ed59e1d1-3b1b0dce88cmr7411321a91.67.1794745200156;
-        Sun, 15 Nov 2026 04:20:00 -0800 (PST)
-Received: from yhlee-960QFG.Davolink ([2406:5900:1044:110c:35d0:694a:1071:9bae])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3b197d27d26sm17099781a91.13.2026.11.15.04.19.57
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 15 Nov 2026 04:19:59 -0800 (PST)
-From: Yehyeong Lee <yhlee@isslab.korea.ac.kr>
-To: mkp@kernel.org
-Cc: michael.christie@oracle.com,
-	bvanassche@acm.org,
-	target-devel@vger.kernel.org,
-	linux-scsi@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH] scsi: target: iscsi: run the Time2Retain handler in process context
-Date: Sun, 15 Nov 2026 21:19:43 +0900
-Message-ID: <20261115121943.1446744-1-yhlee@isslab.korea.ac.kr>
-X-Mailer: git-send-email 2.43.0
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=B3cTwy/4
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 56B4F1F000C4;
+	Sun, 15 Nov 2026 12:42:39 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1794746559;
+	bh=4Z+4567/QWUOqxO9Q+A6yXUFz2TTKjM5ijC4fu+iGq0=;
+	h=From:Subject:Reply-To:To:Cc:In-Reply-To:References:Date;
+	b=B3cTwy/4fdHnnwfsQLpWqFs7RmQbJLPon/RNZhz4rfrZZOp9Dwd5R/sJIEueANd1C
+	 SbKOEsT4T6EhWSZABpib43IO3U6C4la5/jfmwpp/FJ46isly7cI+84BkiIzSu5Asje
+	 RBPIwCYvqF9Gj0GqIq9HxcbOGtl1aUP7SLaY8AP8bFuX96B9W9ET8wFHIEZ/huU0nl
+	 sGfeHk06J/M03rJeRWQ1dmFbsi1q3/2j+KjCfFN+DPprJo+/2oKHfbJFdA4TO/aQc4
+	 HCtJ1/y3CcTwCbHdbGuqCFDIH7yhmLh8tQ3bG5SpnW0gs3pd/jZ2nbpQfimq4RA4o4
+	 t9BK4eF72l08Q==
+Message-ID: <sashiko-outbox-215504@kernel.org>
+From: sashiko-bot@kernel.org
+Subject: Re: [PATCH] scsi: target: iscsi: run the Time2Retain handler in
+ process context
+Reply-To: sashiko-reviews@lists.linux.dev
+To: "Yehyeong Lee" <yhlee@isslab.korea.ac.kr>
+Cc: target-devel@vger.kernel.org, linux-scsi@vger.kernel.org
+In-Reply-To: <20261115121943.1446744-1-yhlee@isslab.korea.ac.kr>
+References: <20261115121943.1446744-1-yhlee@isslab.korea.ac.kr>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+Date: Sun, 15 Nov 2026 12:42:38 +0000
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Post: <mailto:target-devel@vger.kernel.org>
@@ -98,216 +59,209 @@ List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:target-devel+owner@vger.kernel.org>
 Precedence: list
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
 
-iscsit_handle_time2retain_timeout() is a timer callback, so it runs in
-timer softirq context, and from there it closes the session:
+Thank you for your contribution! Sashiko AI review found 4 potential
+issues to consider:
+- [High] scsi: target: iscsi: UAF race in
+  iscsit_stop_time2retain_timer() on restart
+- [High] scsi: target: iscsi: session leak in iscsit_close_session()
+  when !can_sleep
+- [High] scsi: target: iscsi: UAF in iscsit_close_connection() when
+  Time2Retain is 0
+- [Medium] scsi: target: iscsi: session_lock dropped in
+  iscsit_stop_time2retain_timer()
+--
 
-	iscsit_handle_time2retain_timeout()	<- timer softirq
-	  iscsit_close_session(sess, false)
-	    transport_deregister_session()
-	      target_for_each_device(target_release_res, se_sess)
-	        mutex_lock(&device_mutex)
+commit cd2ff8f1169a8e47b09d7eb1b677944735610f1c
+Author: Yehyeong Lee <yhlee@isslab.korea.ac.kr>
 
-transport_deregister_session() has walked the device list under
-device_mutex since commit 80647a89eaf3f2 ("scsi: target: core: Release
-SPC-2 reservations when closing a session").  The can_sleep argument that
-the handler passes as false only guards iscsit_check_session_usage_count();
-the transport_deregister_session() call below it runs either way.
+scsi: target: iscsi: run the Time2Retain handler in process context
 
-The callback also takes se_tpg->session_lock in softirq context, and it is
-the only code that does, which makes that lock SOFTIRQ-safe.
-iscsit_start_time2retain_handler() takes tpg->tpg_state_lock with plain
-spin_lock() under it, so lockdep reports an inversion as well.  Both the
-softirq acquisition and the plain spin_lock() are as old as the driver,
-commit e48354ce078c ("iscsi-target: Add iSCSI fabric support for target
-v4.1").
+This commit converts the session Time2Retain timer into a delayed work item=
+ on
+system_dfl_wq so that iscsit_handle_time2retain_timeout() closes the session
+and acquires se_tpg->session_lock in process context rather than timer soft=
+irq
+context.
 
-An initiator needs nothing but a session to get there: log in, then send a
-Logout with reason CLOSE_CONNECTION.  iscsit_close_connection() leaves
-session_fall_back_to_erl0 clear for a Logout, so instead of closing the
-session it arms the Time2Retain handler, which runs DefaultTime2Retain
-seconds later because the session is never resumed.  Three such logouts on
-a KASAN + PROVE_LOCKING + DEBUG_ATOMIC_SLEEP guest give three of these:
+> diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/i=
+scsi_target.c
+> index 03d618cd76721..4c6579eb803f3 100644
+> --- a/drivers/target/iscsi/iscsi_target.c
+> +++ b/drivers/target/iscsi/iscsi_target.c
+> @@ -4485,8 +4485,8 @@ int iscsit_close_session(struct iscsit_session *ses=
+s, bool can_sleep)
+> =20
+>  	/*
+>  	 * If any other processes are accessing this session pointer we must
+> -	 * wait until they have completed.  If we are in an interrupt (the
+> -	 * time2retain handler) and contain and active session usage count we
+> +	 * wait until they have completed.  If we are the Time2Retain work
+> +	 * (can_sleep is false) and contain and active session usage count we
+>  	 * restart the timer and exit.
+>  	 */
+>  	if (iscsit_check_session_usage_count(sess, can_sleep)) {
 
-  BUG: sleeping function called from invalid context at kernel/locking/mutex.c:623
-  in_atomic(): 1, irqs_disabled(): 0, non_block: 0, pid: 0, name: swapper/0
-  preempt_count: 101, expected: 0
-  RCU nest depth: 0, expected: 0
-  INFO: lockdep is turned off.
-  CPU: 0 UID: 0 PID: 0 Comm: swapper/0 Not tainted 7.4.0-rc2-00563-g97d73c825122 #1 PREEMPT(lazy)
-  Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.16.3-debian-1.16.3-2 04/01/2014
-  Call Trace:
-   <IRQ>
-   dump_stack_lvl+0x80/0xa0
-   __might_resched+0x31c/0x520
-   __mutex_lock+0x10e/0x24e0
-   target_for_each_device+0x6c/0xc0
-   transport_deregister_session+0x19c/0x250
-   iscsit_close_session+0x20c/0x540
-   call_timer_fn+0x15a/0x4b0
-   __run_timer_base.part.0+0x5e3/0x930
-   run_timer_softirq+0x12c/0x210
-   handle_softirqs+0x1ff/0x8e0
-   __irq_exit_rcu+0x153/0x1e0
-   irq_exit_rcu+0x9/0x20
-   sysvec_apic_timer_interrupt+0x6b/0x80
-   </IRQ>
+[Severity: High]
+Can keeping can_sleep as false when iscsit_handle_time2retain_timeout() cal=
+ls
+iscsit_close_session() leak the session if session_usage_count is non-zero?
 
-and, once per boot, this:
+In iscsi_target_login_sess_out(), the old_sess_out path starts the Time2Ret=
+ain
+handler and drops se_tpg->session_lock before calling
+iscsit_dec_session_usage_count().  When DefaultTime2Retain is 0,
+mod_delayed_work() queues time2retain_work with zero delay, so
+iscsit_handle_time2retain_timeout() can run on another CPU while
+session_usage_count is still elevated.
 
-  WARNING: possible irq lock inversion dependency detected
-  7.4.0-rc2-00563-g97d73c825122 #1 Not tainted
-  --------------------------------------------------------
-  swapper/0/0 just changed the state of lock:
-  ffff88800ec14148 (&se_tpg->session_lock){+.-.}-{3:3}, at: iscsit_handle_time2retain_timeout+0x46/0x1a0
-  but this lock took another, SOFTIRQ-unsafe lock in the past:
-   (&tpg->tpg_state_lock){+.+.}-{3:3}
-  Chain exists of:
-    &se_tpg->session_lock --> &sess->conn_lock --> &tpg->tpg_state_lock
+iscsit_handle_time2retain_timeout() sets ISCSI_TF_EXPIRED (with
+ISCSI_TF_RUNNING still set) and calls iscsit_close_session(sess, false).
+iscsit_close_session() sets session_reinstatement to 1, fails to stop the
+timer because ISCSI_TF_EXPIRED is set, deregisters configfs, and enters the
+!can_sleep branch above because session_usage_count is non-zero.  There,
+iscsit_start_time2retain_handler() returns immediately without re-arming the
+work because ISCSI_TF_RUNNING was never cleared, leaving the half-closed
+session leaked with ISCSI_TF_EXPIRED and session_reinstatement set.
 
-Move the body of the handler into a delayed work item on system_dfl_wq, so
-that nothing in iscsi_target takes se_tpg->session_lock in softirq context
-any more and the inversion goes away with the invalid sleep.
-mod_delayed_work() and cancel_delayed_work() do not sleep, so
-iscsit_start_time2retain_handler() and iscsit_stop_time2retain_timer() keep
-calling them with se_tpg->session_lock held; cancel_delayed_work() does not
-wait for a work that has already started running and need not, because
-ISCSI_TF_STOP is set under se_tpg->session_lock and the work rechecks it
-under the same lock before it touches the session, and the one thing left
-to wait for - a work on its way out of that check - is waited for in
-iscsit_close_session() before the session is freed, unless it is that work
-itself and can_sleep is false.
+Since iscsit_handle_time2retain_timeout() now runs in process context, could
+it wait on session_waiting_on_uc_comp instead of taking the non-sleeping
+restart path?
 
-Fixes: e48354ce078c ("iscsi-target: Add iSCSI fabric support for target v4.1")
-Fixes: 80647a89eaf3f2 ("scsi: target: core: Release SPC-2 reservations when closing a session")
-Cc: stable@vger.kernel.org
-Signed-off-by: Yehyeong Lee <yhlee@isslab.korea.ac.kr>
----
- drivers/target/iscsi/iscsi_target.c       | 11 +++++++++--
- drivers/target/iscsi/iscsi_target_erl0.c  | 12 ++++++------
- drivers/target/iscsi/iscsi_target_erl0.h  |  2 +-
- drivers/target/iscsi/iscsi_target_login.c |  4 ++--
- include/target/iscsi/iscsi_target_core.h  |  3 ++-
- 5 files changed, 20 insertions(+), 12 deletions(-)
+[ ... ]
 
-diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/iscsi_target.c
-index 124ff269b8e759..2cb9eb6711e739 100644
---- a/drivers/target/iscsi/iscsi_target.c
-+++ b/drivers/target/iscsi/iscsi_target.c
-@@ -4504,8 +4504,8 @@ int iscsit_close_session(struct iscsit_session *sess, bool can_sleep)
- 
- 	/*
- 	 * If any other processes are accessing this session pointer we must
--	 * wait until they have completed.  If we are in an interrupt (the
--	 * time2retain handler) and contain and active session usage count we
-+	 * wait until they have completed.  If we are the Time2Retain work
-+	 * (can_sleep is false) and contain and active session usage count we
- 	 * restart the timer and exit.
- 	 */
- 	if (iscsit_check_session_usage_count(sess, can_sleep)) {
-@@ -4535,6 +4535,13 @@ int iscsit_close_session(struct iscsit_session *sess, bool can_sleep)
- 	sess->sess_ops = NULL;
- 	spin_unlock_bh(&se_tpg->session_lock);
- 
-+	/*
-+	 * Wait for a Time2Retain work that was cancelled after it started
-+	 * running; can_sleep is false only when that work is the caller.
-+	 */
-+	if (can_sleep)
-+		cancel_delayed_work_sync(&sess->time2retain_work);
-+
- 	kfree(sess);
- 	return 0;
- }
-diff --git a/drivers/target/iscsi/iscsi_target_erl0.c b/drivers/target/iscsi/iscsi_target_erl0.c
-index 24db6b07493e62..9db833f3eeaec2 100644
---- a/drivers/target/iscsi/iscsi_target_erl0.c
-+++ b/drivers/target/iscsi/iscsi_target_erl0.c
-@@ -741,10 +741,10 @@ int iscsit_check_post_dataout(
- 	}
- }
- 
--void iscsit_handle_time2retain_timeout(struct timer_list *t)
-+void iscsit_handle_time2retain_timeout(struct work_struct *work)
- {
--	struct iscsit_session *sess = timer_container_of(sess, t,
--							 time2retain_timer);
-+	struct iscsit_session *sess = container_of(work, struct iscsit_session,
-+						   time2retain_work.work);
- 	struct iscsi_portal_group *tpg = sess->tpg;
- 	struct se_portal_group *se_tpg = &tpg->tpg_se_tpg;
- 
-@@ -791,8 +791,8 @@ void iscsit_start_time2retain_handler(struct iscsit_session *sess)
- 
- 	sess->time2retain_timer_flags &= ~ISCSI_TF_STOP;
- 	sess->time2retain_timer_flags |= ISCSI_TF_RUNNING;
--	mod_timer(&sess->time2retain_timer,
--		  jiffies + sess->sess_ops->DefaultTime2Retain * HZ);
-+	mod_delayed_work(system_dfl_wq, &sess->time2retain_work,
-+			 sess->sess_ops->DefaultTime2Retain * HZ);
- }
- 
- int iscsit_stop_time2retain_timer(struct iscsit_session *sess)
-@@ -811,7 +811,7 @@ int iscsit_stop_time2retain_timer(struct iscsit_session *sess)
- 	sess->time2retain_timer_flags |= ISCSI_TF_STOP;
- 	spin_unlock(&se_tpg->session_lock);
- 
--	timer_delete_sync(&sess->time2retain_timer);
-+	cancel_delayed_work(&sess->time2retain_work);
- 
- 	spin_lock(&se_tpg->session_lock);
- 	sess->time2retain_timer_flags &= ~ISCSI_TF_RUNNING;
-diff --git a/drivers/target/iscsi/iscsi_target_erl0.h b/drivers/target/iscsi/iscsi_target_erl0.h
-index 2a877d13977d24..66d5cb779aa8a1 100644
---- a/drivers/target/iscsi/iscsi_target_erl0.h
-+++ b/drivers/target/iscsi/iscsi_target_erl0.h
-@@ -12,7 +12,7 @@ extern void iscsit_set_dataout_sequence_values(struct iscsit_cmd *);
- extern int iscsit_check_pre_dataout(struct iscsit_cmd *, unsigned char *);
- extern int iscsit_check_post_dataout(struct iscsit_cmd *, unsigned char *, u8);
- extern void iscsit_start_time2retain_handler(struct iscsit_session *);
--extern void iscsit_handle_time2retain_timeout(struct timer_list *t);
-+void iscsit_handle_time2retain_timeout(struct work_struct *work);
- extern int iscsit_stop_time2retain_timer(struct iscsit_session *);
- extern void iscsit_connection_reinstatement_rcfr(struct iscsit_conn *);
- extern void iscsit_cause_connection_reinstatement(struct iscsit_conn *, int);
-diff --git a/drivers/target/iscsi/iscsi_target_login.c b/drivers/target/iscsi/iscsi_target_login.c
-index c282b6a7029684..c1e7891365ad45 100644
---- a/drivers/target/iscsi/iscsi_target_login.c
-+++ b/drivers/target/iscsi/iscsi_target_login.c
-@@ -248,8 +248,8 @@ static int iscsi_login_zero_tsih_s1(
- 	spin_lock_init(&sess->session_usage_lock);
- 	spin_lock_init(&sess->ttt_lock);
- 
--	timer_setup(&sess->time2retain_timer,
--		    iscsit_handle_time2retain_timeout, 0);
-+	INIT_DELAYED_WORK(&sess->time2retain_work,
-+			  iscsit_handle_time2retain_timeout);
- 
- 	ret = ida_alloc(&sess_ida, GFP_KERNEL);
- 	if (ret < 0) {
-diff --git a/include/target/iscsi/iscsi_target_core.h b/include/target/iscsi/iscsi_target_core.h
-index 51ca80abacf7ba..486e1c1528c61d 100644
---- a/include/target/iscsi/iscsi_target_core.h
-+++ b/include/target/iscsi/iscsi_target_core.h
-@@ -7,6 +7,7 @@
- #include <linux/sched.h>
- #include <linux/socket.h>            /* struct sockaddr_storage */
- #include <linux/types.h>             /* u8 */
-+#include <linux/workqueue.h>         /* struct delayed_work */
- #include <scsi/iscsi_proto.h>        /* itt_t */
- #include <target/target_core_base.h> /* struct se_cmd */
- 
-@@ -681,7 +682,7 @@ struct iscsit_session {
- 	struct completion	reinstatement_comp;
- 	struct completion	session_wait_comp;
- 	struct completion	session_waiting_on_uc_comp;
--	struct timer_list	time2retain_timer;
-+	struct delayed_work	time2retain_work;
- 	struct iscsi_sess_ops	*sess_ops;
- 	struct se_session	*se_sess;
- 	struct iscsi_portal_group *tpg;
--- 
-2.43.0
+> diff --git a/drivers/target/iscsi/iscsi_target_erl0.c b/drivers/target/is=
+csi/iscsi_target_erl0.c
+> index 24db6b07493e6..9db833f3eeaec 100644
+> --- a/drivers/target/iscsi/iscsi_target_erl0.c
+> +++ b/drivers/target/iscsi/iscsi_target_erl0.c
 
+[ ... ]
+
+> @@ -791,8 +791,8 @@ void iscsit_start_time2retain_handler(struct iscsit_s=
+ession *sess)
+> =20
+>  	sess->time2retain_timer_flags &=3D ~ISCSI_TF_STOP;
+>  	sess->time2retain_timer_flags |=3D ISCSI_TF_RUNNING;
+> -	mod_timer(&sess->time2retain_timer,
+> -		  jiffies + sess->sess_ops->DefaultTime2Retain * HZ);
+> +	mod_delayed_work(system_dfl_wq, &sess->time2retain_work,
+> +			 sess->sess_ops->DefaultTime2Retain * HZ);
+>  }
+> =20
+>  int iscsit_stop_time2retain_timer(struct iscsit_session *sess)
+
+[Severity: High]
+Can this cause a use-after-free in iscsit_close_connection() when
+DefaultTime2Retain is 0?
+
+drivers/target/iscsi/iscsi_target.c:iscsit_close_connection() {
+    ...
+		if (!atomic_read(&sess->session_continuation))
+			iscsit_start_time2retain_handler(sess);
+
+		if (atomic_read(&sess->session_close)) {
+			spin_unlock_bh(&sess->conn_lock);
+			complete_all(&sess->session_wait_comp);
+			iscsit_close_session(sess, true);
+		} else {
+			spin_unlock_bh(&sess->conn_lock);
+		}
+    ...
+}
+
+Previously, mod_timer() armed a softirq timer while spin_lock_bh() kept loc=
+al
+softirqs disabled across iscsit_start_time2retain_handler() and the subsequ=
+ent
+sess accesses.  With mod_delayed_work(), a zero delay bypasses the timer wh=
+eel
+and queues time2retain_work immediately on an unbound worker, and neither
+iscsit_handle_time2retain_timeout() nor iscsit_close_session() takes
+sess->conn_lock:
+
+CPU0                                  CPU1 (kworker)
+iscsit_close_connection()
+  spin_lock_bh(&sess->conn_lock)
+  iscsit_start_time2retain_handler(sess)
+    mod_delayed_work(..., 0)
+                                      iscsit_handle_time2retain_timeout()
+                                        iscsit_close_session(sess, false)
+                                          kfree(sess)
+  atomic_read(&sess->session_close)
+  spin_unlock_bh(&sess->conn_lock)  <-- use-after-free
+
+> @@ -811,7 +811,7 @@ int iscsit_stop_time2retain_timer(struct iscsit_sessi=
+on *sess)
+>  	sess->time2retain_timer_flags |=3D ISCSI_TF_STOP;
+>  	spin_unlock(&se_tpg->session_lock);
+> =20
+> -	timer_delete_sync(&sess->time2retain_timer);
+> +	cancel_delayed_work(&sess->time2retain_work);
+> =20
+>  	spin_lock(&se_tpg->session_lock);
+>  	sess->time2retain_timer_flags &=3D ~ISCSI_TF_RUNNING;
+
+[Severity: High]
+Can replacing timer_delete_sync() with cancel_delayed_work() here allow an
+already-dispatched work item to close and free the session after the timer =
+is
+stopped and restarted?
+
+Because cancel_delayed_work() does not wait for a running work item,
+iscsit_stop_time2retain_timer() clears ISCSI_TF_RUNNING while a worker thre=
+ad
+can still be preempted before taking se_tpg->session_lock.  If the timer is
+then restarted (for example via the old_sess_out path in
+iscsi_target_login_sess_out() when a continuation login fails),
+iscsit_start_time2retain_handler() clears ISCSI_TF_STOP and re-queues
+sess->time2retain_work:
+
+CPU0 (kworker)                        CPU1
+iscsit_handle_time2retain_timeout()
+  /* preempted before session_lock */
+                                      iscsi_login_non_zero_tsih_s2()
+                                        iscsit_stop_time2retain_timer()
+                                          flags |=3D ISCSI_TF_STOP
+                                          cancel_delayed_work()
+                                          flags &=3D ~ISCSI_TF_RUNNING
+                                      ...
+                                      iscsi_target_login_sess_out()
+                                        iscsit_start_time2retain_handler()
+                                          flags &=3D ~ISCSI_TF_STOP
+                                          flags |=3D ISCSI_TF_RUNNING
+                                          mod_delayed_work()
+  spin_lock_bh(&se_tpg->session_lock)
+  /* ISCSI_TF_STOP is now clear */
+  flags |=3D ISCSI_TF_EXPIRED
+  spin_unlock_bh(&se_tpg->session_lock)
+  iscsit_close_session(sess, false)
+    iscsit_stop_time2retain_timer()   <-- returns -1 (ISCSI_TF_EXPIRED)
+    /* cancel_delayed_work_sync() skipped because !can_sleep */
+    kfree(sess)                       <-- time2retain_work still queued
+
+When CPU0 acquires se_tpg->session_lock, ISCSI_TF_STOP is no longer set, so
+the stale work sets ISCSI_TF_EXPIRED and calls iscsit_close_session(sess,
+false).  Because ISCSI_TF_EXPIRED is set and can_sleep is false, neither
+iscsit_stop_time2retain_timer() nor cancel_delayed_work_sync() cancels the
+newly armed time2retain_work before kfree(sess) frees the session (or if a
+new connection is already active on the session, iscsit_close_session() hits
+BUG() on sess->nconn).
+
+[Severity: Medium]
+Why does iscsit_stop_time2retain_timer() still drop and re-acquire
+se_tpg->session_lock around cancel_delayed_work()?
+
+The commit message notes that cancel_delayed_work() is called with
+se_tpg->session_lock held because it does not sleep, but the unlock and lock
+around it remain from timer_delete_sync().  Dropping se_tpg->session_lock
+splits the update of time2retain_timer_flags across two critical sections, =
+so
+an unlocked caller of iscsit_start_time2retain_handler() such as
+iscsit_close_connection() can observe ISCSI_TF_RUNNING still set in that
+window and return without arming the work just before ISCSI_TF_RUNNING is
+cleared.
+
+--=20
+Sashiko AI review =C2=B7 https://sashiko.dev/#/patchset/20261115121943.1446=
+744-1-yhlee@isslab.korea.ac.kr?part=3D1
