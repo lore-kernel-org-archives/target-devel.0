@@ -1,56 +1,57 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=91.218.175.223
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794746560;
-	b=JdUNlMyAfV5/lpHLF+szAJCmR7Vadll4Jq/DpRN5ilrmVzBwqfoFk8RrTds4m1at9GCC
-	 9EOheAvQzzwfnubnQ7SA2IAoMPG/uxzfPDEO4kCQW0FrSUFny/IY8cWzmgLLSxYcQeJOE
-	 VRZRLSqKBnhzccO9RsO4pb2d6xjAs0XZU/pU55QFouot415l+pL9TdSJ8NiRRMtnPSATa
-	 TSo+kTm/QPazTWNwyUBVzCXsQtcU789GyPsgSrzetkRwY0cZP7VcSWsclQ/BxqipSh/I9
-	 1kQUJGeHrNY9jNiQICqLjbiSCO0auvweTAvbTJTDXEGVwYVcANRjjoMFq+YVWcye+Rg==
+	t=1794788288;
+	b=Mm5nq/RTAps8VvCqdll6rkF+5n17r+T6MiINGx45RZ46F4fkQXn6/B20rWdhp+iiuKPX
+	 4oknNoBsPagdrWv6wIhhBx33W3821bGas+OVriZ09LWltwBy4Fsa1hcFph7d130xLr2V7
+	 o05dt42SlsZAjSQ4L6AjEedtyFuVIn3xyd7MEUT7R+c2GV0/QGBfHucWuaDMXrgb1miIT
+	 NUtcEcVdlR2Xryij+ohLngP//SSkEZhWpK8PNQhm3YfYUd0N61+aEaim/6plmQGO7UGnt
+	 AzeMmKmaAsRUkzSy1+Kr3dB/jroU7Gk1Ap3LUvDFYkbePHnR4KbjOcI8fTbGIhbofPg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794746560;
-	h=Received:DKIM-Signature:Message-ID:From:Subject:Reply-To:To:Cc:
-	 In-Reply-To:References:Content-Type:Content-Transfer-Encoding:Date;
-	bh=4Z+4567/QWUOqxO9Q+A6yXUFz2TTKjM5ijC4fu+iGq0=;
-	b=Ja9BW/emhGCWsfUjggcHJqCk2RsBg0GSnlcHuLiY7dOIWj/hnbTeW1NcRXwMcLvkg1cs
-	 3fN2ZWukVr0AR7h6oPC10IT3zMYGKKvi46/jtoJROVZqKIMIQn46EAGbNRcSwItq3ceTg
-	 DiwpewN7ooucNmK5v7a9WvOcILEtjXi2dXBGvinF3AA/6ge2NBkBMILaRCG26kmNVLiHG
-	 jjQ1TMM4VSE6P61FLlyX1H4b+2rQhcfE6YJZe06D6VUVmjtBcbBJwVcGlFOxOt1IFSTIp
-	 sFErRb2FDAbdnIL5fLRtYmo+r7Z7cfdQcvzZSu9Kc0ogVO1a/O7LnaH8Y1tZoQe7FsQ==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794788288;
+	h=DMARC-Filter:X-Envelope-To:DKIM-Signature:X-Envelope-To:Received:
+	 X-Mizu-Trace-ID:X-Migadu-Flow:From:Subject:Date:Message-Id:
+	 MIME-Version:Content-Type:Content-Transfer-Encoding:X-B4-Tracking:To:
+	 Cc:X-Mailer;
+	bh=bEVsen0Z4XKtG98sBbUiY6hiqLLLzzqtV9NIpCrXVCY=;
+	b=yA8UhZqcZ9anfFoZIao+2QXg3TSq7jEdI8dc5ooJeUozIOzra8cDnB01FNOii3RqFdI4
+	 dgPh9bFb0/HWoeSUT28sUUz70sQFjZ8ROJYf/hrOhT8HHMeU/DU1DSIVO5QP/L0O4sHAF
+	 52t2BJEIZvyTkoUNKrmaWMsx5bP16RKrfDjhdVzs37FxKt/0+Q6evQGchM/ETXNjaVq6J
+	 pzS5nnwauSs6RldT0zaf7wf6nuH9ZDKL6ZFjVwWmnbikx9wkzQXq9bSAgX5nqyzA8vDun
+	 dj0vDUdT7aP3uY0P5MMlIx0oJzjLe0653DIsOeU8t4rCw/Gg+DuSUgvaORPicW2bsTA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b="B3cTwy/4";
-	arc=none smtp.remote-ip=100.103.45.18
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	dmarc=pass header.from=linux.dev;
+	spf=pass smtp.mailfrom=linux.dev;
+	dkim=pass header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=Outz9IDc;
+	arc=none smtp.remote-ip=91.218.175.223
+Received: from mta0.migadu.com (out-223.mta0.migadu.com [91.218.175.223])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E9768606A32D;
-	Sun, 15 Nov 2026 12:42:39 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AFB40606A331
+	for <target-devel@vger.kernel.org>; Mon, 16 Nov 2026 00:18:06 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org AFB40606A331
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.dev
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=B3cTwy/4
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 56B4F1F000C4;
-	Sun, 15 Nov 2026 12:42:39 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1794746559;
-	bh=4Z+4567/QWUOqxO9Q+A6yXUFz2TTKjM5ijC4fu+iGq0=;
-	h=From:Subject:Reply-To:To:Cc:In-Reply-To:References:Date;
-	b=B3cTwy/4fdHnnwfsQLpWqFs7RmQbJLPon/RNZhz4rfrZZOp9Dwd5R/sJIEueANd1C
-	 SbKOEsT4T6EhWSZABpib43IO3U6C4la5/jfmwpp/FJ46isly7cI+84BkiIzSu5Asje
-	 RBPIwCYvqF9Gj0GqIq9HxcbOGtl1aUP7SLaY8AP8bFuX96B9W9ET8wFHIEZ/huU0nl
-	 sGfeHk06J/M03rJeRWQ1dmFbsi1q3/2j+KjCfFN+DPprJo+/2oKHfbJFdA4TO/aQc4
-	 HCtJ1/y3CcTwCbHdbGuqCFDIH7yhmLh8tQ3bG5SpnW0gs3pd/jZ2nbpQfimq4RA4o4
-	 t9BK4eF72l08Q==
-Message-ID: <sashiko-outbox-215504@kernel.org>
-From: sashiko-bot@kernel.org
-Subject: Re: [PATCH] scsi: target: iscsi: run the Time2Retain handler in
- process context
-Reply-To: sashiko-reviews@lists.linux.dev
-To: "Yehyeong Lee" <yhlee@isslab.korea.ac.kr>
-Cc: target-devel@vger.kernel.org, linux-scsi@vger.kernel.org
-In-Reply-To: <20261115121943.1446744-1-yhlee@isslab.korea.ac.kr>
-References: <20261115121943.1446744-1-yhlee@isslab.korea.ac.kr>
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
-Date: Sun, 15 Nov 2026 12:42:38 +0000
+	dkim=pass (1024-bit key, unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=Outz9IDc
+X-Envelope-To: target-devel@vger.kernel.org
+DKIM-Signature: a=rsa-sha256; bh=LUmjHTjauelHCTImcnlLJ9hln9wqDY9gHPAu5bGOtwM=;
+ c=simple/simple; d=linux.dev;
+ h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
+ t=1794788284; v=1; x=1795393084;
+ b=Outz9IDcDuGE5hqx4zXYEqSTTzJQ34NOd8UC6hLRnWRc5baxtWGGR45Z6gFfympS42DOTh4M
+ 7vbj8p7UQyoA9K+6YMmegC0RcR/ZHyJtI+nP5bwJ6aRxi3nhouMEI9Z1314JnAugnxTSJ1ALhB+
+ VKoKTrgm93zxma0UbxchG/+E=
+X-Envelope-To: target-devel@vger.kernel.org
+Received: by smtp.migadu.com with ESMTPS id 413efdc466c6c190;
+	Mon, 16 Nov 2026 00:18:04 +0000
+X-Mizu-Trace-ID: 413efdc466c6c190
+X-Migadu-Flow: FLOW_OUT
+From: Qiliang Yuan <qiliang.yuan@linux.dev>
+Subject: [PATCH RFC 00/18] scsi: target: Add target_core_uring, an io_uring
+ based user backstore
+Date: Sun, 15 Nov 2026 19:17:53 -0500
+Message-Id: <20261115-feat-target-core-uring-v1-0-28cdc137eac6@linux.dev>
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Post: <mailto:target-devel@vger.kernel.org>
@@ -59,209 +60,107 @@ List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:target-devel+owner@vger.kernel.org>
 Precedence: list
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIALJL+moC/x3MsQqDMBCH8VeRmz3wLHHoKvQBukqHYP5Jb4nlk
+ oogvntDx9/wfScVmKLQvTvJsGvRLTdI39H69jmBNTTTOIyTiDiO8JWrt4TK62bgr2lOHOTmJES
+ 4CKEWfwxRj/94oedjptd1/QCN/mLTbQAAAA==
+To: "Martin K. Petersen" <mkp@kernel.org>, Shuah Khan <shuah@kernel.org>, 
+ Jonathan Corbet <corbet@lwn.net>, Shuah Khan <skhan@linuxfoundation.org>, 
+ Randy Dunlap <rdunlap@infradead.org>
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org, 
+ target-devel@vger.kernel.org, linux-kselftest@vger.kernel.org, 
+ linux-doc@vger.kernel.org, Jens Axboe <axboe@kernel.dk>, 
+ io-uring@vger.kernel.org, Mike Christie <michael.christie@oracle.com>, 
+ Bodo Stroesser <bostroesser@gmail.com>, Ming Lei <tom.leiming@gmail.com>, 
+ Qiliang Yuan <qiliang.yuan@linux.dev>
+X-Mailer: b4 0.13.0
 
-Thank you for your contribution! Sashiko AI review found 4 potential
-issues to consider:
-- [High] scsi: target: iscsi: UAF race in
-  iscsit_stop_time2retain_timer() on restart
-- [High] scsi: target: iscsi: session leak in iscsit_close_session()
-  when !can_sleep
-- [High] scsi: target: iscsi: UAF in iscsit_close_connection() when
-  Time2Retain is 0
-- [Medium] scsi: target: iscsi: session_lock dropped in
-  iscsit_stop_time2retain_timer()
---
+TCM/USER is how a userspace process serves a LIO device, for instance
+to export distributed storage over iSCSI or vhost-scsi. All commands of
+a device go through one command ring under one mutex, the data of each
+command is copied into and out of a shared data area, and the server
+has to parse every SCSI CDB itself.
 
-commit cd2ff8f1169a8e47b09d7eb1b677944735610f1c
-Author: Yehyeong Lee <yhlee@isslab.korea.ac.kr>
+This series adds target_core_uring, a second user backstore next to
+TCM/USER, built the way ublk is:
 
-scsi: target: iscsi: run the Time2Retain handler in process context
+- The kernel emulates the SCSI commands. The server only sees reads,
+  writes, flushes, UNMAP and WRITE SAME as an operation, an offset and a
+  length.
+- A device has several queues. Each queue is served through io_uring
+  commands on its own ring, with no lock shared between queues.
+- Data is copied once, with pread()/pwrite() on the character device, or
+  not at all when the server registers the pages of a command as an
+  io_uring fixed buffer.
 
-This commit converts the session Time2Retain timer into a delayed work item=
- on
-system_dfl_wq so that iscsit_handle_time2retain_timeout() closes the session
-and acquires se_tpg->session_lock in process context rather than timer soft=
-irq
-context.
+Patches 1-4 create the device, its queues and the character device.
+Patches 5-8 pass reads and writes to the server. Patches 9-11 handle a
+server that exits or hangs, and aborts. Patches 12-14 add flush, UNMAP
+and WRITE SAME, patch 15 adds fixed buffers. Patches 16-18 add a small
+server, a selftest and the documentation.
 
-> diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/i=
-scsi_target.c
-> index 03d618cd76721..4c6579eb803f3 100644
-> --- a/drivers/target/iscsi/iscsi_target.c
-> +++ b/drivers/target/iscsi/iscsi_target.c
-> @@ -4485,8 +4485,8 @@ int iscsit_close_session(struct iscsit_session *ses=
-s, bool can_sleep)
-> =20
->  	/*
->  	 * If any other processes are accessing this session pointer we must
-> -	 * wait until they have completed.  If we are in an interrupt (the
-> -	 * time2retain handler) and contain and active session usage count we
-> +	 * wait until they have completed.  If we are the Time2Retain work
-> +	 * (can_sleep is false) and contain and active session usage count we
->  	 * restart the timer and exit.
->  	 */
->  	if (iscsit_check_session_usage_count(sess, can_sleep)) {
+Not covered yet: protection information, and a way for existing
+tcmu-runner handlers to move over without changes, as they implement
+SCSI rather than block commands.
 
-[Severity: High]
-Can keeping can_sleep as false when iscsit_handle_time2retain_timeout() cal=
-ls
-iscsit_close_session() leak the session if session_usage_count is non-zero?
+Exporting a 2 GiB device through tcm_loop to fio (io_uring, direct I/O,
+iodepth 32 for 4k and 8 for 1M, 6 seconds per job) on a 32 CPU VM, with
+TCM/USER and a single-threaded handler, then with this series, 32 queues
+and one server thread per queue. Both servers keep the data in memory.
+A single job is slower; the gain comes with concurrency and with large
+I/O. Three alternating runs (median, min-max in parentheses):
 
-In iscsi_target_login_sess_out(), the old_sess_out path starts the Time2Ret=
-ain
-handler and drops se_tpg->session_lock before calling
-iscsit_dec_session_usage_count().  When DefaultTime2Retain is 0,
-mod_delayed_work() queues time2retain_work with zero delay, so
-iscsit_handle_time2retain_timeout() can run on another CPU while
-session_usage_count is still elevated.
+  workload               TCM/USER (MB/s)   uring (MB/s)          change
+  4k randread, 1 job      426 (409-463)      369 (366-384)         -13%
+  4k randread, 4 jobs    1165 (1072-1253)   1524 (1413-1541)       +31%
+  4k randread, 16 jobs    920 (916-1162)    6193 (5845-6222)      +574%
+  4k randwrite, 16 jobs   793 (711-886)     5701 (5257-5706)      +619%
+  1M read, 4 jobs        6019 (5857-6047)  49460 (46706-57997)    +722%
+  1M write, 4 jobs       2791 (2649-2907)  26692 (25958-27560)    +856%
 
-iscsit_handle_time2retain_timeout() sets ISCSI_TF_EXPIRED (with
-ISCSI_TF_RUNNING still set) and calls iscsit_close_session(sess, false).
-iscsit_close_session() sets session_reinstatement to 1, fails to stop the
-timer because ISCSI_TF_EXPIRED is set, deregisters configfs, and enters the
-!can_sleep branch above because session_usage_count is non-zero.  There,
-iscsit_start_time2retain_handler() returns immediately without re-arming the
-work because ISCSI_TF_RUNNING was never cleared, leaving the half-closed
-session leaked with ISCSI_TF_EXPIRED and session_reinstatement set.
+Signed-off-by: Qiliang Yuan <qiliang.yuan@linux.dev>
+---
+Qiliang Yuan (18):
+      scsi: target: uring: Introduce an io_uring based user backstore
+      scsi: target: uring: Allocate per-queue command descriptors
+      scsi: target: uring: Create a character device per backstore device
+      scsi: target: uring: Map the command descriptors into the server
+      scsi: target: uring: Queue commands until a server fetches them
+      scsi: target: uring: Hand commands out through TCMUR_IO_FETCH
+      scsi: target: uring: Complete commands with TCMUR_IO_COMMIT_AND_FETCH
+      scsi: target: uring: Copy command data with pread() and pwrite()
+      scsi: target: uring: Fail in-flight commands when the server exits
+      scsi: target: uring: Time out commands the server does not complete
+      scsi: target: uring: Drop aborted commands that are still queued
+      scsi: target: uring: Support SYNCHRONIZE CACHE
+      scsi: target: uring: Implement UNMAP
+      scsi: target: uring: Handle WRITE SAME
+      scsi: target: uring: Register command data as io_uring fixed buffers
+      selftests: target_core_uring: Add a minimal server
+      selftests: target_core_uring: Test a device exported through tcm_loop
+      Documentation: target: Describe the uring backstore
 
-Since iscsit_handle_time2retain_timeout() now runs in process context, could
-it wait on session_waiting_on_uc_comp instead of taking the non-sleeping
-restart path?
+ Documentation/target/index.rst                     |    1 +
+ Documentation/target/tcm-uring.rst                 |   84 ++
+ MAINTAINERS                                        |    2 +
+ drivers/target/Kconfig                             |   10 +
+ drivers/target/Makefile                            |    1 +
+ drivers/target/target_core_uring.c                 | 1126 ++++++++++++++++++++
+ include/uapi/linux/target_core_uring.h             |  126 +++
+ tools/testing/selftests/Makefile                   |    1 +
+ .../testing/selftests/target_core_uring/.gitignore |    1 +
+ tools/testing/selftests/target_core_uring/Makefile |    8 +
+ tools/testing/selftests/target_core_uring/config   |    5 +
+ .../selftests/target_core_uring/tcmur_server.c     |  310 ++++++
+ .../selftests/target_core_uring/tcmur_test.sh      |  137 +++
+ 13 files changed, 1812 insertions(+)
+---
+base-commit: 23c62304dde29abe92013d85910d03a77dada35d
+change-id: 20261115-feat-target-core-uring-d1351dfe5fe1
 
-[ ... ]
+Best regards,
+-- 
+Qiliang Yuan <qiliang.yuan@linux.dev>
 
-> diff --git a/drivers/target/iscsi/iscsi_target_erl0.c b/drivers/target/is=
-csi/iscsi_target_erl0.c
-> index 24db6b07493e6..9db833f3eeaec 100644
-> --- a/drivers/target/iscsi/iscsi_target_erl0.c
-> +++ b/drivers/target/iscsi/iscsi_target_erl0.c
-
-[ ... ]
-
-> @@ -791,8 +791,8 @@ void iscsit_start_time2retain_handler(struct iscsit_s=
-ession *sess)
-> =20
->  	sess->time2retain_timer_flags &=3D ~ISCSI_TF_STOP;
->  	sess->time2retain_timer_flags |=3D ISCSI_TF_RUNNING;
-> -	mod_timer(&sess->time2retain_timer,
-> -		  jiffies + sess->sess_ops->DefaultTime2Retain * HZ);
-> +	mod_delayed_work(system_dfl_wq, &sess->time2retain_work,
-> +			 sess->sess_ops->DefaultTime2Retain * HZ);
->  }
-> =20
->  int iscsit_stop_time2retain_timer(struct iscsit_session *sess)
-
-[Severity: High]
-Can this cause a use-after-free in iscsit_close_connection() when
-DefaultTime2Retain is 0?
-
-drivers/target/iscsi/iscsi_target.c:iscsit_close_connection() {
-    ...
-		if (!atomic_read(&sess->session_continuation))
-			iscsit_start_time2retain_handler(sess);
-
-		if (atomic_read(&sess->session_close)) {
-			spin_unlock_bh(&sess->conn_lock);
-			complete_all(&sess->session_wait_comp);
-			iscsit_close_session(sess, true);
-		} else {
-			spin_unlock_bh(&sess->conn_lock);
-		}
-    ...
-}
-
-Previously, mod_timer() armed a softirq timer while spin_lock_bh() kept loc=
-al
-softirqs disabled across iscsit_start_time2retain_handler() and the subsequ=
-ent
-sess accesses.  With mod_delayed_work(), a zero delay bypasses the timer wh=
-eel
-and queues time2retain_work immediately on an unbound worker, and neither
-iscsit_handle_time2retain_timeout() nor iscsit_close_session() takes
-sess->conn_lock:
-
-CPU0                                  CPU1 (kworker)
-iscsit_close_connection()
-  spin_lock_bh(&sess->conn_lock)
-  iscsit_start_time2retain_handler(sess)
-    mod_delayed_work(..., 0)
-                                      iscsit_handle_time2retain_timeout()
-                                        iscsit_close_session(sess, false)
-                                          kfree(sess)
-  atomic_read(&sess->session_close)
-  spin_unlock_bh(&sess->conn_lock)  <-- use-after-free
-
-> @@ -811,7 +811,7 @@ int iscsit_stop_time2retain_timer(struct iscsit_sessi=
-on *sess)
->  	sess->time2retain_timer_flags |=3D ISCSI_TF_STOP;
->  	spin_unlock(&se_tpg->session_lock);
-> =20
-> -	timer_delete_sync(&sess->time2retain_timer);
-> +	cancel_delayed_work(&sess->time2retain_work);
-> =20
->  	spin_lock(&se_tpg->session_lock);
->  	sess->time2retain_timer_flags &=3D ~ISCSI_TF_RUNNING;
-
-[Severity: High]
-Can replacing timer_delete_sync() with cancel_delayed_work() here allow an
-already-dispatched work item to close and free the session after the timer =
-is
-stopped and restarted?
-
-Because cancel_delayed_work() does not wait for a running work item,
-iscsit_stop_time2retain_timer() clears ISCSI_TF_RUNNING while a worker thre=
-ad
-can still be preempted before taking se_tpg->session_lock.  If the timer is
-then restarted (for example via the old_sess_out path in
-iscsi_target_login_sess_out() when a continuation login fails),
-iscsit_start_time2retain_handler() clears ISCSI_TF_STOP and re-queues
-sess->time2retain_work:
-
-CPU0 (kworker)                        CPU1
-iscsit_handle_time2retain_timeout()
-  /* preempted before session_lock */
-                                      iscsi_login_non_zero_tsih_s2()
-                                        iscsit_stop_time2retain_timer()
-                                          flags |=3D ISCSI_TF_STOP
-                                          cancel_delayed_work()
-                                          flags &=3D ~ISCSI_TF_RUNNING
-                                      ...
-                                      iscsi_target_login_sess_out()
-                                        iscsit_start_time2retain_handler()
-                                          flags &=3D ~ISCSI_TF_STOP
-                                          flags |=3D ISCSI_TF_RUNNING
-                                          mod_delayed_work()
-  spin_lock_bh(&se_tpg->session_lock)
-  /* ISCSI_TF_STOP is now clear */
-  flags |=3D ISCSI_TF_EXPIRED
-  spin_unlock_bh(&se_tpg->session_lock)
-  iscsit_close_session(sess, false)
-    iscsit_stop_time2retain_timer()   <-- returns -1 (ISCSI_TF_EXPIRED)
-    /* cancel_delayed_work_sync() skipped because !can_sleep */
-    kfree(sess)                       <-- time2retain_work still queued
-
-When CPU0 acquires se_tpg->session_lock, ISCSI_TF_STOP is no longer set, so
-the stale work sets ISCSI_TF_EXPIRED and calls iscsit_close_session(sess,
-false).  Because ISCSI_TF_EXPIRED is set and can_sleep is false, neither
-iscsit_stop_time2retain_timer() nor cancel_delayed_work_sync() cancels the
-newly armed time2retain_work before kfree(sess) frees the session (or if a
-new connection is already active on the session, iscsit_close_session() hits
-BUG() on sess->nconn).
-
-[Severity: Medium]
-Why does iscsit_stop_time2retain_timer() still drop and re-acquire
-se_tpg->session_lock around cancel_delayed_work()?
-
-The commit message notes that cancel_delayed_work() is called with
-se_tpg->session_lock held because it does not sleep, but the unlock and lock
-around it remain from timer_delete_sync().  Dropping se_tpg->session_lock
-splits the update of time2retain_timer_flags across two critical sections, =
-so
-an unlocked caller of iscsit_start_time2retain_handler() such as
-iscsit_close_connection() can observe ISCSI_TF_RUNNING still set in that
-window and return without arming the work just before ISCSI_TF_RUNNING is
-cleared.
-
---=20
-Sashiko AI review =C2=B7 https://sashiko.dev/#/patchset/20261115121943.1446=
-744-1-yhlee@isslab.korea.ac.kr?part=3D1
