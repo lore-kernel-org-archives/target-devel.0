@@ -1,49 +1,49 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794827454;
-	b=Fhu7n+IxiXZFiYYNxp6fmcgD3HcFLxeEY15uCBMQ8CUb0zjD/05yUWkcSnAmYOBUKRTD
-	 VInhTZ5mrTynau0AndkwSPGtMUU/xug+bQ5qSNqcSYTH07+R49A/KxT5p0Ua3DTMAyTiM
-	 xGLCfBixdutukVS5YlGMG6Nsz7DlKo1zlD97WV0M3FXyHyHbXRPM/Kr4NMyk8zoQ/stmt
-	 5RG+ehr6+fHoqo250YTLx/gnUanvdtO+vY3x0MEDwuwxEiiUXK/9IMfxlu2VGhqBZh9Hb
-	 akBCbI/HzMRsj8387XVG2cMu9M7gQGuVOagKbZWU/DSpls8fOZeYWLQ2mooFv3dPfyA==
+	t=1794827469;
+	b=s6KCguraidFQ8ywG4cN0Xi4MxJKpL8n9Dh3jflZe2MIlXKDyHa/4+DjPwOlU8eYCIALR
+	 dGl6TB2x4M1enZIHqha1c4oBnPlIefnD1qc7wrsoGl39wKo/Z7V300isl7y8gQuBynqXw
+	 maLreMdNtE7vY6Ngw3Aqe8waY45dn0kkjyow8lHMpTfkiybyRVQ4VyqGUA/KCbpMStRbA
+	 M4oGMU80lpA1rJHqsabW11F6GarQuZvsQ/3/dY01LJIXsMYnvjViocrV0JQDDAlML6CCF
+	 O+9dX9uWD3AI6NPS6e8GiVuVl06zd6+dVvsv7/mCit1ld9DrbsSzq/tIh8XRJpilzoQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794827454;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794827469;
 	h=Received:DKIM-Signature:From:Date:Subject:MIME-Version:Content-Type:
 	 Content-Transfer-Encoding:Message-Id:References:In-Reply-To:To:Cc:
 	 X-Mailer:X-Developer-Signature:X-Developer-Key;
-	bh=BY87H/RnXilQq13XAhtvlglG6136WbkekRPXJvo2I3U=;
-	b=s+k//LAOGv22X8fclpoZMjvu3uPFshH5VexG7uQL4NqaSBr44WS8zmnySYxf0hGbTQTD
-	 q+RPLc7odXiLath/8jAWaH0fkKZoFH4NZuuuxlyheeohy7Ie/Z0CQ0G9PoW3FVuiFW/H6
-	 gQSUkt+E+5a87lLaT7zGV3Yvnv0d1wTCMNP1/njanX0LSrEZtaq2nxPTXgeZN1zDDRuJj
-	 OMxhNeSY95nSonQM7GWF8X7RjjgeyiyadCdU8YeWXisjDfD+sBpMd+ViErqM0jv8ApK8C
-	 tNXKDZOvTiS9X0lwnYDxr+dU8uQlmLYPUtxsX//HLbttdmwrLWYx7OPD+cP/GhJ+2Qw==
+	bh=OTEjlmIJyKpC5NfEWKTxGQBI4o98SYAhIwo6Ai+LDGM=;
+	b=gv29WwJIZ4Ici7x4rS5ECFkszg4r8i1nSn9z/gqWVkdCymMZEV2nQMkEHoYCLHRFyEba
+	 Mcx/zWfgIsn0KB3dT2EqmYO8+jWcnS162tUlCcnUHB/zvmVZz7N4Eochc5fV52v/hxeLX
+	 n8lj5VAHtMzR3UuDPJbzLCcVtLqerWODaGGqEq/qZNDIuIllLHe1dY8rCHZIyU6GToeEt
+	 4abY0SveDJoRBPREXxzXK8HttG3FYkjbAEE3XrzJLdhMrH5Unc3SRych4H1kfr19eIqYE
+	 S59kHA5DODNotcx5mrM9UUg6BbVSR47PjXQe0BaC9AS7WvXe9b2WrMKEDTikp3sCfbg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Tsq4iuTK;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=b8+ShhPz;
 	arc=none smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C4EB460A6F54;
-	Mon, 16 Nov 2026 11:10:54 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 50CB46071B36;
+	Mon, 16 Nov 2026 11:11:08 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Tsq4iuTK
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 416851F000C5;
-	Mon, 16 Nov 2026 11:10:47 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=b8+ShhPz
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B90BD1F000C4;
+	Mon, 16 Nov 2026 11:11:01 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1794827454;
-	bh=BY87H/RnXilQq13XAhtvlglG6136WbkekRPXJvo2I3U=;
+	s=k20260515; t=1794827468;
+	bh=OTEjlmIJyKpC5NfEWKTxGQBI4o98SYAhIwo6Ai+LDGM=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=Tsq4iuTKRhulkomOLwfJCGY7RSUTospv3OqWJbcYQQFjEoKupjSCxw6Yy3rPq4pB9
-	 +LrXvKA4rBly7ufMqZGGURI/PkATv40fMYkjtpqcL/tNHRyeTByFbJTZmujbH0d7/Q
-	 HXCq2zQGevHC5tGi3GM/YXAFadxr211gKZs+efK2OMgZEBHzheaSEy+WXOjCe8RO5r
-	 TJ2bRHJjwjB/ITjzevhBLxBTbfuTMUOIvIjO5xZFZMBmnzadWnSvOl1+uUswfItRJz
-	 cvn+ZB4G6vMTJzmJfSaWRJJZDIQQXhCz05Bm/gc8LbBO51UdG9XgtkJRygpVExqJdR
-	 0R8YByohYWTAQ==
+	b=b8+ShhPzXQ5lKArD/6+ZRe9DOjMyoKKAtnYUlLtEIbco9DLALBR0Fd2WDzfzWc/xq
+	 +KykUFg8yMY6Kd78+glVS3d4yeckJ0NZgym4qTmABG1DSqtV08TKvEgKTSRPYYc8FP
+	 3A/zUYyTBLJdxk3fLBWngqH38gEefnGvMYwPDcaoLTEerXzCHabY1vE4quu1HkYEqI
+	 xK7UXhuJplVmiu7BnozU6NuKxVhigBCbUzntJkdDKhMU1U4LXEjJVGGRKv6uioBtRs
+	 sd3pKHijxRAVRCt9esuvtmGbmGhGQspe3OfnCiNM1Ut6Q2kagZYzQsqGYzonRHSJSV
+	 uP0mNwhmOYf2A==
 From: Christian Brauner <brauner@kernel.org>
-Date: Mon, 16 Nov 2026 12:05:12 +0100
-Subject: [PATCH RFC v3 39/44] target: fileio: refuse files on pseudo
- filesystems as backing files
+Date: Mon, 16 Nov 2026 12:05:14 +0100
+Subject: [PATCH RFC v3 41/44] usb: gadget: f_mass_storage: refuse files on
+ pseudo filesystems
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Post: <mailto:target-devel@vger.kernel.org>
@@ -55,7 +55,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261116-work-loop-pseudo-v3-39-8cbbea1cf34f@kernel.org>
+Message-Id: <20261116-work-loop-pseudo-v3-41-8cbbea1cf34f@kernel.org>
 References: <20261116-work-loop-pseudo-v3-0-8cbbea1cf34f@kernel.org>
 In-Reply-To: <20261116-work-loop-pseudo-v3-0-8cbbea1cf34f@kernel.org>
 To: linux-fsdevel@vger.kernel.org
@@ -75,70 +75,70 @@ Cc: Jann Horn <jannh@google.com>, Chris Mason <mason@kernel.org>,
  Amir Goldstein <amir73il@gmail.com>, linux-erofs@lists.ozlabs.org, 
  linux-kselftest@vger.kernel.org, 
  "Christian Brauner (Amutable)" <brauner@kernel.org>, 
- Sashiko <sashiko-bot@kernel.org>, Chris Down <chris@chrisdown.name>
+ Alexander Mikhalitsyn <alex@amutable.com>, 
+ Chris Down <chris@chrisdown.name>
 X-Mailer: b4 0.17-dev-ce4c1
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2223; i=brauner@kernel.org;
- h=from:subject:message-id; bh=11gfWGw/ZwPDfVFtqD+CkdePFs+glK5xVNQbp3ek2T8=;
- b=owGbwMvMwCU28Zj0gdSKO4sYT6slMWT9etzj8cs54I/rlC7xuCARluu5a1aodKvyswTvkD6zv
- 1dfVPVMRykLgxgXg6yYIotDu0m43HKeis1GmRowc1iZQIYwcHEKwETirBj+e2jMajfMFJqpekRG
- aqlo40Pe5TUVy7c/+DD7XlLpsaZOLoa/knzXPN++Mv3K99Ndbp9ymKjRnUWue9I2sb1mqWq5pLu
- bHQA=
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2207; i=brauner@kernel.org;
+ h=from:subject:message-id; bh=9yOpMEvSpwTZ88CI4cJoJKFDpbu7ZmjHFE7v8Gz8hhc=;
+ b=owGbwMvMwCU28Zj0gdSKO4sYT6slMWT9etynd0NX1vPeFOdEtq9nL7ydJOxr3SZTcqJWrC/8P
+ 8+eTSY8HaUsDGJcDLJiiiwO7Sbhcst5KjYbZWrAzGFlAhnCwMUpABNpsmJk2P/2xMUG9fKOCS+q
+ pmtt5+OefHRG0P2je5ZsqZU7vHHpSW+GvxKn1gcduJD7d9+yy53iOseiZErr8u6GsuasXRM//eL
+ OvXwA
 X-Developer-Key: i=brauner@kernel.org; a=openpgp;
  fpr=4880B8C9BD0E5106FC070F4F7B3C391EFEA93624
 
-fd_dev_name can name any file including files on procfs or sysfs. The
-initiator then gets to read and write kernel interfaces through the LUN
-with kernel credentials. Refuse files on pseudo filesystems just like
-loop does by switching to file_check_backing().
+fsg_lun_open() takes any regular file as the backing file of a LUN. The
+file-storage kthread then reads and writes it with kernel_read() and
+kernel_write() on behalf of the USB host. With a procfs or sysfs file
+behind a LUN the host gets to read and write kernel interfaces with
+kernel credentials. Refuse files on pseudo filesystems just like loop
+does by switching to file_check_backing().
 
-Do the same for the protection file. With DIF protection enabled the
-fileio backend keeps the protection information in a second file. It is
-named like the backing file with ".protection" appended and
-fd_init_prot() opens it by path. Whatever that path leads to was taken
-without any checks.
+The helper also does the file type and readability checks. So the
+messages for an unsuitable backing file become one. It looks at the
+inode of the file instead of the host of ->f_mapping. For regular files
+and block devices both have the same type. It also wants ->read_iter()
+where FMODE_CAN_READ was enough so far. But kernel_read() never worked
+without ->read_iter() anyway.
 
-Note that the helper only accepts regular files and block devices as
-backing file and only regular files as protection file. So far the
-backing file could be anything with ->read_iter() and ->write_iter()
-including character devices and FIFOs.
-
-Reported-by: Sashiko <sashiko-bot@kernel.org>
-Closes: https://lore.kernel.org/all/sashiko-outbox-206765@kernel.org
+Reviewed-by: Alexander Mikhalitsyn <alex@amutable.com>
 Reviewed-by: Chris Down <chris@chrisdown.name>
-Tested-by: Chris Down <chris@chrisdown.name>
 Signed-off-by: Christian Brauner (Amutable) <brauner@kernel.org>
 ---
- drivers/target/target_core_file.c | 10 ++++++++--
- 1 file changed, 8 insertions(+), 2 deletions(-)
+ drivers/usb/gadget/function/storage_common.c | 11 +++--------
+ 1 file changed, 3 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/target/target_core_file.c b/drivers/target/target_core_file.c
-index a5391e57e9aa5..c747cc4a647ff 100644
---- a/drivers/target/target_core_file.c
-+++ b/drivers/target/target_core_file.c
-@@ -145,8 +145,8 @@ static int fd_configure_device(struct se_device *dev)
- 	}
- 	fd_dev->fd_file = file;
+diff --git a/drivers/usb/gadget/function/storage_common.c b/drivers/usb/gadget/function/storage_common.c
+index 75831f2c7abeb..af0c37a9fe029 100644
+--- a/drivers/usb/gadget/function/storage_common.c
++++ b/drivers/usb/gadget/function/storage_common.c
+@@ -205,23 +205,18 @@ int fsg_lun_open(struct fsg_lun *curlun, const char *filename)
+ 	if (!(filp->f_mode & FMODE_WRITE))
+ 		ro = 1;
  
--	if (!file->f_op->read_iter || !file->f_op->write_iter) {
--		pr_err("FILEIO: %s lacks ->read_iter or ->write_iter\n",
-+	if (file_check_backing(file, FMODE_READ | FMODE_WRITE, S_IFBLK)) {
-+		pr_err("FILEIO: %s can't be used as a backing file\n",
- 		       fd_dev->fd_dev_name);
- 		ret = -EINVAL;
- 		goto fail;
-@@ -861,6 +861,12 @@ static int fd_init_prot(struct se_device *dev)
- 		ret = PTR_ERR(prot_file);
- 		return ret;
+-	inode = filp->f_mapping->host;
+-	if ((!S_ISREG(inode->i_mode) && !S_ISBLK(inode->i_mode))) {
+-		LINFO(curlun, "invalid file type: %s\n", filename);
+-		goto out;
+-	}
+-
+ 	/*
+ 	 * If we can't read the file, it's no good.
+ 	 * If we can't write the file, use it read-only.
+ 	 */
+-	if (!(filp->f_mode & FMODE_CAN_READ)) {
+-		LINFO(curlun, "file not readable: %s\n", filename);
++	if (file_check_backing(filp, FMODE_READ, S_IFBLK)) {
++		LINFO(curlun, "invalid backing file: %s\n", filename);
+ 		goto out;
  	}
-+
-+	if (file_check_backing(prot_file, FMODE_READ | FMODE_WRITE, 0)) {
-+		pr_err("FILEIO: %s can't be used as a protection file\n", buf);
-+		filp_close(prot_file, NULL);
-+		return -EINVAL;
-+	}
- 	fd_dev->fd_prot_file = prot_file;
+ 	if (!(filp->f_mode & FMODE_CAN_WRITE))
+ 		ro = 1;
  
- 	return 0;
++	inode = filp->f_mapping->host;
+ 	size = i_size_read(inode);
+ 	if (size < 0) {
+ 		LINFO(curlun, "unable to find file size: %s\n", filename);
 
 -- 
 2.53.0
