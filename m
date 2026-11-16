@@ -1,48 +1,49 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794827081;
-	b=IscuBtHFBDRhLR7RnnEjjFDEP7S1RdeiZ8Z4/trWoFiEie/GzGEOxQPem7ME2pDgGGC4
-	 PXiLwkFBIkVU0o6+h+5Fuw8L8BoM6Zkray+toTJfDJZzBi6zXKiih/TEiwB/i/PTW3wVw
-	 G0rdHR8rOO6O6DojUB5wAH49gz5IkLX8XL/uAErrjtJD4ha6+5kBSD6g93BKPE48wgsXt
-	 C5h10eDhTtvMhfUhH1FuqCNY1fmevxOhyeQ1PcOB4zy3TLPcEv3RiYh67yXROil/75TWl
-	 ZjLXdH0eRYZc7seM4EdoWkDfAC0Huxcy7cAHU7CWQTv7RxxD21bXJl6O0qQKZjzGYcw==
+	t=1794827089;
+	b=C5op2Qr23+92tIK0wwcYgsT4F6QTrTqmGEW7cl5sgemsBGtnNk4oF7QQoyOMUurG7fxI
+	 cPSMumhQg8e7VRcVFx0pppkytIezjgvYYNPwVmVDu7pqXOI0h8OrTwEh/+upGmcO/lEsN
+	 J/H9oVsDLBFTcyMuzgdhn3Sncv5vLrGYD/IfjaTo+kdSi5ZA63uFAfJ+s5MdthdaOCgW3
+	 XZgJvNei5CWDghHJbu6UkND+y7hYihz0qKX9QJhsDf28EY7yxzvFLKHXA7T7KM1aw9Fau
+	 Z3/FbuNIFSlkMHFz+ct2+Jno/U1G24uoGIqfkKOa9lkyv758SP/nfg54i+MouwQo33A==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794827081;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794827089;
 	h=Received:DKIM-Signature:From:Date:Subject:MIME-Version:Content-Type:
 	 Content-Transfer-Encoding:Message-Id:References:In-Reply-To:To:Cc:
 	 X-Mailer:X-Developer-Signature:X-Developer-Key;
-	bh=EWEQe50Q7bYbdLpYkYQap52GI3LJt8CnLN09OmwuI1w=;
-	b=sv9XpZTvbrYfxY1eWG/wHiJcOlzAfa6EWPtezDZVtIotq1YFeW1YhjFeUvsId5EJYYjf
-	 LnAEj1KtntLm2y6VEyuKjM25spT55IabZcSL/xhrW/Cd+UMYuDZGSO3IKqahxwZi8ilQz
-	 cjeTa5RbSVP3Kt7/Yrh4vhcxzWRBsm06C9F5MP5ss0RdAIkj83E6Ln4rCwhrm7v+SB++Q
-	 SbDDoR9q0TZO5JwU+P/VnlFPkd0HZg4BtjuV1S0PkfmXJu/CEUSM4OtJd7cFW69I9yUpA
-	 YXzK5HBZj+cTc3XgRe38ckvFY/vT43+013LrC7SV1t/UHyIm5ngwLObXO/TA43vGx4Q==
+	bh=rLjMzucVvAg0/2ubS/mq+wqOERAfWvgX+KIv/hkuemY=;
+	b=JrNMhl1OMk1X+cAPo0ZBTcO/Iyk9o2X3R4cbB5xeXqJ0UnDCmKPoHFetDMAfx4ciA6u2
+	 B+XK/zzt3Z/j0dvgLyWHDNLHCXCToet7Eh5Yj29z+rpEL9NGRrvX9z4N1c5tC38VkCyIg
+	 QH5adekJBrv3THnYSjqNTVBOlfQg/uqfsJXSxqXDAEZbZoDEfepuiecPKNKbPMi1fP/F/
+	 wgENCYrolfyxzj00ndkJYCiC+KhPk6KHMAkpK0Xo7QNn9RSrAXKSHAg0g7IcDJwHA9RVZ
+	 ZCu/MBphY62Qg/EYQV7twnAFC5OQpzDTULYxHz7DHPZ7bx+I7Q3YjG6Vkjq9iU2Oq/g==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=PafvJE3d;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ehf1KYsa;
 	arc=none smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9E89A606A88F;
-	Mon, 16 Nov 2026 11:04:41 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B180C60A5BD2;
+	Mon, 16 Nov 2026 11:04:49 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=PafvJE3d
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id ADBF11F000C7;
-	Mon, 16 Nov 2026 11:04:37 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ehf1KYsa
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id F00281F000D2;
+	Mon, 16 Nov 2026 11:04:45 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1794827081;
-	bh=EWEQe50Q7bYbdLpYkYQap52GI3LJt8CnLN09OmwuI1w=;
+	s=k20260515; t=1794827089;
+	bh=rLjMzucVvAg0/2ubS/mq+wqOERAfWvgX+KIv/hkuemY=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=PafvJE3dQs6OTj/LdjhOhzqOr8zu4Rs9a7Ti00DrfRgIuCxFWcDacjwO97FZyLBpA
-	 jYuevIl9DI19bSn0Dks4p3CjhVQmBu6Z+C7G8ENMP1klGGbVePVvTGDHCDF7A+ebFP
-	 XtfrWPtHqIXMmG/6Kj0eF8f//xIYX+bNePhsW8jQoTvZe6wjtCrp7lhxsxP1u/ZMD9
-	 tCLsB93fgShCrx0f7WKCB7/FLREZcuLsc4J2cx6WRMz1EgSjBwk2VCNISg3+w/XOaI
-	 fywy9B8wP7688ExWLyowqIdnXq89PA9+A4QMQLzwFt6nlWWDckBl2QObVHEs1Siq9V
-	 wUyIGDmt6hkHg==
+	b=ehf1KYsaBzcvEZRRn9FVaFqDFmqB0UQ0g1iARuGWtVkKt8d4vqdiKbMEUacE8S6tg
+	 ZS+s+sXs0D3y5MI3pqIoktVwqVYEci0dnL6MJ4FLFCDKoHt/RN8XVVhtlWyZMvlS+W
+	 PykMOLDUXh7g7a2X3nlZaks4sNuve2SSmwD5VkZ79tMA2w3SwgaQk0heYZYOkZOmpm
+	 qQKBTrbyPLe+W8yT7CPCaTJX4nkpbZMg2yvZr4A7OvKQkr971In+xEsBT2EKdfEqSz
+	 1Gr3POLxMK33OUFzxEUXZh9hs4dRlTE4B906114LgxJ5/RS52DaZBy/nTHfJWT6pSw
+	 iX5m2TBE2RFtg==
 From: Christian Brauner <brauner@kernel.org>
-Date: Mon, 16 Nov 2026 12:03:44 +0100
-Subject: [PATCH v2 04/17] zloop: take freeze protection for writes
+Date: Mon, 16 Nov 2026 12:03:46 +0100
+Subject: [PATCH v2 06/17] target: fileio: don't free the aio command under
+ the filesystem
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Post: <mailto:target-devel@vger.kernel.org>
@@ -54,7 +55,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261116-work-fs-frozen_writes-v2-4-ecc4a2aac40e@kernel.org>
+Message-Id: <20261116-work-fs-frozen_writes-v2-6-ecc4a2aac40e@kernel.org>
 References: <20261116-work-fs-frozen_writes-v2-0-ecc4a2aac40e@kernel.org>
 In-Reply-To: <20261116-work-fs-frozen_writes-v2-0-ecc4a2aac40e@kernel.org>
 To: Jan Kara <jack@suse.cz>
@@ -68,31 +69,34 @@ Cc: Shakeel Butt <shakeel.butt@linux.dev>,
  linux-nfs@vger.kernel.org, 
  "Christian Brauner (Amutable)" <brauner@kernel.org>, stable@vger.kernel.org
 X-Mailer: b4 0.17-dev-ce4c1
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2086; i=brauner@kernel.org;
- h=from:subject:message-id; bh=Stx5DC9HTEHrmNCMj043d8T1E73IV+TuEjjoB5nUMbU=;
- b=owGbwMvMwCU28Zj0gdSKO4sYT6slMWT9eqwkwjJ7qdD/d/tmPhEu3TXrtdNe/Y6eqY90e8UC1
- MtfOqbkdJSyMIhxMciKKbI4tJuEyy3nqdhslKkBM4eVCWQIAxenAEzEOJyRYUZe6+87LsIq6vVh
- 2wTC/brNP3r6LxPumf/tZGXY86+iIowMd0+sVF+47/Yzxxfbm9SmN0lN/u6uMlfrXojIv7uPXb3
- l+QA=
+X-Developer-Signature: v=1; a=openpgp-sha256; l=4336; i=brauner@kernel.org;
+ h=from:subject:message-id; bh=3WHrQEBl/d4Gta/2IhTxL7wycPfQZedhBDFwdSyAbEM=;
+ b=owGbwMvMwCU28Zj0gdSKO4sYT6slMWT9eqyyWWzZ5+5Lb54u6LVLmVYaZKBlPeNbpXHmrPjX1
+ msO186Z2FHKwiDGxSArpsji0G4SLrecp2KzUaYGzBxWJpAhDFycAjCRX/WMDPPPPfsgxxOwXSt7
+ 18Wys0pRvrt2GTAvPLt797nm7smfbmgxMlzI2R1ZUd7iffJ/PndElTbb/fDIE3+jTc0dC8qUlr7
+ KYgAA
 X-Developer-Key: i=brauner@kernel.org; a=openpgp;
  fpr=4880B8C9BD0E5106FC070F4F7B3C391EFEA93624
 
-zloop calls ->write_iter() of the zone files without taking freeze
-protection. So a write to a zloop device goes through to a filesystem
-that is frozen. With the zone files on ext4:
+With fd_async_io=1 the fileio backend allocates a command that holds the
+kiocb for every read and write and frees it in the completion callback.
+Nothing keeps the command alive until ->read_iter() or ->write_iter()
+return. But a filesystem may use the kiocb after it queued the I/O. ext4
+does that for direct reads:
 
-  WARNING: fs/ext4/ext4_jbd2.c:90 at ext4_journal_check_start+0x1f6/0x2d0, CPU#3: kworker/u16:4/507
-  Workqueue: zloop0 zloop_cmd_workfn
+  BUG: KASAN: slab-use-after-free in ext4_dio_read_iter+0x5e1/0x690
+  Workqueue: target_submission target_queued_submit_work
   Call Trace:
    <TASK>
-   __ext4_journal_start_sb+0x7a/0x470
-   ext4_dirty_inode+0xa1/0x120
-   __mark_inode_dirty+0x154/0x1110
-   file_update_time_flags+0x3ab/0x4b0
-   ext4_buffered_write_iter+0x143/0x630
-   ext4_file_write_iter+0x7b9/0x1570
-   zloop_do_rw+0x8ac/0xe10
-   zloop_cmd_workfn+0xac5/0x1ff0
+   dump_stack_lvl+0x5d/0x80
+   print_report+0x14b/0x4b0
+   kasan_report+0x108/0x130
+   ext4_dio_read_iter+0x5e1/0x690
+   fd_execute_rw+0xd30/0x1700
+   __target_execute_cmd+0x53/0x190
+   transport_generic_new_cmd+0x65a/0xdb0
+   __target_submit+0x12c/0x380
+   target_queued_submit_work+0x73/0x270
    process_one_work+0x946/0x1820
    worker_thread+0x4f1/0xd60
    kthread+0x364/0x460
@@ -100,39 +104,108 @@ that is frozen. With the zone files on ext4:
    ret_from_fork_asm+0x1a/0x30
    </TASK>
 
-Submit writes with kiocb_write_iter() and drop freeze protection in the
-completion callback with kiocb_end_write_iter(). zloop_rw() also calls
-the completion callback for I/O that wasn't queued or that failed before
-it was submitted. kiocb_end_write_iter() does nothing for these.
+  Allocated by task 59:
+   __kmalloc_noprof+0x223/0x830
+   fd_execute_rw+0x766/0x1700
+   __target_execute_cmd+0x53/0x190
+   transport_generic_new_cmd+0x65a/0xdb0
+   __target_submit+0x12c/0x380
+   target_queued_submit_work+0x73/0x270
 
-Fixes: eb0570c7df23 ("block: new zoned loop block device driver")
+  Freed by task 14:
+   kfree+0x267/0x6a0
+   blk_update_request+0x3f5/0x1260
+   blk_mq_end_request+0x59/0x450
+   blk_complete_reqs+0xb0/0x130
+   handle_softirqs+0x20c/0x860
+   run_ksoftirqd+0x31/0x60
+
+The read completed and freed the command before ext4_dio_read_iter() got
+to file_accessed(iocb->ki_filp).
+
+Do what loop, zloop and fs/backing-file.c do and hold a reference to the
+command until the I/O is submitted. Only complete the target command
+when the last reference is dropped as well. Otherwise the command drops
+its LUN reference while the filesystem still uses the kiocb and the
+device and with it the backing file can go away underneath it.
+
+Fixes: 769031c92c8b ("scsi: target: target/file: Add support of direct and async I/O")
 Cc: stable@vger.kernel.org
 Signed-off-by: Christian Brauner (Amutable) <brauner@kernel.org>
 ---
- drivers/block/zloop.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/target/target_core_file.c | 25 +++++++++++++++++++------
+ 1 file changed, 19 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/block/zloop.c b/drivers/block/zloop.c
-index 65634a39b0bfc..76d54c9b89c0b 100644
---- a/drivers/block/zloop.c
-+++ b/drivers/block/zloop.c
-@@ -514,6 +514,7 @@ static void zloop_rw_complete(struct kiocb *iocb, long ret)
+diff --git a/drivers/target/target_core_file.c b/drivers/target/target_core_file.c
+index ab9824a4852f1..4b23fadd7bb88 100644
+--- a/drivers/target/target_core_file.c
++++ b/drivers/target/target_core_file.c
+@@ -15,6 +15,7 @@
+ #include <linux/timer.h>
+ #include <linux/blkdev.h>
+ #include <linux/slab.h>
++#include <linux/refcount.h>
+ #include <linux/spinlock.h>
+ #include <linux/module.h>
+ #include <linux/vmalloc.h>
+@@ -243,25 +244,34 @@ static void fd_destroy_device(struct se_device *dev)
+ 
+ struct target_core_file_cmd {
+ 	unsigned long	len;
++	long		ret;
+ 	struct se_cmd	*cmd;
++	refcount_t	ref;
+ 	struct kiocb	iocb;
+ 	struct bio_vec	bvecs[];
+ };
+ 
+-static void cmd_rw_aio_complete(struct kiocb *iocb, long ret)
++static void cmd_rw_aio_put(struct target_core_file_cmd *cmd)
  {
- 	struct zloop_cmd *cmd = container_of(iocb, struct zloop_cmd, iocb);
+-	struct target_core_file_cmd *cmd;
+-
+-	cmd = container_of(iocb, struct target_core_file_cmd, iocb);
++	if (!refcount_dec_and_test(&cmd->ref))
++		return;
  
-+	kiocb_end_write_iter(iocb);
- 	cmd->ret = ret;
- 	zloop_put_cmd(cmd);
+-	if (ret != cmd->len)
++	if (cmd->ret != cmd->len)
+ 		target_complete_cmd(cmd->cmd, SAM_STAT_CHECK_CONDITION);
+ 	else
+ 		target_complete_cmd(cmd->cmd, SAM_STAT_GOOD);
+-
+ 	kfree(cmd);
  }
-@@ -567,7 +568,7 @@ static int zloop_do_rw(struct zloop_cmd *cmd)
- 	cmd->iocb.ki_ioprio = IOPRIO_PRIO_VALUE(IOPRIO_CLASS_NONE, 0);
  
- 	if (rw == ITER_SOURCE)
--		return zone->file->f_op->write_iter(&cmd->iocb, &iter);
-+		return kiocb_write_iter(&cmd->iocb, &iter);
- 	return zone->file->f_op->read_iter(&cmd->iocb, &iter);
++static void cmd_rw_aio_complete(struct kiocb *iocb, long ret)
++{
++	struct target_core_file_cmd *cmd;
++
++	cmd = container_of(iocb, struct target_core_file_cmd, iocb);
++	cmd->ret = ret;
++	cmd_rw_aio_put(cmd);
++}
++
+ static sense_reason_t
+ fd_execute_rw_aio(struct se_cmd *cmd, struct scatterlist *sgl, u32 sgl_nents,
+ 	      enum dma_data_direction data_direction)
+@@ -288,6 +298,8 @@ fd_execute_rw_aio(struct se_cmd *cmd, struct scatterlist *sgl, u32 sgl_nents,
+ 
+ 	iov_iter_bvec(&iter, is_write, aio_cmd->bvecs, sgl_nents, len);
+ 
++	/* The filesystem may still use the kiocb after it queued the I/O. */
++	refcount_set(&aio_cmd->ref, 2);
+ 	aio_cmd->cmd = cmd;
+ 	aio_cmd->len = len;
+ 	aio_cmd->iocb.ki_pos = cmd->t_task_lba * dev->dev_attrib.block_size;
+@@ -305,6 +317,7 @@ fd_execute_rw_aio(struct se_cmd *cmd, struct scatterlist *sgl, u32 sgl_nents,
+ 
+ 	if (ret != -EIOCBQUEUED)
+ 		cmd_rw_aio_complete(&aio_cmd->iocb, ret);
++	cmd_rw_aio_put(aio_cmd);
+ 
+ 	return 0;
  }
- 
 
 -- 
 2.53.0
