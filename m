@@ -1,112 +1,95 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.221.43
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.215.174
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794905084;
-	b=PiH/p6JRLcwUGOaSCDOvZ23B7+ayEcESqqqB4Wd3JKhEIq73gNxWEByz3RIKreWqipao
-	 sJac3HDx7iC+9HHqMVcYVELgbG2yfm1tz1TJIa2vfWdvoZ5RwVcJvU4SII8T2zAS/cKM0
-	 sNj+W93XCillVOV9pX4fyNHYVpa905MH9W+RbqLoJ+RS7/H4ge5sMaqGcQBC5m5DOU2O9
-	 h9PZxzRuNedBi+d/tnQhO5nAnuwDSp1YBn2KXGAsbk3XVW23yKnv/EGXEaYGiMKYdJqC/
-	 ehSuS2EfC8+r/PjJJB0vtWkqiUqKAIpeCayUSqs3zbU8AAC1kaCBfEjnm+1vnjgk0/A==
+	t=1794916210;
+	b=1MH4lwZC2p4AJYNrzLFABlBsVnYqFAExoKW78EvlMXVhqOE89ZF9b4WJjizqMuO3MmRR
+	 27xMmaR/Fhigc6LeEgcj1PL569xw5lAeS+d88t3TzkuEa3bJHpUBP/avbr5HbVCnhf5Mj
+	 BA6nDjFNfwKVifkZ6ry1qV/D692b1b1rz8q3rOlSH+tQ8PSsDbPzxk8r9Hj/2nH6oofBT
+	 Ws+GlgiuNhEqOlDJuzHH9uS11n69oSpJpCVlEd11AlOTTBUoxiquNNfkHXUIt2aCybBg7
+	 AdVVfrfljve8K3qO4ScjKrz4uoDJ466qxFE9dPghXddHNIifpFqsEw99v2+iPxUToNw==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794905084;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794916210;
 	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
 	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:Content-Transfer-Encoding:User-Agent:MIME-Version;
-	bh=YtgOPMlBsDbDRTTami0iaeC2PfdAlPMUJ3BhZBWqnDY=;
-	b=D8DXru6yrlrbnYbVMKeIAzB3jj3yrhqfQ/KTimh3am2FVTtyyNNQwT0hlV0Vp3m8gcrx
-	 vyfi+zsUMmbfim1SWmIB3OVFje0sD9AutDbLANj/bk4vxqnRaaXd8HD8k+sn4kWiM7rwr
-	 OgK73y/F/AKkFa8B0OiOC3jqx8WEkPC32e+EgFhIMRpQRfsJUwR15VwEqY1ILoQuj+cx8
-	 lWCXNvcMapu9wGHpnWbjsmWzosejeHIfr7jnmNsg3uL9Levl/F1fa4FvUIhPtHglAyB0B
-	 qE2vc2OuoQVZnPSOU9BNBedr/2LtwWLYiYpR4w0v0LxCurHQvwrwp0WqdufdS1pqM+Q==
+	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:MIME-Version:
+	 Content-Transfer-Encoding;
+	bh=qfTo9puh3xasNY1aP22V5A6GBlqgitet0uYuUJvkDpk=;
+	b=PePgvI3h2IDEedv0F/2r6xSpaT/9bwPQI2cydc/Ic9nkVY251PzdrpmHhBO7WeCVBGkw
+	 Bm5iOH5W6/Tykjojbf5VYkRga+rDCfdPWK9f+prjgzmmyJQDKRVd73E62KUMOosb4yJTD
+	 WRkRxE0vLcJzZ50Zkl+f2xxJaQ6BqXRjAz0a7d5hc6gmBCFJB6yaCGyfu3djFPrvRWZT5
+	 e9eES2ATSsLFEWlwf9NYJQprUP9gHeJKOXKc41h/g/wcicq4MGPCmiScCF7aj6CYdiDcb
+	 XF59TfcOjDuocHOtwXykcrPi3aZM/MRzGqTVDx6eR/JaJCbVlRSRjxB8cgCBicX3o4g==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=none header.from=amutable.com;
-	spf=pass smtp.mailfrom=amutable.com;
-	dkim=pass header.d=amutable-com.20260707.gappssmtp.com header.i=@amutable-com.20260707.gappssmtp.com header.a=rsa-sha256 header.s=20260707 header.b=qPWJSshs;
-	arc=none smtp.remote-ip=209.85.221.43
-Received: from mail-wr1-f43.google.com (mail-wr1-f43.google.com [209.85.221.43])
+	dmarc=fail header.from=isslab.korea.ac.kr;
+	spf=none smtp.mailfrom=isslab.korea.ac.kr;
+	dkim=pass header.d=isslab-korea-ac-kr.20260707.gappssmtp.com header.i=@isslab-korea-ac-kr.20260707.gappssmtp.com header.a=rsa-sha256 header.s=20260707 header.b=d0hKzQPJ;
+	arc=none smtp.remote-ip=209.85.215.174
+Received: from mail-pg1-f174.google.com (mail-pg1-f174.google.com [209.85.215.174])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E84AB606A88D
-	for <target-devel@vger.kernel.org>; Tue, 17 Nov 2026 08:44:42 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org E84AB606A88D
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=amutable.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=amutable.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 34B92606A883
+	for <target-devel@vger.kernel.org>; Tue, 17 Nov 2026 11:50:07 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 34B92606A883
+Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=isslab.korea.ac.kr
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=isslab.korea.ac.kr
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=amutable-com.20260707.gappssmtp.com header.i=@amutable-com.20260707.gappssmtp.com header.a=rsa-sha256 header.s=20260707 header.b=qPWJSshs
-Received: by mail-wr1-f43.google.com with SMTP id ffacd0b85a97d-48e46e449e8so3217596f8f.3
-        for <target-devel@vger.kernel.org>; Tue, 17 Nov 2026 00:44:42 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=isslab-korea-ac-kr.20260707.gappssmtp.com header.i=@isslab-korea-ac-kr.20260707.gappssmtp.com header.a=rsa-sha256 header.s=20260707 header.b=d0hKzQPJ
+Received: by mail-pg1-f174.google.com with SMTP id 41be03b00d2f7-cc4be0e5351so1888840a12.0
+        for <target-devel@vger.kernel.org>; Tue, 17 Nov 2026 03:50:07 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=amutable-com.20260707.gappssmtp.com; s=20260707; t=1794905081; x=1795509881; darn=vger.kernel.org;
-        h=mime-version:user-agent:content-transfer-encoding:content-type
-         :references:in-reply-to:date:cc:to:from:subject:message-id:from:to
-         :cc:subject:date:message-id:reply-to:content-type;
-        bh=YtgOPMlBsDbDRTTami0iaeC2PfdAlPMUJ3BhZBWqnDY=;
-        b=qPWJSshsn8vVlxONBkwnt0Rrdn9d5F3Qc4ul63isG/q9SzfN/YeX6Opt0gSo3Jew6G
-         TPoHc3exB3o1TVJHb31ucJURrMLm+X5ZLvKQdkLiUwsGhwj3/4jXaF9QxR3XbUAvZwOE
-         a/cd4y1UcgXoBr9kVgdvuhJuBveUAauSYuunqpBOO8ny5BuS4lSdHT4xtCJFDNjS8url
-         r/ZKVJBRzaToW1BBIq0cKvkP0/i/p+OipahpXpiSl0PGBR9WYmSpn39e8LKnYXYjrWjD
-         bzQp5gYJPTRPzgdIgnmtc42HrrCv5BgaqLA/tsUHs3tWdIoSQrhFLq1gvYrghbRPmmpF
-         EcZA==
+        d=isslab-korea-ac-kr.20260707.gappssmtp.com; s=20260707; t=1794916207; x=1795521007; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=qfTo9puh3xasNY1aP22V5A6GBlqgitet0uYuUJvkDpk=;
+        b=d0hKzQPJTVgv5uxPAsm2i20jxPzZeq78svSSLC2KFjo/hLarSGc2qGrX0ZPTEaEMY9
+         iEPOLG7NpZyFL1gX9u7bKhhAccg033wJPd36SEJX4Bv8xl67K9BPJUlWQ9Xun5Ongal8
+         al4iMl0ohZYVWGRttNX0f9qeN0K9Hu9+lMHuiss5H+2qDMrgVjjPGq/4jVfHGMjbftDi
+         wdi87QAYnzs31eZGw4wjApap/ZOymLmB/KMGie/HfvY4u6GRZZCPYVguuO4QYkmGEUy1
+         m83tUPjnPeaxFKppxueKONDlM3jbLAm3tDp0KPiOq459UveMxcXJkGMAq6RXWyZ5wgmV
+         Cang==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794905081; x=1795509881;
-        h=mime-version:user-agent:content-transfer-encoding:content-type
-         :references:in-reply-to:date:cc:to:from:subject:message-id:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=YtgOPMlBsDbDRTTami0iaeC2PfdAlPMUJ3BhZBWqnDY=;
-        b=szuDN/5D8hSwSRTGioy+kGxZxT1uWztuqc9Hcc60Xe74ihnVoFZr7/7V+lDK71lJ/d
-         nLGCTbReyfkCi7FuwQck0rR8+Y4Ydaowr012+E5yNiNo0AFdocsLtbGWWnZhiWARkqNP
-         wKb0kppn4xQMcCA5PBw5LuFg7q45DLOmylB0kc6PVv7ChkX8z3tXg7u6Umvz1uMgmFyA
-         rKRWezHPvl4Os4zKmfgmNHmllV2vrzbWw6m5vEIXDRHHmUwz2ND6fyJN7egF/SKVxa8f
-         /90+tLW2o0mfkKik3+yhFZW/hgo98j0I7BStEyxPlUePGSZgoKhMWblGFHq0z3uOQagL
-         okbQ==
-X-Forwarded-Encrypted: i=1; AL+hErFcPmTOi0ZD9kqyBpBAFRUOJmfKUOKQZwY+ii6JqJQ9DX2TOx9LBD4RqbT7+zdX7qkDkY8jY4LOGjeocuk=@vger.kernel.org
-X-Gm-Message-State: APuU4Z/FXaKht4/PTG/s3xo88GUTUcuKmblRFMPai7QH1Q9dQnEex9RG
-	L8aqRDYD/QqMwWcl5aT6kaO1nhnxQyw5vaywGVS8MYDgCiQXjjGJt/RC6/RxRO8qzdw8
-X-Gm-Gg: AZFdTZeVKwYvCr4LmE2HwpSg86HUyl9Eer4KGGVX3t/+KC3i9miz2FiO+xoFgNT/rTk
-	8dxV7pn1PcNQNjHDWBUX+n4+GoiHXtH+hmW6G2mH5nQ/sRq92Mc1KUjCvopTi8ouJuyycdN9HoI
-	aMaUi2K9NOBruC9Vm+h59IZOiMORpeSIXVEfKIdDBUE41eRe2JzliAIftIUGUWMiPlsbZVjPzwb
-	Jh4qK3+0OiubWNyNY1RaXGH9t5MCzEVLiuen/rUlHVGwTGaIY7ZvhRH5qUcqMAZwMxAXbaTM1ew
-	FBFGXv5aO/bHAl2oMN+qA105G/cCgNi/aD9OxfGn5C0Pm6DqUfmcSmTd5064U8JxgBq4l5sfYzS
-	nSI0CupyFWBBhMBRznJQ4bNgrJhYlaxm5R6polZXCvhXkYSsh7HWRSN4YOp6rsK+rhUARp7sdkA
-	hudkikBpW6wlKAgWEk+EClZwq/Fu5S2Oc7EiFBWwfChf7LqHcOzR0SawV99rH6i1OCuW6S/O4XI
-	B/VMaXd98VU2Rfa74xHGIooFGaZpW2JMa5zLZmi/3l/KzUnDzu4s6PAFHgXk/fYNdXgAMKx83Vm
-	1aDeyVO13Mrj69ZSWFo48v5oFtjbsAALMSGeWBBBH9yBCz1WM2BXvqyTsHesC9fINzvGxyj3cC9
-	4h7fDKRGzIu8Fz+20ZwsVTY+X1Y41La23elz7itYOCz07eaM2cDCRmgJdo7iQzvlzHX9IB5Scg+
-	Hddg==
-X-Received: by 2002:a05:6000:2411:b0:48f:f26d:c5c with SMTP id ffacd0b85a97d-49c70b051d1mr27471178f8f.9.1794905081269;
-        Tue, 17 Nov 2026 00:44:41 -0800 (PST)
-Received: from ?IPv6:2003:cf:572c:2800:de4c:6789:33ce:97c2? (p200300cf572c2800de4c678933ce97c2.dip0.t-ipconnect.de. [2003:cf:572c:2800:de4c:6789:33ce:97c2])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-49d673ce75fsm19982260f8f.55.2026.11.17.00.44.39
+        d=1e100.net; s=20260707; t=1794916207; x=1795521007;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=qfTo9puh3xasNY1aP22V5A6GBlqgitet0uYuUJvkDpk=;
+        b=Z4C/gFeh9eZcUukFEBPe+ePdKqNFRMVAJAYPGvho4VIXxVNzcYetStqMRIAsJ7vMC6
+         af8jaknExxwgoMex1D1h/fuGNbYuWes3i2BVhzQxKjwzoW8tzS34RPOA7ETb+24hXWkG
+         rVnUElO1ZYsiXVnFA9446sFf+qeCRauJ+zxkcQn99dEAtfkxeO9rnN7uR++9NeuJ1WQD
+         zcoMRonw44ZBtm6OZiVwQvLbup7mJIw08ZN6i9hTIPpNQ+rRwFp7bVJhJA1oCLz+akfo
+         17tLnwDDtcm9k434KTfWDPQfVxO3GhrYtBkcrfraFXkCwmEeWgyRXqQNwDJ06ZlXpHJG
+         UcWw==
+X-Forwarded-Encrypted: i=1; AL+hErGSJNy9PK784ZqieU8+znvQzdMm5aFGfZbtAKSD0hvjR2JS9YA9e5CfL66EJpg7fIcP84FXTORaGDTm9Bc=@vger.kernel.org
+X-Gm-Message-State: APuU4Z/Mo88jleiJYHkztKPiSX2LUiLQ8vFht0yahp62qYfcJaMUEmzS
+	k0tPZ0WkomAat26ZgLjSLk9fPkTKRodf/3iiOJ9q6+zbQdrHFpWEVuD3YGtXSQ8hTVv8UQIxU0s
+	SFbnTAHs=
+X-Gm-Gg: AZFdTZdQaxfNHOHtFmD2DVmUQZO2g97j4yxVFOY/aKJEnikd+WxPLb9HXl3q7Pry0XV
+	JrHZmIo3euTErBuKtHB/o9j3qiAv9XQjtz8pJTdZozx1Od61kYkcbYghWLV3vkz+aoOjYB3DBMj
+	sH2Q9AKmVyuaV0g7hcGerDNr9Mqc19EePOYKf5v3IHpfo128ejMqhCW5kB5dnghRZV0I0RJMwPj
+	xa78FEzdfW54PLH3xti/rPLf4jqM+Lu/K2Iq6Lowm1m4OzlMiPDy9nbxwfMEWmZi3j7d14BMYl7
+	CdTQjXYLCPjttOi9U/2EpmIBJ855GfPYukBIkWZWuxunlD6Vh8A0M8ZMY28aYVSxadQSZTlUcr3
+	wLq2D2BytkpJ8KUiR9BPHVdmsaeYBBloSh+HjgWnI3OczU4UWu6oqtkEKkuaiCiZY+P1ClJof39
+	tuPN9uS5SyjiaRZO6wF8U7j9VbcrjQnEuZ90jCKOn7sjLz27I9/3ED5kIfA/B6TKjr4rTpu+GEY
+	s52DZSsCSD2N55PcNISfewH4l81+D4TPoXq9oEkMfqJMJjBetIGg0o+nxm8NL5nx0K+dgzLVyjm
+	qNz3w46KSouuSEsN1dnv2djJMrGmVVLg/h3VhxKPu2+MlabgBNc3VOxDsndByuavkpDXrtejaP3
+	UrHZhyMv4nUgm0Owy6E2BFNPDGtdrsph8h4xgFw==
+X-Received: by 2002:a17:90b:5608:b0:3ac:adce:60a9 with SMTP id 98e67ed59e1d1-3b1b07ef0camr12818846a91.9.1794916206873;
+        Tue, 17 Nov 2026 03:50:06 -0800 (PST)
+Received: from yhlee-960QFG.Davolink ([2406:5900:1044:110c:73df:c7da:8e76:82c5])
+        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-cddc18c847asm5507715a12.28.2026.11.17.03.50.04
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 17 Nov 2026 00:44:40 -0800 (PST)
-Message-ID: <d18a972cfc6a7d6da39ab9674903d7ae6e4c1826.camel@amutable.com>
-Subject: Re: [PATCH RFC v3 35/44] fs: add file_check_backing()
-From: Alexander Mikhalitsyn <alex@amutable.com>
-To: Christian Brauner <brauner@kernel.org>, linux-fsdevel@vger.kernel.org
-Cc: Jann Horn <jannh@google.com>, Chris Mason <mason@kernel.org>, Josef
- Bacik	 <josef@toxicpanda.com>, Christoph Hellwig <hch@lst.de>, 
-	linux-block@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linux-nvme@lists.infradead.org, Alexander Viro <viro@zeniv.linux.org.uk>,
- Jan Kara <jack@suse.cz>, linux-scsi@vger.kernel.org,
- target-devel@vger.kernel.org, 	driver-core@lists.linux.dev,
- linux-mm@kvack.org, bpf@vger.kernel.org, 
-	linux-security-module@vger.kernel.org, selinux@vger.kernel.org, 
-	apparmor@lists.ubuntu.com, linux-nfs@vger.kernel.org,
- netdev@vger.kernel.org, 	fuse-devel@lists.linux.dev,
- linux-efi@vger.kernel.org, 	xen-devel@lists.xenproject.org,
- ocfs2-devel@lists.linux.dev, 	linux-s390@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, 	linux-usb@vger.kernel.org, Amir Goldstein
- <amir73il@gmail.com>, 	linux-erofs@lists.ozlabs.org,
- linux-kselftest@vger.kernel.org
-Date: Tue, 17 Nov 2026 09:44:39 +0100
-In-Reply-To: <20261116-work-loop-pseudo-v3-35-8cbbea1cf34f@kernel.org>
-References: <20261116-work-loop-pseudo-v3-0-8cbbea1cf34f@kernel.org>
-	 <20261116-work-loop-pseudo-v3-35-8cbbea1cf34f@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.56.2-0+deb13u1 
+        Tue, 17 Nov 2026 03:50:06 -0800 (PST)
+From: Yehyeong Lee <yhlee@isslab.korea.ac.kr>
+To: mkp@kernel.org
+Cc: michael.christie@oracle.com,
+	bvanassche@acm.org,
+	target-devel@vger.kernel.org,
+	linux-scsi@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH v2] scsi: target: iscsi: run the Time2Retain handler in process context
+Date: Tue, 17 Nov 2026 20:49:20 +0900
+Message-ID: <20261117114920.1955697-1-yhlee@isslab.korea.ac.kr>
+X-Mailer: git-send-email 2.43.0
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Post: <mailto:target-devel@vger.kernel.org>
@@ -116,172 +99,295 @@ List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:target-devel+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 
-On Mon, 2026-11-16 at 12:05 +0100, Christian Brauner wrote:
-> Loop, zloop, the nvme target, the scsi target, fuse passthrough, the
-> usb
-> mass storage gadget, erofs and acct all take a file from userspace
-> and
-> use it as storage. Currently, each of them has its own idea of what
-> to
-> check before using a file like that:
->=20
-> - loop and the gadget check for a regular file or a block device, the
-> =C2=A0 nvme target, the scsi target and zloop take any file type
-> - loop checks the open mode, the gadget checks FMODE_CAN_READ, the
-> nvme
-> =C2=A0 target, the scsi target and zloop only check for ->read_iter() and
-> =C2=A0 ->write_iter()
-> - apart from acct which refuses procfs and sysfs files none of them
-> =C2=A0 cares whether the file is a kernel interface
->=20
-> Add a helper that does all of it in one place. It only accepts
-> regular
-> files and, if the caller passes S_IFBLK, block devices. It refuses
-> files
-> on pseudo filesystems. And it checks that the file is open for what
-> the
-> caller is going to do with it and implements ->read_iter() for
-> reading
-> and ->write_iter() for writing.
->=20
-> O_PATH files are refused unless the caller passes FMODE_PATH. That is
-> for callers that only need the path of the file. fuse passthrough is
-> one of them and has accepted O_PATH file descriptors since commit
-> efad7153bf93 ("fuse: allow O_PATH fd for FUSE_DEV_IOC_BACKING_OPEN").
->=20
-> Block devices are fine even though bdevfs is a pseudo filesystem. A
-> block device that userspace hands in is a device node on devtmpfs or
-> some other filesystem. Files on bdevfs only come from
-> bdev_file_open_by_*() and never end up here.
->=20
-> The pseudo filesystem check looks at the inode that actually provides
-> the data via d_real_data_inode(). overlayfs accepts sysfs, cgroup2,
-> debugfs, tracefs, configfs and securityfs as lower layers and reads
-> of
-> such an overlayfs file are served by the file on the pseudo
-> filesystem.
-> Checking the overlayfs inode would miss that.
->=20
-> For an O_PATH file nothing might have looked up the data yet.
-> overlayfs
-> only looks up the data of a metacopy file in a data-only layer when
-> the
-> file is opened. d_real_data_inode() does the lookup then and if that
-> fails we return the error.
->=20
-> Note that the file type is taken from the inode of the file and not
-> from
-> the host of ->f_mapping like loop and the gadget do it. A driver can
-> point ->f_mapping somewhere else in ->open(). It makes no difference
-> for
-> block devices as both inodes are block devices.
->=20
-> No functional changes. Nothing calls the helper yet.
->=20
+iscsit_handle_time2retain_timeout() is a timer callback, so it runs in
+timer softirq context, and from there it closes the session:
 
-Reviewed-by: Alexander Mikhalitsyn <alex@amutable.com>
+	iscsit_handle_time2retain_timeout()	<- timer softirq
+	  iscsit_close_session(sess, false)
+	    transport_deregister_session()
+	      target_for_each_device(target_release_res, se_sess)
+	        mutex_lock(&device_mutex)
 
-> Signed-off-by: Christian Brauner (Amutable) <brauner@kernel.org>
-> ---
-> =C2=A0fs/read_write.c=C2=A0=C2=A0=C2=A0 | 53
-> +++++++++++++++++++++++++++++++++++++++++++++++++++++
-> =C2=A0include/linux/fs.h |=C2=A0 2 ++
-> =C2=A02 files changed, 55 insertions(+)
->=20
-> diff --git a/fs/read_write.c b/fs/read_write.c
-> index 6767283108991..9f1e7bfcbd4f1 100644
-> --- a/fs/read_write.c
-> +++ b/fs/read_write.c
-> @@ -866,6 +866,59 @@ static ssize_t do_loop_readv_writev(struct file
-> *filp, struct iov_iter *iter,
-> =C2=A0	return ret;
-> =C2=A0}
-> =C2=A0
-> +/**
-> + * file_check_backing - check that the kernel can use a file as
-> storage
-> + * @file: file that userspace handed in
-> + * @mode: FMODE_READ and/or FMODE_WRITE the kernel will do I/O with,
-> or
-> + *=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 FMODE_PATH if only the path=
- of @file is used
-> + * @type: S_IFBLK if a block device is fine as well, 0 otherwise
-> + *
-> + * Call this where a file from userspace is taken as a backing file.
-> Only
-> + * regular files and, if @type is S_IFBLK, block devices are
-> storage. Files
-> + * on pseudo filesystems are kernel interfaces and are refused. The
-> file
-> + * must be open for @mode and implement ->read_iter() for reading
-> and
-> + * ->write_iter() for writing. O_PATH files are only fine with
-> FMODE_PATH.
-> + *
-> + * Return: 0 on success, -EBADF if @file isn't open for @mode, -
-> EINVAL if it
-> + * can't be used as storage, or the error from looking up the data
-> of @file
-> + * on a stacking filesystem.
-> + */
-> +int file_check_backing(const struct file *file, fmode_t mode,
-> umode_t type)
-> +{
-> +	fmode_t io =3D mode & (FMODE_READ | FMODE_WRITE);
-> +	/* Drivers may point ->f_mapping at something else. */
-> +	umode_t fmt =3D file_inode(file)->i_mode & S_IFMT;
-> +	struct inode *real_inode;
-> +
-> +	/* O_PATH files are only fine for callers that just use the
-> path. */
-> +	if ((file->f_mode & FMODE_PATH) && !(mode & FMODE_PATH))
-> +		return -EBADF;
-> +
-> +	if ((file->f_mode & io) !=3D io)
-> +		return -EBADF;
-> +
-> +	if (fmt !=3D S_IFREG && !(type =3D=3D S_IFBLK && fmt =3D=3D S_IFBLK))
-> +		return -EINVAL;
-> +
-> +	/* Look through stacking filesystems at the inode with the
-> data. */
-> +	real_inode =3D d_real_data_inode(file->f_path.dentry);
-> +	if (IS_ERR(real_inode))
-> +		return PTR_ERR(real_inode);
-> +	if (real_inode->i_sb->s_iflags & SB_I_PSEUDO)
-> +		return -EINVAL;
-> +
-> +	if ((mode & FMODE_READ) &&
-> +	=C2=A0=C2=A0=C2=A0 (!(file->f_mode & FMODE_CAN_READ) || !file->f_op-
-> >read_iter))
-> +		return -EINVAL;
-> +
-> +	if ((mode & FMODE_WRITE) &&
-> +	=C2=A0=C2=A0=C2=A0 (!(file->f_mode & FMODE_CAN_WRITE) || !file->f_op-
-> >write_iter))
-> +		return -EINVAL;
-> +
-> +	return 0;
-> +}
-> +EXPORT_SYMBOL_GPL(file_check_backing);
-> +
-> =C2=A0ssize_t vfs_iocb_iter_read(struct file *file, struct kiocb *iocb,
-> =C2=A0			=C2=A0=C2=A0 struct iov_iter *iter)
-> =C2=A0{
-> diff --git a/include/linux/fs.h b/include/linux/fs.h
-> index 99caef43ff3c4..b1c7ebafbadbe 100644
-> --- a/include/linux/fs.h
-> +++ b/include/linux/fs.h
-> @@ -2553,6 +2553,8 @@ static inline const struct inode
-> *file_user_inode(const struct file *f)
-> =C2=A0	return file_inode(f);
-> =C2=A0}
-> =C2=A0
-> +int file_check_backing(const struct file *file, fmode_t mode,
-> umode_t type);
-> +
-> =C2=A0static inline struct file *file_clone_open(struct file *file)
-> =C2=A0{
-> =C2=A0	return dentry_open(&file->f_path, file->f_flags, file-
-> >f_cred);
+transport_deregister_session() has walked the device list under
+device_mutex since commit 80647a89eaf3f2 ("scsi: target: core: Release
+SPC-2 reservations when closing a session").  The can_sleep argument that
+the handler passes as false only guards iscsit_check_session_usage_count();
+the transport_deregister_session() call below it runs either way.
+
+The callback also takes se_tpg->session_lock in softirq context, and it is
+the only code that does, which makes that lock SOFTIRQ-safe.
+iscsit_start_time2retain_handler() takes tpg->tpg_state_lock with plain
+spin_lock() under it, so lockdep reports an inversion as well.  Both the
+softirq acquisition and the plain spin_lock() are as old as the driver,
+commit e48354ce078c ("iscsi-target: Add iSCSI fabric support for target
+v4.1").
+
+An initiator needs nothing but a session to get there: log in, then send a
+Logout with reason CLOSE_CONNECTION.  iscsit_close_connection() leaves
+session_fall_back_to_erl0 clear for a Logout, so instead of closing the
+session it arms the Time2Retain handler, which runs DefaultTime2Retain
+seconds later because the session is never resumed.  Three such logouts on
+a KASAN + PROVE_LOCKING + DEBUG_ATOMIC_SLEEP guest give three of these:
+
+  BUG: sleeping function called from invalid context at kernel/locking/mutex.c:623
+  in_atomic(): 1, irqs_disabled(): 0, non_block: 0, pid: 0, name: swapper/0
+  preempt_count: 101, expected: 0
+  RCU nest depth: 0, expected: 0
+  INFO: lockdep is turned off.
+  CPU: 0 UID: 0 PID: 0 Comm: swapper/0 Not tainted 7.4.0-rc2-00563-g97d73c825122 #1 PREEMPT(lazy)
+  Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.16.3-debian-1.16.3-2 04/01/2014
+  Call Trace:
+   <IRQ>
+   dump_stack_lvl+0x80/0xa0
+   __might_resched+0x31c/0x520
+   ? __pfx___might_resched+0x10/0x10
+   __mutex_lock+0x10e/0x24e0
+   ? target_for_each_device+0x6c/0xc0
+   ? __irq_work_queue_local+0x18e/0x370
+   ? __pfx___irq_work_queue_local+0x10/0x10
+   ? lock_acquire+0x2c8/0x300
+   ? __pfx___mutex_lock+0x10/0x10
+   ? lock_release+0x1de/0x280
+   ? vprintk_emit+0x2dd/0x3d0
+   ? __pfx_vprintk_emit+0x10/0x10
+   ? target_for_each_device+0x6c/0xc0
+   target_for_each_device+0x6c/0xc0
+   ? __pfx_target_for_each_device+0x10/0x10
+   ? __pfx_target_release_res+0x10/0x10
+   ? trace_hardirqs_on+0x18/0x160
+   transport_deregister_session+0x19c/0x250
+   ? iscsit_check_session_usage_count+0xa4/0xd0
+   ? __local_bh_enable_ip+0xa7/0x120
+   iscsit_close_session+0x20c/0x540
+   ? __pfx_iscsit_handle_time2retain_timeout+0x10/0x10
+   call_timer_fn+0x15a/0x4b0
+   ? __pfx_call_timer_fn+0x10/0x10
+   ? lock_acquire+0x18d/0x300
+   ? __run_timer_base.part.0+0x5d4/0x930
+   ? lock_release+0xc6/0x280
+   ? timer_recalc_next_expiry+0x6e/0x210
+   ? lockdep_hardirqs_on_prepare+0xa9/0x190
+   ? __pfx_iscsit_handle_time2retain_timeout+0x10/0x10
+   __run_timer_base.part.0+0x5e3/0x930
+   ? __pfx___run_timer_base.part.0+0x10/0x10
+   ? __lock_acquire+0x570/0x1b00
+   ? find_held_lock+0x2b/0x80
+   ? clockevents_program_event+0x1b8/0x860
+   ? lock_release+0xc6/0x280
+   run_timer_softirq+0x12c/0x210
+   ? __pfx_run_timer_softirq+0x10/0x10
+   ? lock_acquire+0x18d/0x300
+   ? lockdep_hardirqs_on_prepare+0xa9/0x190
+   handle_softirqs+0x1ff/0x8e0
+   ? __irq_exit_rcu+0x1b8/0x1e0
+   ? __pfx_handle_softirqs+0x10/0x10
+   __irq_exit_rcu+0x153/0x1e0
+   irq_exit_rcu+0x9/0x20
+   sysvec_apic_timer_interrupt+0x6b/0x80
+   </IRQ>
+
+and, once per boot, this:
+
+  WARNING: possible irq lock inversion dependency detected
+  7.4.0-rc2-00563-g97d73c825122 #1 Not tainted
+  --------------------------------------------------------
+  swapper/0/0 just changed the state of lock:
+  ffff88800ec7c148 (&se_tpg->session_lock){+.-.}-{3:3}, at: iscsit_handle_time2retain_timeout+0x46/0x1a0
+  but this lock took another, SOFTIRQ-unsafe lock in the past:
+   (&tpg->tpg_state_lock){+.+.}-{3:3}
+  and interrupts could create inverse lock ordering between them.
+  other info that might help us debug this:
+  Chain exists of:
+    &se_tpg->session_lock --> &sess->conn_lock --> &tpg->tpg_state_lock
+
+Keep the timer and move only its body into a work item, so that nothing in
+iscsi_target takes se_tpg->session_lock in softirq context any more and the
+invalid sleep goes away with the inversion.  Arming and stopping do not
+change: mod_timer() queues on the timer base of the CPU that arms it, which
+a caller holding a spinlock with softirqs disabled cannot let expire under
+itself, and iscsit_stop_time2retain_timer() still ends in
+timer_delete_sync().
+
+What a stop can no longer wait for is the work.  Every caller holds
+se_tpg->session_lock with softirqs disabled, so it must not sleep in
+cancel_work_sync(), and a work that has started but not yet taken that lock
+would outlive the stop: ISCSI_TF_STOP does not hold it back, because a
+later iscsit_start_time2retain_handler() clears the flag again and the work
+would then close a session that has been resumed.  So the expiry itself is
+handed over.  The timer sets ->time2retain_fired, the work takes it back
+under se_tpg->session_lock and returns without it, and a stop clears it.
+Only an expiry that no stop has overtaken closes a session.
+
+iscsit_close_session() must also leave no work behind.  It waits for one
+where it may sleep; where it may not, it is that work, and because a work
+never runs twice at once the only one it can have is queued, which a
+non-sync cancel drops.
+
+What the restart in iscsit_close_session() does when a session usage count
+is held is unchanged and still wrong: iscsit_start_time2retain_handler()
+returns without arming anything because ISCSI_TF_RUNNING is still set.
+Waiting for the count instead is not an answer either, because the thread
+that closes the session waits on the same single completion.
+
+Fixes: e48354ce078c ("iscsi-target: Add iSCSI fabric support for target v4.1")
+Fixes: 80647a89eaf3f2 ("scsi: target: core: Release SPC-2 reservations when closing a session")
+Cc: stable@vger.kernel.org
+Signed-off-by: Yehyeong Lee <yhlee@isslab.korea.ac.kr>
+---
+
+Notes:
+    v1 -> v2:
+    - Keep the timer and queue a work item from its callback instead of
+      replacing it with a delayed_work.  mod_delayed_work() with the
+      DefaultTime2Retain=0 an initiator can negotiate queues the work at once
+      on another CPU, which iscsit_close_connection() does not expect while it
+      holds sess->conn_lock.
+    - Hand the expiry over in ->time2retain_fired, so that a work which has
+      started but not taken se_tpg->session_lock cannot close a session that
+      was stopped and resumed in the meantime; cancel_delayed_work() did not
+      wait for it.
+    - Cancel the work in iscsit_close_session() on both paths, not only where
+      it may sleep.
+    - Say in the message what the code does about the lock around the cancel,
+      and that the restart path when a session usage count is held is left as
+      it is.
+    Link: https://lore.kernel.org/all/20261115121943.1446744-1-yhlee@isslab.korea.ac.kr/
+
+ drivers/target/iscsi/iscsi_target.c       | 13 +++++++++++--
+ drivers/target/iscsi/iscsi_target_erl0.c  | 20 ++++++++++++++++----
+ drivers/target/iscsi/iscsi_target_erl0.h  |  1 +
+ drivers/target/iscsi/iscsi_target_login.c |  1 +
+ include/target/iscsi/iscsi_target_core.h  |  3 +++
+ 5 files changed, 32 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/iscsi_target.c
+index 124ff269b8e759..1653483727666e 100644
+--- a/drivers/target/iscsi/iscsi_target.c
++++ b/drivers/target/iscsi/iscsi_target.c
+@@ -4504,8 +4504,8 @@ int iscsit_close_session(struct iscsit_session *sess, bool can_sleep)
+ 
+ 	/*
+ 	 * If any other processes are accessing this session pointer we must
+-	 * wait until they have completed.  If we are in an interrupt (the
+-	 * time2retain handler) and contain and active session usage count we
++	 * wait until they have completed.  If we are the Time2Retain work
++	 * (can_sleep is false) and contain and active session usage count we
+ 	 * restart the timer and exit.
+ 	 */
+ 	if (iscsit_check_session_usage_count(sess, can_sleep)) {
+@@ -4535,6 +4535,15 @@ int iscsit_close_session(struct iscsit_session *sess, bool can_sleep)
+ 	sess->sess_ops = NULL;
+ 	spin_unlock_bh(&se_tpg->session_lock);
+ 
++	/*
++	 * No Time2Retain work may outlive the session.  A work item never runs
++	 * twice at once, so the work itself can only find a queued one.
++	 */
++	if (can_sleep)
++		cancel_work_sync(&sess->time2retain_work);
++	else
++		cancel_work(&sess->time2retain_work);
++
+ 	kfree(sess);
+ 	return 0;
+ }
+diff --git a/drivers/target/iscsi/iscsi_target_erl0.c b/drivers/target/iscsi/iscsi_target_erl0.c
+index 24db6b07493e62..036ddc1002f6ca 100644
+--- a/drivers/target/iscsi/iscsi_target_erl0.c
++++ b/drivers/target/iscsi/iscsi_target_erl0.c
+@@ -741,15 +741,17 @@ int iscsit_check_post_dataout(
+ 	}
+ }
+ 
+-void iscsit_handle_time2retain_timeout(struct timer_list *t)
++void iscsit_time2retain_work(struct work_struct *work)
+ {
+-	struct iscsit_session *sess = timer_container_of(sess, t,
+-							 time2retain_timer);
++	struct iscsit_session *sess = container_of(work, struct iscsit_session,
++						   time2retain_work);
+ 	struct iscsi_portal_group *tpg = sess->tpg;
+ 	struct se_portal_group *se_tpg = &tpg->tpg_se_tpg;
+ 
+ 	spin_lock_bh(&se_tpg->session_lock);
+-	if (sess->time2retain_timer_flags & ISCSI_TF_STOP) {
++	/* A stop after the timer fired takes ->time2retain_fired back. */
++	if (!atomic_xchg(&sess->time2retain_fired, 0) ||
++	    (sess->time2retain_timer_flags & ISCSI_TF_STOP)) {
+ 		spin_unlock_bh(&se_tpg->session_lock);
+ 		return;
+ 	}
+@@ -769,6 +771,15 @@ void iscsit_handle_time2retain_timeout(struct timer_list *t)
+ 	iscsit_close_session(sess, false);
+ }
+ 
++void iscsit_handle_time2retain_timeout(struct timer_list *t)
++{
++	struct iscsit_session *sess = timer_container_of(sess, t,
++							 time2retain_timer);
++
++	atomic_set(&sess->time2retain_fired, 1);
++	queue_work(system_dfl_wq, &sess->time2retain_work);
++}
++
+ void iscsit_start_time2retain_handler(struct iscsit_session *sess)
+ {
+ 	int tpg_active;
+@@ -814,6 +825,7 @@ int iscsit_stop_time2retain_timer(struct iscsit_session *sess)
+ 	timer_delete_sync(&sess->time2retain_timer);
+ 
+ 	spin_lock(&se_tpg->session_lock);
++	atomic_set(&sess->time2retain_fired, 0);
+ 	sess->time2retain_timer_flags &= ~ISCSI_TF_RUNNING;
+ 	pr_debug("Stopped Time2Retain Timer for SID: %u\n",
+ 			sess->sid);
+diff --git a/drivers/target/iscsi/iscsi_target_erl0.h b/drivers/target/iscsi/iscsi_target_erl0.h
+index 2a877d13977d24..f0e157b0a2f5c3 100644
+--- a/drivers/target/iscsi/iscsi_target_erl0.h
++++ b/drivers/target/iscsi/iscsi_target_erl0.h
+@@ -13,6 +13,7 @@ extern int iscsit_check_pre_dataout(struct iscsit_cmd *, unsigned char *);
+ extern int iscsit_check_post_dataout(struct iscsit_cmd *, unsigned char *, u8);
+ extern void iscsit_start_time2retain_handler(struct iscsit_session *);
+ extern void iscsit_handle_time2retain_timeout(struct timer_list *t);
++void iscsit_time2retain_work(struct work_struct *work);
+ extern int iscsit_stop_time2retain_timer(struct iscsit_session *);
+ extern void iscsit_connection_reinstatement_rcfr(struct iscsit_conn *);
+ extern void iscsit_cause_connection_reinstatement(struct iscsit_conn *, int);
+diff --git a/drivers/target/iscsi/iscsi_target_login.c b/drivers/target/iscsi/iscsi_target_login.c
+index c282b6a7029684..fda04eb15d3a27 100644
+--- a/drivers/target/iscsi/iscsi_target_login.c
++++ b/drivers/target/iscsi/iscsi_target_login.c
+@@ -250,6 +250,7 @@ static int iscsi_login_zero_tsih_s1(
+ 
+ 	timer_setup(&sess->time2retain_timer,
+ 		    iscsit_handle_time2retain_timeout, 0);
++	INIT_WORK(&sess->time2retain_work, iscsit_time2retain_work);
+ 
+ 	ret = ida_alloc(&sess_ida, GFP_KERNEL);
+ 	if (ret < 0) {
+diff --git a/include/target/iscsi/iscsi_target_core.h b/include/target/iscsi/iscsi_target_core.h
+index 51ca80abacf7ba..5cc688b3f7d148 100644
+--- a/include/target/iscsi/iscsi_target_core.h
++++ b/include/target/iscsi/iscsi_target_core.h
+@@ -7,6 +7,7 @@
+ #include <linux/sched.h>
+ #include <linux/socket.h>            /* struct sockaddr_storage */
+ #include <linux/types.h>             /* u8 */
++#include <linux/workqueue.h>         /* struct work_struct */
+ #include <scsi/iscsi_proto.h>        /* itt_t */
+ #include <target/target_core_base.h> /* struct se_cmd */
+ 
+@@ -682,6 +683,8 @@ struct iscsit_session {
+ 	struct completion	session_wait_comp;
+ 	struct completion	session_waiting_on_uc_comp;
+ 	struct timer_list	time2retain_timer;
++	struct work_struct	time2retain_work;
++	atomic_t		time2retain_fired;
+ 	struct iscsi_sess_ops	*sess_ops;
+ 	struct se_session	*se_sess;
+ 	struct iscsi_portal_group *tpg;
+-- 
+2.43.0
+
