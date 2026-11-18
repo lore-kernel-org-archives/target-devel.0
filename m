@@ -1,101 +1,57 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.216.44
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795036591;
-	b=1yHElAG2fvujyW2h3ISJbqlscfYyd59zauI+TkN3SF0vz58pWl8qysylCjbTDdGRhAmM
-	 Ay3Sj/B8YOdi/zSBrJfm93r7t5TQ6ilYoL51uQzH6ZUYcHCqYmuCE6grRy5yDwRN5Rfwi
-	 ylPjaH29lziNhFiXo8Ur92H15O9eExf9nI7jHfcWxgixcRQxSuJeIJG3QMS6XFPGqaBmU
-	 OmBf/Ydr2N9cPglUy1D2/9eq3q09MYDzq8boLxwuZptduYPfVtDine+9do6wKJSs+IEnA
-	 f2A32oLgTXwz5Su5fFBKOYw8CQvELtxnaNboFWW95rUqN/wC1dI47wWPcI+JQ675IqQ==
+	t=1795037356;
+	b=hC32is/NKyTrJQo1vIvqRsMv3zEhTdQZHKZgNaOZ6brNto0OLfPNJCO28LeZbcta17Id
+	 vJGGAqN7EN4Bod0sWpHusc2RNuE3Bfl7l3oEBsgzol5TZD8LnzgIy2iU+UitTgWkVIBGE
+	 dHndaykhjbzCSJ6L5uyeBlDS8Ix1P+kcTJTKSBOappTVJUJM5T65tSZFGM0u28atLN7Pz
+	 7fdh9nxKWbUUhOa2Pgyr8DRuaEFA4Bf+AHDYxmzKOkNw3TkqNnlwym3TGixDb1S5uWQDj
+	 77iH54wihetRq+t9VcCDN7oMzQcAu4nl05USuhzHh4fNwjugpubz0j7/KAglfdvV+pA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795036591;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:
-	 MIME-Version:Content-Type:Content-Transfer-Encoding;
-	bh=y/YHJ2V7TLyLaA0CfPasf19cYxUxIPcmQV6VRFoc+cI=;
-	b=h8GwUJC5EaKRjGyWzo1AYJbfqUYX6Z8/zXill+rl6pJKAyZQB9Y3lwjYPgmTCcomZE24
-	 cu+Bv5q97lDTyTvfsTSIew7ujguAPNTTHNzXh1jM7UnRkEL7R7fnrpqRk1C4JgXRNPrNp
-	 IIRtgLHGo07n5SRep/qwyYsbZb/mrqJxxZIhHdMP5J0q1eIBTc/Oh5CmvayU3405Ig5z/
-	 S1YybPH9488HDkmbSibzghKuoYdtxV8qI27fEGKRcaNvEMjyU8JP4gYVWUoB9KyBiLMHf
-	 mH0rwzbtzPhjzfH+txgvYFe0qhCimTdGO0PxARPhnN8CR2uiab4tkTQEll9kXHfC4Jw==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795037356;
+	h=Received:DKIM-Signature:Message-ID:From:Subject:Reply-To:To:Cc:
+	 In-Reply-To:References:Content-Type:Content-Transfer-Encoding:Date;
+	bh=C3QlfZ+wK6lyf08+qEikLrmLhlgppq+P5MHxH0U5RZk=;
+	b=n8vIUdWPprXsx/87Twn/DKbFaDKdfQAf0YMOLM+gXBB/kvcUVaHITSRcflwmEVgOxeVB
+	 GewoyNPh+SwogwUUtYwHxS1+G8Kt4UAbRUmbH6GMnIYm62KOFS42x/7Cyb6gXx2MaPqMJ
+	 o7agA7ByGGSu54/tCeiRAJXg5u3sPVlEtFKSj8DcDGBXrF1q6e6HVNTsAMOAjpsES/VLQ
+	 ZLLAGbRbltbdb2GHWlfG+tj0nMUj/tWU1Y5NQe1mDd5cGoRLtBUzzRtaklutbCDO8NtPg
+	 b/OkTbL52flpUW/P4QOCt7JET9GJ368o+aPYWGLSeCY/FF3jvwEcXmtO2MLTtTLfYFw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=fail header.from=isslab.korea.ac.kr;
-	spf=none smtp.mailfrom=isslab.korea.ac.kr;
-	dkim=pass header.d=isslab-korea-ac-kr.20260707.gappssmtp.com header.i=@isslab-korea-ac-kr.20260707.gappssmtp.com header.a=rsa-sha256 header.s=20260707 header.b=tAKIDOon;
-	arc=none smtp.remote-ip=209.85.216.44
-Received: from mail-pj1-f44.google.com (mail-pj1-f44.google.com [209.85.216.44])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=F7O+ZVcp;
+	arc=none smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5299D606A33A
-	for <target-devel@vger.kernel.org>; Wed, 18 Nov 2026 21:16:31 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 5299D606A33A
-Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=isslab.korea.ac.kr
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=isslab.korea.ac.kr
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 964B3606A32C;
+	Wed, 18 Nov 2026 21:29:16 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=isslab-korea-ac-kr.20260707.gappssmtp.com header.i=@isslab-korea-ac-kr.20260707.gappssmtp.com header.a=rsa-sha256 header.s=20260707 header.b=tAKIDOon
-Received: by mail-pj1-f44.google.com with SMTP id 98e67ed59e1d1-3ae7626d14aso904493a91.2
-        for <target-devel@vger.kernel.org>; Wed, 18 Nov 2026 13:16:31 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=isslab-korea-ac-kr.20260707.gappssmtp.com; s=20260707; t=1795036591; x=1795641391; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:mime-version:references
-         :in-reply-to:message-id:date:subject:cc:to:from:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=y/YHJ2V7TLyLaA0CfPasf19cYxUxIPcmQV6VRFoc+cI=;
-        b=tAKIDOonM/7tAl+OKNOFPyXrRjlTvzxrmWiMXNZVhliT++H88DRZp4VsIUQSlAau47
-         6Spe9kGkx/9/L36JcBVgrovt+2ZIS4Cr6mD4O+TqZXkb+Fs8d3BHkVFjNRYauw6KUOLW
-         pdZMZkVm1dlo/rRzE7QAqZrltbbI/Gm+XgjCCSuf3kb6HHmDw61HbQhBPAfAaLim7kcd
-         KHhTUjMGyljf1cYXetfpnx+xFF8C6Hzq5WQIa6scbKxA9JGH3dzX3M6mnJbWax5CbQgl
-         rVV82iAcZE4+QNEKxL/Fr+9TjwXagcNwTZIGgDnvPrebuhix9W35IoBv55MqzEQgj6nh
-         xwsg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1795036591; x=1795641391;
-        h=content-transfer-encoding:content-type:mime-version:references
-         :in-reply-to:message-id:date:subject:cc:to:from:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=y/YHJ2V7TLyLaA0CfPasf19cYxUxIPcmQV6VRFoc+cI=;
-        b=SAvFoe+RoMJCrvOCpTpHCWZHXPmsZEwV2ju0Jai37d9CUJQ8T6vvVlJnafNESt3vn7
-         0Ap1NU/NCDEquueVHIxjTwUPfuDm5+Pomia6dZGCVGnpGZrTg+QMlueskGCXnf7nhxrG
-         Jbb8IWDxFHAjtrnWAmgVKvaS5a/8LgivoYJ6VQLwvhXb/87a++Cfa/4UiGLVZCib2phq
-         PheAp+IyLoJFHvbGZNIjwYwQFfPBrCXAEuuPDrJ8wXET+eWPvozZZAwgS4d2wSAbDQh3
-         nTrbfd/3MgUvkZFPxyy2JMn3r5oHZ+vYmaG8DTXdbZcyqZfeEhYm95seAfr+dVqwM9bS
-         7iOQ==
-X-Forwarded-Encrypted: i=1; AL+hErF9eumK/GtEoQKkCHiAZqqOrVaXswucdk/KJ3Oz35E3UeaHpBLgIYGlojU8qNXXGJyRu29PJxRZkVjYHKM=@vger.kernel.org
-X-Gm-Message-State: APuU4Z9DzjSWWZ2g26vhvZy1hCbCOcUdcXrBeQwW05AuokG5pbqdfOYa
-	Gj/BWJn5oRmJlfVhn+IHaixzy/22EYyod3QP9ZRb04GsOcBMduivDFpFSlITZwwKy073e7Aon0s
-	uIQ471HI=
-X-Gm-Gg: AZFdTZeEVyA58mc8O+1zU3V6q7lQuHW1EVkrCpsbIr6zgTYJtzueBQQyWaO1pgE+r1N
-	Y50jx3fMhL6vBcOCUIjjBwlaZ5HLpkUoTqcXI6OoH4HK97Y209nf2k73zr9hiq3KXxb53dJcHr5
-	p+fNFWPxMw+i7zg9iM7fK7nUyR37cknxXnyFFokjvPYPWTMtkTtoLXk14DaMoLBUAHh+PdcSqqj
-	pzQ2pyGVh19WimwygQMDbEAmIBalXsQIWtOVKPduTcSdeHUAhreMwqTV7hS3hu+kkPUapaIxK/4
-	Q6Q//ybCHNOsbGgoQK6PlW82XDnXlj8AdQXR8vAaUY9NN5uxQpx8jOhQ51BtDrJ6FL0x76o/EBJ
-	/38GfdQZOJV7Y7zZPRxEEfGq6MADk76hBmhk0184XsEagPruU+mDgcLYjbldte7Gnzt4VPSQ8BL
-	5qAzufdOhHRRt8aHLSO6Pmf+AQ/J27vkC1Bul3o6vHRGpTXPELvY2OnEjJOF5gWt7qhepBwZnbz
-	EDgIILWU7voms/l49CGijogmcSjOtIFDxdqGdIuifiweW6wPFo374s3/8MUJRPG5QRdZ96NS8Fw
-	DUvpYLzUHkavjs1I+YlD2wQgN7cG895P8Bq2OSOwfnkndpEC6JDk2J3YwBWkf8dajAaHGm3JATV
-	NL5QwXs7/xxzGqdD/3bcYnjxib6DGQcBv20LCbQ==
-X-Received: by 2002:a17:90b:5307:b0:3a8:545a:9e87 with SMTP id 98e67ed59e1d1-3b3d0759881mr3709135a91.15.1795036590739;
-        Wed, 18 Nov 2026 13:16:30 -0800 (PST)
-Received: from yhlee-960QFG.Davolink ([2406:5900:1044:110c:e78e:f7f0:2120:34e7])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3b3f706dd83sm914903a91.14.2026.11.18.13.16.28
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 18 Nov 2026 13:16:30 -0800 (PST)
-From: Yehyeong Lee <yhlee@isslab.korea.ac.kr>
-To: sagi@grimberg.me,
-	jgg@ziepe.ca,
-	leon@kernel.org,
-	mkp@kernel.org
-Cc: linux-rdma@vger.kernel.org,
-	target-devel@vger.kernel.org,
-	linux-scsi@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2 0/4] isert: the commands the target core allocates itself
-Date: Thu, 19 Nov 2026 06:16:23 +0900
-Message-ID: <20261118211623.2526894-1-yhlee@isslab.korea.ac.kr>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20261118113905.2361969-1-yhlee@isslab.korea.ac.kr>
-References: <20261118113905.2361969-1-yhlee@isslab.korea.ac.kr>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=F7O+ZVcp
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2E7E51F000C5;
+	Wed, 18 Nov 2026 21:29:16 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1795037356;
+	bh=C3QlfZ+wK6lyf08+qEikLrmLhlgppq+P5MHxH0U5RZk=;
+	h=From:Subject:Reply-To:To:Cc:In-Reply-To:References:Date;
+	b=F7O+ZVcpmI9iu4q6m73SUnLlUP3NfDFnG6TJII5WnCwlbsdHYGLDY35+Fgt3viUHs
+	 n9uyQiCK0Aj4nfetbTf6c+JI3/5RW/ll0GdBZwM0FVApu5qPJCbHdIPxxReEwY1MdE
+	 rrz+ZKxlFjI+0jE33OYIddRQ5a0Oj8Ox+qVYGvjN5QlOwyzIh8WL7iuRen1WUGyO47
+	 b4ZgHLAu7B09GL5gcGQSXmb0Hb9yjGxT2spX624lydhm89v8lnUMS8HpF+vZzFmx3H
+	 QyUp/unRT2S2aEm8y/J6T2ifwWJ3qmnC59xdnwtXQilaNtMi9Ps9dKm4ORuy4iHsxC
+	 yZsTBGo+8b3hQ==
+Message-ID: <sashiko-outbox-221994@kernel.org>
+From: sashiko-bot@kernel.org
+Subject: Re: [PATCH v3 1/4] scsi: target: iscsi: retire an unsolicited
+ NOP-In only once
+Reply-To: sashiko-reviews@lists.linux.dev
+To: "Yehyeong Lee" <yhlee@isslab.korea.ac.kr>
+Cc: linux-rdma@vger.kernel.org, target-devel@vger.kernel.org, linux-scsi@vger.kernel.org
+In-Reply-To: <20261118211503.2526705-2-yhlee@isslab.korea.ac.kr>
+References: <20261118211503.2526705-1-yhlee@isslab.korea.ac.kr>
+ <20261118211503.2526705-2-yhlee@isslab.korea.ac.kr>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+Date: Wed, 18 Nov 2026 21:29:15 +0000
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Post: <mailto:target-devel@vger.kernel.org>
@@ -104,12 +60,103 @@ List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:target-devel+owner@vger.kernel.org>
 Precedence: list
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
 
-This is superseded by v3:
-  https://lore.kernel.org/all/20261118211503.2526705-1-yhlee@isslab.korea.ac.kr/
+Thank you for your contribution! Sashiko AI review found 1 potential
+issue to consider:
+- [High] scsi: target: iscsi: race on unsent NOP-In in
+  iscsit_take_nopin_from_ttt()
+--
 
-Best regards,
-Yehyeong Lee
+commit 079f94c5aa78a5118ce1f2b2658476b66fcf7998
+Author: Yehyeong Lee <yhlee@isslab.korea.ac.kr>
+
+scsi: target: iscsi: retire an unsolicited NOP-In only once
+
+This commit introduces iscsit_take_nopin_from_ttt() to match unsolicited
+NOP-In commands by opcode and TTT under conn->cmd_lock and clear their tag
+so a NOP-In cannot be queued for removal more than once.
+
+Link: https://lore.kernel.org/all/1437516477-30554-4-git-send-email-sbaugh@=
+catern.com/
+
+> diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/i=
+scsi_target.c
+> index 124ff269b8e75..b0dd3e84e68e0 100644
+> --- a/drivers/target/iscsi/iscsi_target.c
+> +++ b/drivers/target/iscsi/iscsi_target.c
+> @@ -1783,6 +1783,33 @@ int iscsit_setup_nop_out(struct iscsit_conn *conn,=
+ struct iscsit_cmd *cmd,
+>  }
+>  EXPORT_SYMBOL(iscsit_setup_nop_out);
+> =20
+> +/*
+> + * Take the NOP-In under cmd_lock, which the tx thread holds when it unl=
+inks
+> + * and frees the command, and clear its tag so only the first answer get=
+s it.
+> + */
+> +static struct iscsit_cmd *iscsit_take_nopin_from_ttt(struct iscsit_conn =
+*conn,
+> +						     u32 targ_xfer_tag)
+> +{
+> +	struct iscsit_cmd *cmd;
+> +
+> +	spin_lock_bh(&conn->cmd_lock);
+> +	list_for_each_entry(cmd, &conn->conn_cmd_list, i_conn_node) {
+> +		if (cmd->iscsi_opcode !=3D ISCSI_OP_NOOP_IN ||
+> +		    cmd->targ_xfer_tag !=3D targ_xfer_tag)
+> +			continue;
+> +
+> +		cmd->targ_xfer_tag =3D 0xFFFFFFFF;
+> +		cmd->i_state =3D ISTATE_REMOVE;
+> +		spin_unlock_bh(&conn->cmd_lock);
+> +		return cmd;
+> +	}
+
+[Severity: High]
+Can iscsit_take_nopin_from_ttt() claim an unsolicited NOP-In before
+iscsit_add_nopin() has queued it or before the TX thread has built and
+sent it?
+
+session_get_next_ttt() assigns sequential TTTs, and iscsit_add_nopin()
+drops conn->cmd_lock after adding cmd to conn->conn_cmd_list, before
+starting nopin_response_timer and queuing ISTATE_SEND_NOPIN_WANT_RESPONSE:
+
+<softirq>                              rx_thread / tx_thread
+iscsit_handle_nopin_timeout()
+  iscsit_add_nopin()
+    spin_lock_bh(&conn->cmd_lock)
+    list_add_tail(..., &conn->conn_cmd_list)
+    spin_unlock_bh(&conn->cmd_lock)
+                                       iscsit_process_nop_out()
+                                         iscsit_take_nopin_from_ttt()
+                                           cmd->targ_xfer_tag =3D 0xFFFFFFFF
+                                         iscsit_stop_nopin_response_timer()
+                                         iscsit_add_cmd_to_immediate_queue(
+                                           ..., ISTATE_REMOVE)
+    iscsit_start_nopin_response_timer()
+    iscsit_add_cmd_to_immediate_queue(
+      ..., ISTATE_SEND_NOPIN_WANT_RESPONSE)
+                                       iscsit_immediate_queue()
+                                         case ISTATE_REMOVE:
+                                           iscsit_free_cmd(cmd, false)
+                                         case ISTATE_SEND_NOPIN_WANT_RESPON=
+SE:
+                                           iscsit_send_unsolicited_nopin(cm=
+d)
+                                             <-- use-after-free
+
+Because iscsit_free_cmd(cmd, false) does not purge remaining immediate
+queue entries for cmd, the subsequent ISTATE_SEND_NOPIN_WANT_RESPONSE
+entry runs on a freed (and potentially reallocated) command slot while
+leaving nopin_response_timer running.
+
+Even when ISTATE_SEND_NOPIN_WANT_RESPONSE is queued before the NOP-Out is
+processed, if iscsit_take_nopin_from_ttt() runs before the TX thread
+executes iscsit_build_nopin_rsp(), overwriting cmd->targ_xfer_tag with
+0xFFFFFFFF causes the outgoing unsolicited NOP-In PDU to be transmitted
+with hdr->ttt set to 0xFFFFFFFF.
+
+--=20
+Sashiko AI review =C2=B7 https://sashiko.dev/#/patchset/20261118211503.2526=
+705-1-yhlee@isslab.korea.ac.kr?part=3D1
