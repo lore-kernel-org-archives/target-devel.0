@@ -1,99 +1,57 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.215.171
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795002028;
-	b=KmTSd9+33ssY8ex2EIeDmhC9EP6MS0ZNk0Op57QbDGTNGjj2xe+c/3paGBYeFfLm8Ro3
-	 QZZIc69MAunuMYvxmu90LAynmGeFYctkklVTUhALvJA8wQLCVhgkGR6Di1ZXyVptmP7ke
-	 63IIToWksKGREgaLUoYtGNthE78xMlruQbann71lEBr2MYg29jvy7jibuvrMQyp2z6kPz
-	 6vyW6pcQhrEJhFrVk+TPbGeWRy0FbtST7WXpeRO0M3+wg8mLLHhIDFa4zoMdagrt1BTxx
-	 3cntfp1L26c4pO0+UkALDDNZWqo6ngnMEq9P7vpujCUGf3KxfV1NBGiocpKCFh1O49Q==
+	t=1795003622;
+	b=Dz+cSNrxlqhbIkc5EpvdClRIxkmokw8G8pNGctDs3veBAQMHuIwo3P9veaSOP9jl/shm
+	 xSSjzPuJgz2mhW7XEGDxZ+yh4Kyvo1ItUOr2HfWqW8Gt8XkB3Px1X6QW6vy235HAAOg69
+	 DWG+xbVf5154wCdEkgnzVbwssFERdeGlzQ9b9u0gHnj71T/oHhouZd04005yygjKkK+wi
+	 CpJLFt4THP0UtliHYxBNWLj6CxcsmuWlMxa42jRf6fDaCY2JYoEbgvUMhQZqiDD+wlBum
+	 fOnrPyK4+LlMTSvbGBZ1/5bElRl6XLUzgqxfJa//Osw+jP+otE0Y822knHuiOxsHQAA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795002028;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:
-	 MIME-Version:Content-Type:Content-Transfer-Encoding;
-	bh=joKPrh60l9RacrgiLaA7oi1DDDf9ZOY+t9J3WM0zaLk=;
-	b=aeoQLbFfNW+XnuwqA3tw96rINqMac+GvK2exZnNxcJ0Nqem9UfyzeKUNDBuZv93zYdtK
-	 ElwnfHvkoGs086zM4W535mCgFbXRRq/hZG6hgUPrs62UdLxjPFcQsdymqxSLh1z6iISeH
-	 5HhsuPj/HE8kj1xSF3a1hEi/YH8qebvKCrxuRbe1tuEQL2ReXmyRjdJUj8jYweO3jFcZU
-	 Er7WLqJMA1OqdMbqYbkN9LadqJB7qXA9Upk3gEgks/DKVnCeoBT3vgBkyA72DSPUaZNYi
-	 yT6JXQJjwpgILV+YjMW83JAXZPFWXEH1f62V8nIc+BV2jE/WL1erRUr9m3zV9fiu/uw==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795003622;
+	h=Received:DKIM-Signature:Message-ID:From:Subject:Reply-To:To:Cc:
+	 In-Reply-To:References:Content-Type:Content-Transfer-Encoding:Date;
+	bh=op6c/74qV6YVj9jP0RugP3C+9ct57ykA6Wnx8wCw/qs=;
+	b=r4rmCucFjjkL3KrW8kchnRN//t/8MnzrtuGDAodsvAP4TkL55HwyVjX+ApQ8yAlP1lo6
+	 Zl3LLe9NeLNsxlOcliaK2D2f0D05fsrAlhea30aGCSul/TTJLUb3gUGFAbZS7+oSzUews
+	 xNheQs1ZC91GZLxhK8a7ydK5I2WZxNKlF9mPIqPK5No/HOcKi0fFk8wZMotegREPbd+4S
+	 /V0F81SPTf8imanXyv2Bwt1aT3H2SjqP3P2c46OS5/SdUTWRvgjcmotz12R4zCPWcBTrX
+	 a77e6ENDrRnJRhYHaXc2a7FOoS0kBbts8ICAYEH9JjCDZ8Hk/xc4mZOmEUdgbV3gXWA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=fail header.from=isslab.korea.ac.kr;
-	spf=none smtp.mailfrom=isslab.korea.ac.kr;
-	dkim=pass header.d=isslab-korea-ac-kr.20260707.gappssmtp.com header.i=@isslab-korea-ac-kr.20260707.gappssmtp.com header.a=rsa-sha256 header.s=20260707 header.b=Ri4FMxE0;
-	arc=none smtp.remote-ip=209.85.215.171
-Received: from mail-pg1-f171.google.com (mail-pg1-f171.google.com [209.85.215.171])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=RftNcetH;
+	arc=none smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 85959606A32A
-	for <target-devel@vger.kernel.org>; Wed, 18 Nov 2026 11:40:28 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 85959606A32A
-Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=isslab.korea.ac.kr
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=isslab.korea.ac.kr
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E34FD606A32A;
+	Wed, 18 Nov 2026 12:07:01 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=isslab-korea-ac-kr.20260707.gappssmtp.com header.i=@isslab-korea-ac-kr.20260707.gappssmtp.com header.a=rsa-sha256 header.s=20260707 header.b=Ri4FMxE0
-Received: by mail-pg1-f171.google.com with SMTP id 41be03b00d2f7-cdb2e0062bbso506135a12.1
-        for <target-devel@vger.kernel.org>; Wed, 18 Nov 2026 03:40:28 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=isslab-korea-ac-kr.20260707.gappssmtp.com; s=20260707; t=1795002028; x=1795606828; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:mime-version:references
-         :in-reply-to:message-id:date:subject:cc:to:from:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=joKPrh60l9RacrgiLaA7oi1DDDf9ZOY+t9J3WM0zaLk=;
-        b=Ri4FMxE0ENmt5ExlIpMFuucBbg8Ff7sKAf10q/8ianryZQyKtbi3YXq+ktSfczLSfu
-         IctLlAj/ddfPqpMpLdJSQfghV9HsCVBQXGWEkWXn72XaqMlG1/eCJwwmgrY6/N3rntfN
-         ZfpbOVhacSiGr87oYY/VR6SGrjRQ6qgHuYNfoBwiKRW/cuRuT2NWrM5Mu7Gx4VZAQNMu
-         gxJRzVDdgVqV3Xko6LFK3vws1WamrlKSqKm9s8WgCUZWPHAPe/9bwG6Cn6uK0NqjWDH0
-         EzCBn00mfADqxTRlXynqAz78TtowHCugr1TZsMaq4UJcPOVvGtmybUrhGNu/nFBP3gme
-         pEEA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1795002028; x=1795606828;
-        h=content-transfer-encoding:content-type:mime-version:references
-         :in-reply-to:message-id:date:subject:cc:to:from:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=joKPrh60l9RacrgiLaA7oi1DDDf9ZOY+t9J3WM0zaLk=;
-        b=w4DfsqTBljRZkfcNGJ8nQ3FBBil3e8pegIYLGAQILnCT3/pUszntpbpU10YYdLrX1G
-         vBp3iucs5n8GOFnH3swAp4nqF2chJtjtWTyEvNJtXHv4yNr2wue0LT7JOdcys92Pj5Ah
-         OMzV9wgv6VU9JipkkJ6AE6PxRXokHi8T+Acg/UP5Ib/udAPMGBdDhoi4E97nfjkb47lv
-         Llw3pWPT5UNofoX23/ZHw/mzoM0K+sU8OU6dbK9Kw4BOsNDd8wCUKHzOVpXV7fPU+pJo
-         oKjzpSJ4WXNZA+lnbQK+R/ZhttZANONdI/8b0+kR17wxp0HegHXfGlzCxaTDXUwRlylj
-         ImjQ==
-X-Forwarded-Encrypted: i=1; AL+hErHFTYfnR83fR6HTmHwjFgL+34aZ5jZ6LmXsPhLFZhKTJ7bhiz0au1m/Fe+iFCNon2cJpSDsOsE8fTgpWfU=@vger.kernel.org
-X-Gm-Message-State: APuU4Z/y+O4VWhkWyvhfpntNgzBSNVnTyqBBE7Js2leanD3aYQta359U
-	FKtXuuegD/cF7oBJNGasSR4P7DUTAQqA8/t1xq1F6nfkBaDISryKJpWDntnbmDPtRA8=
-X-Gm-Gg: AYBFou35zp+qIPKxH5an1VhnfaQF7gCjWE1ubJDLixXInohmk+O21YSAHJFzsW5T37n
-	7QyH2cFkd9lVU+cB3t1an8X+1oyYGQsC8NJwwb29fx/Vn9GLosO+RtsfgdEeuU7ItYKSbjM3LHH
-	NzKEZp0OFTzqLbPp/+FyJ/juupsUx14Kk0qsIA7ZRz9GZX4TVKyjJrJVR3/AjpbVniX/Ss81GcF
-	F63AG1UHrD0eYUrgfKqzskjCLihbGcCfAXF99sU/c9R2AtkMImd7kYkefTw2pCQK+liMb480NqR
-	7VhriqHzAw76vOF1xpqpwT03Kms1vY6cHpGVFid+6n5mt1pW8SrcWV02zqBEbIq77BWkK0y1iMc
-	tFK8ZLZFRcTdALUaQLo1XmEINnhz10YiuLwWh0X6fne5xvrKacSprRJYfVQit2fEOFhEsP0bqTJ
-	3HdCDwEbOhAxdMCSW8OR3BAm+x7zEedKTiVoBwWlbya1cR/Z1ci/9bvEGOMSryMliYVLwpIuCqQ
-	xhvq51dBAAgtZ5wuRDmskMCc/5Dct3soyiS9hBQh0YvKoKempNxBWzUFhWBG/qDztkGbmSAFoqU
-	NZVorjdps2sNccND8LGAP9cSUY/3xOhKwJ50+0dKMBtUhKjvjG20+FO0CU1+tSteBov6lncNP0j
-	zPoOHlQkHryAIyvBKVcrUMAhUJEvCWkKykk8ywQ==
-X-Received: by 2002:a05:6300:6690:b0:3fa:988:1ba7 with SMTP id adf61e73a8af0-3fe86bdc721mr2207986637.11.1795002027791;
-        Wed, 18 Nov 2026 03:40:27 -0800 (PST)
-Received: from localhost.localdomain ([2406:5900:1044:110c:e78e:f7f0:2120:34e7])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-8c5cb35db4esm1038189b3a.35.2026.11.18.03.40.25
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 18 Nov 2026 03:40:27 -0800 (PST)
-From: Yehyeong Lee <yhlee@isslab.korea.ac.kr>
-To: sagi@grimberg.me,
-	jgg@ziepe.ca,
-	leon@kernel.org
-Cc: linux-rdma@vger.kernel.org,
-	target-devel@vger.kernel.org,
-	linux-scsi@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] IB/isert: finish a Reject the target core allocated itself
-Date: Wed, 18 Nov 2026 20:40:19 +0900
-Message-ID: <20261118114019.2362132-1-yhlee@isslab.korea.ac.kr>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20261116101108.1650132-1-yhlee@isslab.korea.ac.kr>
-References: <20261116101108.1650132-1-yhlee@isslab.korea.ac.kr>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=RftNcetH
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3695F1F000C4;
+	Wed, 18 Nov 2026 12:07:01 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1795003621;
+	bh=op6c/74qV6YVj9jP0RugP3C+9ct57ykA6Wnx8wCw/qs=;
+	h=From:Subject:Reply-To:To:Cc:In-Reply-To:References:Date;
+	b=RftNcetH3A+fPv0BUL7O+KDHgH9RIhcfrEQFJJ2en48zQKClpR5DBogW2AHttphzD
+	 2qIFw2innEYwl8kQxi8TCJm7/Rt20KBk1uLeAPg85wN1rqsqZ1xR5qVoMGhozznQx1
+	 T41D3Hl7BlLWJtoMnCqxDrOV8boJQ7j12SuBBsEnqrrxkMLmU6/s8Sc1ldKOsCbWu5
+	 3yMIeFhGEoE9LVmXJgI3pU3qBcikPgkXdnlrQibO5EicpMkaKrCMmsVKiGHlSgfY9A
+	 NaaLti7U5ogteQONSc46xjP6L7lLjSlYgnHfeiSylMb1roUnjk+URjXC637ULeF/ax
+	 1e2maT3KYomKg==
+Message-ID: <sashiko-outbox-220874@kernel.org>
+From: sashiko-bot@kernel.org
+Subject: Re: [PATCH v2 1/4] scsi: target: iscsi: match a NOP-In by opcode as
+ well as by tag
+Reply-To: sashiko-reviews@lists.linux.dev
+To: "Yehyeong Lee" <yhlee@isslab.korea.ac.kr>
+Cc: linux-rdma@vger.kernel.org, target-devel@vger.kernel.org, linux-scsi@vger.kernel.org
+In-Reply-To: <20261118113905.2361969-2-yhlee@isslab.korea.ac.kr>
+References: <20261118113905.2361969-1-yhlee@isslab.korea.ac.kr>
+ <20261118113905.2361969-2-yhlee@isslab.korea.ac.kr>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+Date: Wed, 18 Nov 2026 12:07:00 +0000
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Post: <mailto:target-devel@vger.kernel.org>
@@ -102,12 +60,74 @@ List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:target-devel+owner@vger.kernel.org>
 Precedence: list
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
 
-This is superseded by v2:
-  https://lore.kernel.org/all/20261118113905.2361969-1-yhlee@isslab.korea.ac.kr/
+Thank you for your contribution! Sashiko AI review found 1 potential
+issue to consider:
+- [Critical] scsi: target: iscsi: double free of NOP-In in
+  iscsit_process_nop_out()
+--
 
-Best regards,
-Yehyeong Lee
+commit 4b724f8430caaec9358e8c9a8789de674c7d8d78
+Author: Yehyeong Lee <yhlee@isslab.korea.ac.kr>
+
+scsi: target: iscsi: match a NOP-In by opcode as well as by tag
+
+This commit updates iscsit_find_cmd_from_ttt() to match commands by both
+iSCSI opcode and Target Transfer Tag so that NOP-Out and Data ACK SNACK
+handlers only match the command type they expect.
+
+Link: https://lore.kernel.org/all/1437516477-30554-4-git-send-email-sbaugh@=
+catern.com/
+
+> diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/i=
+scsi_target.c
+> index 124ff269b8e75..2762a60ec3b33 100644
+> --- a/drivers/target/iscsi/iscsi_target.c
+> +++ b/drivers/target/iscsi/iscsi_target.c
+> @@ -1821,7 +1821,8 @@ int iscsit_process_nop_out(struct iscsit_conn *conn=
+, struct iscsit_cmd *cmd,
+>  	 * This was a response to a unsolicited NOPIN ping.
+>  	 */
+>  	if (hdr->ttt !=3D cpu_to_be32(0xFFFFFFFF)) {
+> -		cmd_p =3D iscsit_find_cmd_from_ttt(conn, be32_to_cpu(hdr->ttt));
+> +		cmd_p =3D iscsit_find_cmd_from_ttt(conn, be32_to_cpu(hdr->ttt),
+> +						 ISCSI_OP_NOOP_IN);
+>  		if (!cmd_p)
+>  			return -EINVAL;
+
+[Severity: Critical]
+Can back-to-back NOP-Out PDUs carrying a NOP-In's TTT still double free
+cmd_p?
+
+An unsolicited NOP-In queued by iscsit_add_nopin() sits on
+conn->conn_cmd_list with no se_cmd, and iscsit_find_cmd_from_ttt() returns
+it without removing it from conn->conn_cmd_list or invalidating its
+targ_xfer_tag under conn->cmd_lock:
+
+rx thread                         tx thread
+iscsit_process_nop_out()
+  cmd_p =3D iscsit_find_cmd_from_ttt(...)
+  cmd_p->i_state =3D ISTATE_REMOVE
+  iscsit_add_cmd_to_immediate_queue(cmd_p, ...)
+iscsit_process_nop_out()
+  cmd_p =3D iscsit_find_cmd_from_ttt(...)
+  cmd_p->i_state =3D ISTATE_REMOVE
+  iscsit_add_cmd_to_immediate_queue(cmd_p, ...)
+                                  iscsit_immediate_queue()
+                                    list_del_init(&cmd->i_conn_node)
+                                    iscsit_free_cmd(cmd, false)
+                                  iscsit_immediate_queue()
+                                    list_del_init(&cmd->i_conn_node)
+                                    iscsit_free_cmd(cmd, false)
+                                      <-- double free
+
+Because conn->conn_cmd_list is only updated when the tx thread runs
+iscsit_immediate_queue(), sending two NOP-Out responses with the NOP-In's
+TTT in one write queues the same ISCSI_OP_NOOP_IN command with
+ISTATE_REMOVE twice, causing iscsit_release_cmd() to double free the
+command and its session tag (or corrupt a newly allocated command if the
+tag was reused in between).
+
+--=20
+Sashiko AI review =C2=B7 https://sashiko.dev/#/patchset/20261118113905.2361=
+969-1-yhlee@isslab.korea.ac.kr?part=3D1
