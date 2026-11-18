@@ -1,57 +1,96 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.216.47
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795003622;
-	b=Dz+cSNrxlqhbIkc5EpvdClRIxkmokw8G8pNGctDs3veBAQMHuIwo3P9veaSOP9jl/shm
-	 xSSjzPuJgz2mhW7XEGDxZ+yh4Kyvo1ItUOr2HfWqW8Gt8XkB3Px1X6QW6vy235HAAOg69
-	 DWG+xbVf5154wCdEkgnzVbwssFERdeGlzQ9b9u0gHnj71T/oHhouZd04005yygjKkK+wi
-	 CpJLFt4THP0UtliHYxBNWLj6CxcsmuWlMxa42jRf6fDaCY2JYoEbgvUMhQZqiDD+wlBum
-	 fOnrPyK4+LlMTSvbGBZ1/5bElRl6XLUzgqxfJa//Osw+jP+otE0Y822knHuiOxsHQAA==
+	t=1795005620;
+	b=vXDy846w7hOgqs+Gzqzs3rSDGOSZDgNjLv7ilzFgEKCMUsOInnl2x2ZcyQS0bp1BVEGE
+	 b7ySuFH2Yi2H641Qkllssk/ag9+EdM+HfJf7C5BtHsi1URPhAKn9GPvoW3dSj4fkF3RSm
+	 e7YhA9owyJonlL2JV624cIS5dNX5P3reckfJxNRthRjOarB/z6NoXd9l3FgX/LNNxY721
+	 rl/ypRU4jcydeLmVgZs5MyP1jEKkVvZCwrZw2a9MyjyTANcRBMjpzMzpAfovd9cFL1hPh
+	 sa6uane/olnRaNglKHGV4Jb21ZYJw6pRHv0vrX6guLxZxAQ5kuB6IAsrZbBPmId+5BA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795003622;
-	h=Received:DKIM-Signature:Message-ID:From:Subject:Reply-To:To:Cc:
-	 In-Reply-To:References:Content-Type:Content-Transfer-Encoding:Date;
-	bh=op6c/74qV6YVj9jP0RugP3C+9ct57ykA6Wnx8wCw/qs=;
-	b=r4rmCucFjjkL3KrW8kchnRN//t/8MnzrtuGDAodsvAP4TkL55HwyVjX+ApQ8yAlP1lo6
-	 Zl3LLe9NeLNsxlOcliaK2D2f0D05fsrAlhea30aGCSul/TTJLUb3gUGFAbZS7+oSzUews
-	 xNheQs1ZC91GZLxhK8a7ydK5I2WZxNKlF9mPIqPK5No/HOcKi0fFk8wZMotegREPbd+4S
-	 /V0F81SPTf8imanXyv2Bwt1aT3H2SjqP3P2c46OS5/SdUTWRvgjcmotz12R4zCPWcBTrX
-	 a77e6ENDrRnJRhYHaXc2a7FOoS0kBbts8ICAYEH9JjCDZ8Hk/xc4mZOmEUdgbV3gXWA==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795005620;
+	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
+	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:MIME-Version:
+	 Content-Transfer-Encoding;
+	bh=5u9A3PL16118dnwDzUsQLtTXzEbAMsk2owyLQhcCKJA=;
+	b=lLdpZYpagx1r59Z16umP2+0I7+jVD3q3G4C0KhMZCUyYr6Nnf3BpiZCCwgXywcwgE4AJ
+	 jBVTLoRO85dOMRozqK5lKSyW84lwT+w3vZaGhAJE6rO1CZIaULbn94YS1MSfmFK8o5KGW
+	 i93ZDekbWa2kuH3c25TzMnxfmn78hs8Bno3pux85uKAv12a22vTi4upaRqd+XRTHwOybi
+	 5G2tScVFNzJsiVQpCSmp6GkZQSakkxwXA3+s0kiMDoHZvBrNcNdRRIOS5AWbsLQtudrDc
+	 Gc/S/odAxe1AevuSr8t88LQAQVO3U1LYVBVdF9UJ0JHnQfnY1J146VBDGpUmo5EyGpg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=RftNcetH;
-	arc=none smtp.remote-ip=100.103.45.18
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	dmarc=fail header.from=isslab.korea.ac.kr;
+	spf=none smtp.mailfrom=isslab.korea.ac.kr;
+	dkim=pass header.d=isslab-korea-ac-kr.20260707.gappssmtp.com header.i=@isslab-korea-ac-kr.20260707.gappssmtp.com header.a=rsa-sha256 header.s=20260707 header.b=fjXVeMEP;
+	arc=none smtp.remote-ip=209.85.216.47
+Received: from mail-pj1-f47.google.com (mail-pj1-f47.google.com [209.85.216.47])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E34FD606A32A;
-	Wed, 18 Nov 2026 12:07:01 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3BBB1606A31C
+	for <target-devel@vger.kernel.org>; Wed, 18 Nov 2026 12:40:18 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 3BBB1606A31C
+Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=isslab.korea.ac.kr
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=isslab.korea.ac.kr
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=RftNcetH
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3695F1F000C4;
-	Wed, 18 Nov 2026 12:07:01 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795003621;
-	bh=op6c/74qV6YVj9jP0RugP3C+9ct57ykA6Wnx8wCw/qs=;
-	h=From:Subject:Reply-To:To:Cc:In-Reply-To:References:Date;
-	b=RftNcetH3A+fPv0BUL7O+KDHgH9RIhcfrEQFJJ2en48zQKClpR5DBogW2AHttphzD
-	 2qIFw2innEYwl8kQxi8TCJm7/Rt20KBk1uLeAPg85wN1rqsqZ1xR5qVoMGhozznQx1
-	 T41D3Hl7BlLWJtoMnCqxDrOV8boJQ7j12SuBBsEnqrrxkMLmU6/s8Sc1ldKOsCbWu5
-	 3yMIeFhGEoE9LVmXJgI3pU3qBcikPgkXdnlrQibO5EicpMkaKrCMmsVKiGHlSgfY9A
-	 NaaLti7U5ogteQONSc46xjP6L7lLjSlYgnHfeiSylMb1roUnjk+URjXC637ULeF/ax
-	 1e2maT3KYomKg==
-Message-ID: <sashiko-outbox-220874@kernel.org>
-From: sashiko-bot@kernel.org
-Subject: Re: [PATCH v2 1/4] scsi: target: iscsi: match a NOP-In by opcode as
- well as by tag
-Reply-To: sashiko-reviews@lists.linux.dev
-To: "Yehyeong Lee" <yhlee@isslab.korea.ac.kr>
-Cc: linux-rdma@vger.kernel.org, target-devel@vger.kernel.org, linux-scsi@vger.kernel.org
-In-Reply-To: <20261118113905.2361969-2-yhlee@isslab.korea.ac.kr>
-References: <20261118113905.2361969-1-yhlee@isslab.korea.ac.kr>
- <20261118113905.2361969-2-yhlee@isslab.korea.ac.kr>
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
-Date: Wed, 18 Nov 2026 12:07:00 +0000
+	dkim=pass (2048-bit key) header.d=isslab-korea-ac-kr.20260707.gappssmtp.com header.i=@isslab-korea-ac-kr.20260707.gappssmtp.com header.a=rsa-sha256 header.s=20260707 header.b=fjXVeMEP
+Received: by mail-pj1-f47.google.com with SMTP id 98e67ed59e1d1-3ada4c06b7bso489576a91.2
+        for <target-devel@vger.kernel.org>; Wed, 18 Nov 2026 04:40:18 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=isslab-korea-ac-kr.20260707.gappssmtp.com; s=20260707; t=1795005618; x=1795610418; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=5u9A3PL16118dnwDzUsQLtTXzEbAMsk2owyLQhcCKJA=;
+        b=fjXVeMEPXANBKTkfuitkhxYl4brjaF4kq+WAE1yMT4ZeBGhEKJ9Rag192Ozcpj3g9s
+         ZyG2it/ZAVFK+Gdag4q3vNXEFSQZ7TErvrgKKVa0zN3tsRoSAjd477wvZz00KsLYB/fK
+         q/GYPIjen06QV0sT8lPYehmyRMiwJTavo7fPnS2ffcB2D+8ezhYJRpgGb15D8gcjxDBX
+         vGsYEjKxFYVk8aviP2acTMSq75ELzaRz+jRDFRNulWvTza3el9/K7Br0B2PG5mTEVvbE
+         0/SRCQdFrmonZJstIJ3DHKo7Doo2wPLavTa8cfbT1EhTB4TvneOG1SPzgNGR/jwlL0sA
+         AVRw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1795005618; x=1795610418;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=5u9A3PL16118dnwDzUsQLtTXzEbAMsk2owyLQhcCKJA=;
+        b=wPHB+vDdBpLqsDvMys+emEg+KxeiaM+YxvUmC8jdd+9x6T/SCo3iaDVxxnFztgKZSg
+         80O/NVv6khduWw9fgTRLGx9ndITVa68HIvK3P4fR/S9pPO1P3fXORWDDptVdS+r5t+M5
+         8/hp3uAkCNM2eGWTYzx4K+E735YzGMhTaN7aPdlgJWg1kdw146wmHVxkj51V6VRoX+Gu
+         trSCE9H9YT53gyaSDxGzNaNmJJHBxyHhBCFSsSa3XQgXqX3BMHoZnJXdQefeYoFVLYrV
+         0XGvFNe9AqBahCnA0mOJnOHVkmy0x4MbwXB3gcHa4IEQTjsTiA2zcGoaELWh9qTbUCLe
+         1Sbw==
+X-Forwarded-Encrypted: i=1; AL+hErGqP23tw3mB8HPkFhpM7+VHRVNuJjVMRmBqOOx803T2Nq+Rec1w8mEmw2roK0wpm05nBKydB89MAMMlZfo=@vger.kernel.org
+X-Gm-Message-State: APuU4Z9s6oFOXuCUavu2YeBEahiQ8lVZHOIdKjkC2myV+L+d0kcRuei3
+	gYR/ME65QoP7VVAhG9XRF2ng5LmfCIk9SMocNUK/tiO75DoVF0wgU7QmbYv9NMLYhOg=
+X-Gm-Gg: AZFdTZc3ScrhUy8N3GYFbFlb6nTIl1PUiJPrY/8XDw9bcQ/HAv9TIrtUu27Uazoxhg8
+	q/lRkz/oFIBMxOfzMB8FsN7uXtUdVmIToD3pG1cahDFujxeNuy10ZKYT543hmlWuSwUcVbKXR7d
+	seAWAumPEWvIeoiH2woHryywA/Q8goyR02Ibg5nqkB8f7hUUO5deCZEUi/XFwdcDzaW4s1n1Pc7
+	r7w7SYJFIsjDAwUzu3bGVRGmBTMcoEFhYRe6TGlJMi/VoT3rRF6abnd704MSmBu22Y4HMyWr3W3
+	VN2eODXAvZuVPr98mIgys1d6njRlVgymR7NouVV3hbiCz/xy9cRKyWefNePgOOPpMgfLkDbTnD6
+	SBb1U1W1bfEqMzylxUejXpmJqWBIHAFkTnrYWiFitZvN/RXuuk8X1tPaJdbTcureHwGU9AaG8XK
+	H0zWDY4ofkg6GgjNm+5acAtbOhMW5IoVnOJ25Fn+StXTRImUAEuwmnIxr0gi10lNYTGCb25hCpD
+	LFPRmyB5sIOkisJqUe2GCQ94yBIYvOHUDB5eVYqpme0bt1xlnVm+S5QkNx9Xgx4o3TsSgoNffjp
+	HLwOFQ32yrbtVWcP4kVklrmmcLIvV2sf3PnHEz9yeSUT88QlTGwgcKaQZYfMm1kEa2KxihWMPqw
+	muIL/723i1b3RFx/uldVV0poT6WsNF8sEc7irzqBi4DIMdflYxBkVn9+J1A4=
+X-Received: by 2002:a17:90b:2642:b0:3b0:9a1b:b708 with SMTP id 98e67ed59e1d1-3b3d07da3cbmr2529004a91.62.1795005618178;
+        Wed, 18 Nov 2026 04:40:18 -0800 (PST)
+Received: from localhost.localdomain ([2406:5900:1044:110c:e78e:f7f0:2120:34e7])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3b3d19b6e18sm4257980a91.10.2026.11.18.04.40.15
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 18 Nov 2026 04:40:17 -0800 (PST)
+From: Yehyeong Lee <yhlee@isslab.korea.ac.kr>
+To: gregkh@linuxfoundation.org,
+	nkapron@google.com,
+	linux-usb@vger.kernel.org
+Cc: Thinh.Nguyen@synopsys.com,
+	bigeasy@linutronix.de,
+	target-devel@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	benquike@gmail.com
+Subject: [PATCH v8 0/4] usb: gadget: f_tcm: fix infoleaks, sleep, and UAF in the BOT path
+Date: Wed, 18 Nov 2026 21:40:01 +0900
+Message-ID: <20261118124005.2428068-1-yhlee@isslab.korea.ac.kr>
+X-Mailer: git-send-email 2.43.0
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Post: <mailto:target-devel@vger.kernel.org>
@@ -60,74 +99,61 @@ List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:target-devel+owner@vger.kernel.org>
 Precedence: list
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 
-Thank you for your contribution! Sashiko AI review found 1 potential
-issue to consider:
-- [Critical] scsi: target: iscsi: double free of NOP-In in
-  iscsit_process_nop_out()
---
+v7 was three patches, posted 2026-10-13 and not applied:
+https://lore.kernel.org/all/20261013073328.2936318-1-yhlee@isslab.korea.ac.kr/
 
-commit 4b724f8430caaec9358e8c9a8789de674c7d8d78
-Author: Yehyeong Lee <yhlee@isslab.korea.ac.kr>
+Changes since v7: a new 2/4 for a second infoleak in the same BOT status
+path, a measurement added to 3/4, and the recipient list corrected - v7
+left out the gadget maintainer.  The other three are unchanged, on
+7.4-rc3, where the file is byte for byte what v7 was written against.
 
-scsi: target: iscsi: match a NOP-In by opcode as well as by tag
+1/4 queues the two BOT status requests that run from endpoint completion
+callbacks with GFP_ATOMIC instead of GFP_KERNEL.
 
-This commit updates iscsit_find_cmd_from_ttt() to match commands by both
-iSCSI opcode and Target Transfer Tag so that NOP-Out and Data ACK SNACK
-handlers only match the command type they expect.
+2/4 allocates the CBW buffer with kzalloc().  Only the 31-byte CBW is
+ever written into it, and when a command is rejected before its data
+stage the status path sends that buffer to the host for as long a
+transfer as the host asked for.
 
-Link: https://lore.kernel.org/all/1437516477-30554-4-git-send-email-sbaugh@=
-catern.com/
+3/4 fails a write whose data stage delivered less than the CBW declared,
+instead of committing the untouched tail of the bounce buffer.  4/4
+clears req->sg and req->num_sgs when the BOT status request is reused, so
+an sg-capable controller is not handed a freed scatter list.
 
-> diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/i=
-scsi_target.c
-> index 124ff269b8e75..2762a60ec3b33 100644
-> --- a/drivers/target/iscsi/iscsi_target.c
-> +++ b/drivers/target/iscsi/iscsi_target.c
-> @@ -1821,7 +1821,8 @@ int iscsit_process_nop_out(struct iscsit_conn *conn=
-, struct iscsit_cmd *cmd,
->  	 * This was a response to a unsolicited NOPIN ping.
->  	 */
->  	if (hdr->ttt !=3D cpu_to_be32(0xFFFFFFFF)) {
-> -		cmd_p =3D iscsit_find_cmd_from_ttt(conn, be32_to_cpu(hdr->ttt));
-> +		cmd_p =3D iscsit_find_cmd_from_ttt(conn, be32_to_cpu(hdr->ttt),
-> +						 ISCSI_OP_NOOP_IN);
->  		if (!cmd_p)
->  			return -EINVAL;
+Measured on a dummy_hcd gadget with KASAN, one fresh boot per cell, two
+cells per arm, speaking BOT over usbfs so a CBW can declare one length
+and the data stage deliver another.
 
-[Severity: Critical]
-Can back-to-back NOP-Out PDUs carrying a NOP-In's TTT still double free
-cmd_p?
+  WRITE(10) declaring 8192, 4000 delivered on a short packet
+    7.4-rc3   CSW status 0, and 4192 bytes the host never sent are
+              committed and read back
+    this set  CSW status 1, nothing committed
+  a rejected IN command declaring 4096 bytes
+    both      4096 bytes returned, 72 of them non-zero and the rest
+              zero, starting with the previous CBW.  What 2/4 removes
+              is the part of the buffer no CBW ever writes, and that
+              part read back zero on this allocator too, so the patch
+              does not change what this test sees.
+  login, read, write, readback controls   pass on both, KASAN 0
 
-An unsolicited NOP-In queued by iscsit_add_nopin() sits on
-conn->conn_cmd_list with no se_cmd, and iscsit_find_cmd_from_ttt() returns
-it without removing it from conn->conn_cmd_list or invalidating its
-targ_xfer_tag under conn->cmd_lock:
+1/4 and 4/4 are not exercised there: dummy_hcd ignores the gfp flags in
+its queue callback and never sets sg_supported.  4/4's evidence is a test
+module standing in for an sg-capable controller; 1/4's is the code.
 
-rx thread                         tx thread
-iscsit_process_nop_out()
-  cmd_p =3D iscsit_find_cmd_from_ttt(...)
-  cmd_p->i_state =3D ISTATE_REMOVE
-  iscsit_add_cmd_to_immediate_queue(cmd_p, ...)
-iscsit_process_nop_out()
-  cmd_p =3D iscsit_find_cmd_from_ttt(...)
-  cmd_p->i_state =3D ISTATE_REMOVE
-  iscsit_add_cmd_to_immediate_queue(cmd_p, ...)
-                                  iscsit_immediate_queue()
-                                    list_del_init(&cmd->i_conn_node)
-                                    iscsit_free_cmd(cmd, false)
-                                  iscsit_immediate_queue()
-                                    list_del_init(&cmd->i_conn_node)
-                                    iscsit_free_cmd(cmd, false)
-                                      <-- double free
+Yehyeong Lee (4):
+  usb: gadget: f_tcm: queue the BOT status requests with GFP_ATOMIC
+  usb: gadget: f_tcm: zero the CBW buffer the status path sends
+  usb: gadget: f_tcm: reject a short write data-out transfer
+  usb: gadget: f_tcm: clear the scatter list when reusing the BOT status
+    request
 
-Because conn->conn_cmd_list is only updated when the tx thread runs
-iscsit_immediate_queue(), sending two NOP-Out responses with the NOP-In's
-TTT in one write queues the same ISCSI_OP_NOOP_IN command with
-ISTATE_REMOVE twice, causing iscsit_release_cmd() to double free the
-command and its session tag (or corrupt a newly allocated command if the
-tag was reused in between).
+ drivers/usb/gadget/function/f_tcm.c | 23 +++++++++++++++++------
+ drivers/usb/gadget/function/tcm.h   |  1 +
+ 2 files changed, 18 insertions(+), 6 deletions(-)
 
---=20
-Sashiko AI review =C2=B7 https://sashiko.dev/#/patchset/20261118113905.2361=
-969-1-yhlee@isslab.korea.ac.kr?part=3D1
+-- 
+2.43.0
+
