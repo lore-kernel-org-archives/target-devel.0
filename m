@@ -1,84 +1,84 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.216.49
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.216.54
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795005622;
-	b=V0O3gEzIXRMTU1wflQkV5g1ysHFpsCDsKfLgKc6YcAPonvVhg/KhE4RxJje/hNSmnUcV
-	 CQD6KEsL2Xj6vz6dnMLoecTEusq9p8qD588+J5Mv+GQPuo6o5eZuaKM0B1WQWskWQ5d7T
-	 sORka/LZtE877PSFQswWSnG4Z6G8C9wlh0WeSoJPydIj0AU6WgoIM/HENRpr7YjW+Soiq
-	 dQ6e9yziwrDAgZz4ictxmP02IQm6ojMi/Fzsg6Vy5+0dQnejcgouw7tG7gU0lAkdfRBZQ
-	 jRKREPOeDD46wIIhrREAh9MaJsGL+FfLYd/EI33Czfz7+Oklhl+GQgCYueLbkgq3miQ==
+	t=1795005625;
+	b=rsx6ZQrPZqUpKVLVcEyzRzyLNUzdyavnilA8LA0dtETwC/FYch1zebX4VZmZ3DJIbx/T
+	 /LtKN2QPZDFQtSe0OZU/vMz7Oh9fE+RUN74w18p85CX7uIKvKu+B61FYdpfHPpP5xNzcN
+	 1x2lnpHNdqmdHlGIYdjIcc1JTxIY8+O24DsPeRQOam+fCI8jp2GgurM8FIoBvvxsa8eo/
+	 xH81B8w3bEhDpkdyVUAxZA+YLZRW821Yz9+jrHHgh8gY9Lig+3XpeteDGdPMzUcGk0rvY
+	 JNASyiERVcrJLIhSfzSVEygKxD95gA067hoSEy3N683ZFHKhQBvWiRIVzKV6/f1zlqA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795005622;
+	a=rsa-sha256; c=relaxed/relaxed; t=1795005625;
 	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
 	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
 	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:
 	 MIME-Version:Content-Transfer-Encoding;
-	bh=jmq7Af/sM0RcMj+9tuc6VMNoq5IrrSVjtEHnLJaumaY=;
-	b=4lm7PLYE1QJBPViHZxb2H0H/Dq2vyLEeXoJbOHYPZLroESgMz9+P0x/Xsrly9OE8hSdj
-	 uxTawue+XNZvBvDkUwO7Moon1i3rBx66Pg4HButJMgrvcc143WhK+OfhdPeTNSludmAz9
-	 IxwQqMa/dDVfdkWiMy+ZKi5bk50LV7QsQYEwtVIsYihr/lrxzLdDh8F9DYFYRQ5UQYWJs
-	 PJqIrBos8tb2g8MRrP1U8wWd0Htz0bcnZMg9cnn1Axa5DDVhDwln6AfUXhauuguTrPBnT
-	 4VFJ/yoqZEdxNyBNC0z1AlFk10m/CakUF/lO7U9fzmfpL2yPeqil5vOS4JWjuNH0Uag==
+	bh=7pJ96I8CCGvOS56AX9pgEAEbaQ1usEuN94BGKUJKVPo=;
+	b=3vmrNqJ1uePUxv8n0ISrUSl31oyBkXRhJ/T3PbONN2eoc8RA2qwLscAOrKTPXJHdYRsy
+	 uV3ZC8RNZyemgf2r8T+UNYsGq6yhFRli+5CAnFlhncyw6LZ+hJ+8NlS0y0rTHhv9pWz3F
+	 aRsUg/bnHzOFI/L4xhkMsx8Npo1hEXc0b2f73twM+LcXFCYqLf9BGA0vo9gWaPa45pY0+
+	 jjipl0M0Y5mHNK+xC8K+ax1OTrfIMehppGPlxycm2DFuDMDNK7c/qUo+z0JNC0Q4n2Z9c
+	 f6KsJJJcAZb8hrWcPp7TDF/RlBGq2hNbrcbiC9bc+hMVPjf0RgeQS9veLmPwfo03hAg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=fail header.from=isslab.korea.ac.kr;
 	spf=none smtp.mailfrom=isslab.korea.ac.kr;
-	dkim=pass header.d=isslab-korea-ac-kr.20260707.gappssmtp.com header.i=@isslab-korea-ac-kr.20260707.gappssmtp.com header.a=rsa-sha256 header.s=20260707 header.b=p49ssens;
-	arc=none smtp.remote-ip=209.85.216.49
-Received: from mail-pj1-f49.google.com (mail-pj1-f49.google.com [209.85.216.49])
+	dkim=pass header.d=isslab-korea-ac-kr.20260707.gappssmtp.com header.i=@isslab-korea-ac-kr.20260707.gappssmtp.com header.a=rsa-sha256 header.s=20260707 header.b=QYuCHNu8;
+	arc=none smtp.remote-ip=209.85.216.54
+Received: from mail-pj1-f54.google.com (mail-pj1-f54.google.com [209.85.216.54])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C0732606A335
-	for <target-devel@vger.kernel.org>; Wed, 18 Nov 2026 12:40:21 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org C0732606A335
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D5FAC606A336
+	for <target-devel@vger.kernel.org>; Wed, 18 Nov 2026 12:40:24 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org D5FAC606A336
 Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=isslab.korea.ac.kr
 Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=isslab.korea.ac.kr
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=isslab-korea-ac-kr.20260707.gappssmtp.com header.i=@isslab-korea-ac-kr.20260707.gappssmtp.com header.a=rsa-sha256 header.s=20260707 header.b=p49ssens
-Received: by mail-pj1-f49.google.com with SMTP id 98e67ed59e1d1-3ae1b34e0d2so1181172a91.1
-        for <target-devel@vger.kernel.org>; Wed, 18 Nov 2026 04:40:21 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=isslab-korea-ac-kr.20260707.gappssmtp.com header.i=@isslab-korea-ac-kr.20260707.gappssmtp.com header.a=rsa-sha256 header.s=20260707 header.b=QYuCHNu8
+Received: by mail-pj1-f54.google.com with SMTP id 98e67ed59e1d1-3b197cd42b0so562626a91.2
+        for <target-devel@vger.kernel.org>; Wed, 18 Nov 2026 04:40:24 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=isslab-korea-ac-kr.20260707.gappssmtp.com; s=20260707; t=1795005621; x=1795610421; darn=vger.kernel.org;
+        d=isslab-korea-ac-kr.20260707.gappssmtp.com; s=20260707; t=1795005624; x=1795610424; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=jmq7Af/sM0RcMj+9tuc6VMNoq5IrrSVjtEHnLJaumaY=;
-        b=p49ssensfNeolb6Ih8IzXirPrigVla/RaZ6YMNBkNmOJ1WnxeYsjKRHCEk3DJ+xfri
-         NjkF/f/XmkQtpAFHNLVPyNBsFwJ0SvlYr3W9hdEy1lBDfIKbGKwg8zzxQM6ZjJmujwrn
-         UK2nk9/rHDbN+QgBxht8vdrPlmX+7MljZ+5vlp19cqr7/Z+HzV+wsfXdK4SQMND7xhHx
-         4erVtxtbbWg01ScivNolsL2hSyDo5LLUbVjV5a2RvDaIZJE8Tv5ckPXTJnQSmXIJ6L4T
-         AGPlKP2qUFcG+9ghK803ZXbC6Hkg8t0JCPaXwWY1oT6OmIacKRoVGEsyK63Iey1Nu1qm
-         uUSA==
+        bh=7pJ96I8CCGvOS56AX9pgEAEbaQ1usEuN94BGKUJKVPo=;
+        b=QYuCHNu8QiyJp2MmNEq84pI0sM6uyoM03JyUTwEf3p9qB0jGDLOjhNGToBsEVByldX
+         Mueu575ttpUYhaEDvPC2u2xhTahftneuoIh7ORw2GCegd4CVy/iGP0v1QPoW49WXCa/0
+         BYRb/8pMzvEG1N3th1yKnxl/mVa7G9lF4IU6HqtVveX+bRwVxJVdW8Qa3f13KQ0N15ok
+         n7N8BEGML5RYFPICQrFPESxVHejYefI7vPzxR+J7Ct3LszSIv0FwxIRPxqNMchLjLzgO
+         wVAP6gUr6Wkyq+snL5d7+igxRnS/XIikZrwrwg7FEmqpU8RKemBOCFo2x4MlKX3McsVt
+         g7VQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1795005621; x=1795610421;
+        d=1e100.net; s=20260707; t=1795005624; x=1795610424;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=jmq7Af/sM0RcMj+9tuc6VMNoq5IrrSVjtEHnLJaumaY=;
-        b=BEIPJ5F4i3nF4IuHjFgQeGZHDn9bldJu36RTgzcy+8sQYdjNFKDBxAybfHZSZa55sv
-         oE81zFETtK+mbRxpNWGgtTwB3MQijKCNU/FspPdQC2hCTCTq8/wGyp9ON4I5K1Nd7xNy
-         IeWj5Q/8D85cIA+ofIAx1L/ZM5cKUIjCoARzODff7HlE73BlzrL7JTBCtbUUbLK7OXLk
-         SuOxXoNTbBkxFabNYIa/nKCwGHBSoDlFr03Y9x5Zf6zHsjBX36LldiQY5RlmVeNrFIvq
-         arppwKrM+zjMW+mpsMNgS6xrHXfzmhuU/Ma6bs/iB4oK4T7Z5Opwx68wGXeTvuE0TGha
-         TJXg==
-X-Forwarded-Encrypted: i=1; AL+hErHlEqjIm5oaHQ/t/R3ALxolMVsVFxBa9dWsNmY2Z4bz+j8fbLUh/HCJtp99er2Gq83ZDijA5/xuLmLo6r8=@vger.kernel.org
-X-Gm-Message-State: APuU4Z8mxNzX7vVk62Uf26FN/uPwS2VF2ufTaczjSLT2GGawcoZMTkwY
-	fOTi+VciFKu5hCgyJdhYiJw4uNw+m+dCn368v3IWN1PMQPJt11BYxvmOlPwRe94/hvc=
-X-Gm-Gg: AZFdTZe5yQ5Nt2a3XFjIErBkXUiRYylMZCz3h3d2yKz9+NUwrTybHPnR6ntnIlzhEIe
-	3yt28uuhMUVq8cIAIm3BEhQeAGJR8LyCiTofqhjRJe6hM21qqKiEV9XicxMy+Xs6D+VG2S+luGG
-	NiR8Or/2GvgdHhLMsIogK6IomNwzmeVvKUkNhEaq2cXTCb6fH/pRnZdNb6sW1TBiZfd0/ZXQ82B
-	2PKPd+OV8KkPtvmKLQtsbyRnKM/ZV7x+d0Eq4l4yhi/FWvExibyQIOg7LHk/mxCQ3AeYLfvINZ8
-	Z708FRyKOcFogASk8QfETfCyja+I5bX0Eh1u6eSWbuEOjdY2U0Akw1Ff4kTFlIl4g+gwAvwNrBB
-	qpMQHvuWvEFMCFbn06cwz/9NibB2WZslphlPzGL+ij3R8t7b5Z2c+q8jMPkTIWSZWA+IubyceWx
-	y1qUbijANgnlkQ6dFkdr35S4WsXH59VNB6SiO2L3zrS4/bM/ca8NQpbD/f1OQ+pG7K0w4ISFSVE
-	IYzwmbJV0MgyguQtQH2EJoNJ55PRtLw2u4wwoXeCIuEZrqxIIAe9imT4KRXzsKzFAz9F6kmrIyb
-	7rmXrg5MXi/y48SR/c+3JvZbbf4upR1VejXNNcLhKM3Z+sMm+6CtPRgmc+lCLrPlpDQICD/33fN
-	CcsfeO7729Kk5P1H8YTWyayiDD3OoNSdBO4myxA==
-X-Received: by 2002:a17:90b:5848:b0:3a4:b509:88bd with SMTP id 98e67ed59e1d1-3b3d063dbcbmr1675099a91.2.1795005621132;
-        Wed, 18 Nov 2026 04:40:21 -0800 (PST)
+        bh=7pJ96I8CCGvOS56AX9pgEAEbaQ1usEuN94BGKUJKVPo=;
+        b=wI01sqZkBmfJ3CL01vB4CJ/qwGg5ef7SsMwM+Hq10rPJVYoz2fs5dgXylayD+nqGtf
+         Smri0M8WQSISsAdDBKUEXltxv6wZdtNWS1usVOdH1F9smxj6W3TO8PjJRADSyWAnOkN8
+         azLiV55NEiyo9Qa47Xz9yErL2NkZVO8k9IUM9d+dMfsyIaaXob4AVMFMBKv3n9OT/47g
+         3EtKM1DvIh9Wrk5L5shQ0HiCunu26iEfCYBYnxoNrPJDFn8p6l7W4DdWcrTYKCmeB71K
+         qUf48F1km0sxr6UrD9U2qFzpO9x9JS79CeaDwnZjwMIihxW9yURFarVqZV+iSkL4hMu6
+         NzfQ==
+X-Forwarded-Encrypted: i=1; AL+hErH0F0WEujdmTgwkIqUCtf8VUWajBKtprvlhGfVZ1vnUp0r8hZGQiASlci923GQFl68cVVHbQYg7erNLbFE=@vger.kernel.org
+X-Gm-Message-State: APuU4Z/3+2U+IX5gaGGQFDNczs6FvrzCF3UPbUyZBe9AIrtg7AUkcRe5
+	gCO/t/fm6IqoUvMe8/kS7ndyZ3EYdXLdbZfeKwBB+oLNhXjuw9AzYkDseOOc1vA8ZPA=
+X-Gm-Gg: AZFdTZdZAYWTXB290+ZT2cT2iztkQGMx611vhGrWR/lqII0SHjPl6zFCckfF57Lmtp3
+	SQKUORH9YJv7i1iOEGTuTW+LSQIeuddR1Wb5toic4Ujweo/DHFx9GEv4WH3ojFB090XvvHAizVf
+	AL3+qfG44exq04S9GJMFt/CEOyGW/JiP7bi0A7EowDmUG8dBqR5og5sA55rI5fc8OzjWtc4RQR+
+	QIkNSTW4PdkLnKBFp90+K1gAyGse7CN/W96z11guyY39JwHufipU5DVQdSOKiMLiCCRqoYqx6I1
+	53S5d9A3I7tPIyuQUr+E1alHomq5J7/40FWbhIQWDFbSw4MPVA/RjarlwfxGFeVJC/b1T652bmI
+	sAXYS0MtqbQJ2sl923FG08v6lKdnxUgrH7TcBPpKwLWzInqRNF6QsQUTGjgeMPU4ZhmjE/ttQL6
+	ai2i+cbotJZ7Fihm48hPFsuPjHP6DZdcqES22ARU1JpQ2Z3kTSuaq+ERyFn0KxKYerr2ywwObLA
+	onYUypolqj0BBSjUZYV4Jlux7oHcV26UvyY/CimX8DiS1zdGLu9uaMiE0aEjiVgLuHP1UjvDqoQ
+	DYjCiSB4rvbtAwr2Onxwi3E82j+w/D9yDbMgyjrgE2aZv64XOGbFZO6yDSq/i4PNFqYWj0AUDnR
+	sOCmdjqjoRc2uMaczagSYxgZuJMbgUJkoDwvYBg==
+X-Received: by 2002:a17:90b:4c8a:b0:3ac:7c52:fb04 with SMTP id 98e67ed59e1d1-3b3d07d80admr2483888a91.44.1795005624070;
+        Wed, 18 Nov 2026 04:40:24 -0800 (PST)
 Received: from localhost.localdomain ([2406:5900:1044:110c:e78e:f7f0:2120:34e7])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3b3d19b6e18sm4257980a91.10.2026.11.18.04.40.18
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3b3d19b6e18sm4257980a91.10.2026.11.18.04.40.21
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 18 Nov 2026 04:40:20 -0800 (PST)
+        Wed, 18 Nov 2026 04:40:23 -0800 (PST)
 From: Yehyeong Lee <yhlee@isslab.korea.ac.kr>
 To: gregkh@linuxfoundation.org,
 	nkapron@google.com,
@@ -88,9 +88,9 @@ Cc: Thinh.Nguyen@synopsys.com,
 	target-devel@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
 	benquike@gmail.com
-Subject: [PATCH v8 1/4] usb: gadget: f_tcm: queue the BOT status requests with GFP_ATOMIC
-Date: Wed, 18 Nov 2026 21:40:02 +0900
-Message-ID: <20261118124005.2428068-2-yhlee@isslab.korea.ac.kr>
+Subject: [PATCH v8 2/4] usb: gadget: f_tcm: zero the CBW buffer the status path sends
+Date: Wed, 18 Nov 2026 21:40:03 +0900
+Message-ID: <20261118124005.2428068-3-yhlee@isslab.korea.ac.kr>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20261118124005.2428068-1-yhlee@isslab.korea.ac.kr>
 References: <20261118124005.2428068-1-yhlee@isslab.korea.ac.kr>
@@ -105,44 +105,51 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-bot_send_bad_status() and bot_send_status() run from endpoint completion
-callbacks - bot_send_bad_status() via usbg_data_write_cmpl()'s cleanup
-path, and both of them via bot_read_compl() after a BOT read.  Those
-callbacks are called with interrupts disabled and must not sleep, but both
-functions queue the status or drain request with GFP_KERNEL, which can.
+bot_prepare_reqs() allocates fu->cmd[0].buf with kmalloc(), one endpoint
+maxpacket in size, and the only thing ever written into it is the 31-byte
+CBW the host sends.  The rest is never initialised.
 
-Queue with GFP_ATOMIC, like the other usb_ep_queue() calls reached from the
-same callbacks (bot_enqueue_sense_code() and bot_err_compl()).
+When a command is rejected before its data stage, bot_send_bad_status()
+points the status request at that same buffer and queues it to the IN
+endpoint for a read, and bot_err_compl() re-queues it until the length the
+host declared in the CBW is satisfied.  So the host gets the buffer's
+contents back, a maxpacket at a time, for as long a transfer as it asked
+for, and whatever lies past the CBW it never wrote.
 
+Allocate it with kzalloc().
+
+On a dummy_hcd gadget with a 512-byte bulk maxpacket, a rejected IN
+command declaring 4096 bytes returns 4096 bytes to the host, of which 72
+are non-zero and begin with the previous CBW's "USBC" signature.  The
+part no CBW ever writes read back as zero there, both before and after
+this patch, so what that buffer held beforehand was not observed; what
+the test does show is that the host is handed a buffer it only ever
+wrote 31 bytes of.
+
+Hui Peng's multi-driver fix of 2026-09-19 zeroed this buffer too; the
+reviewer asked for it to be split per driver and it was not applied.
+
+Link: https://lore.kernel.org/all/20260919223521.3890508-1-benquike@gmail.com/
 Fixes: c52661d60f63 ("usb-gadget: Initial merge of target module for UASP + BOT")
 Cc: stable@vger.kernel.org
 Signed-off-by: Yehyeong Lee <yhlee@isslab.korea.ac.kr>
 ---
- drivers/usb/gadget/function/f_tcm.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/usb/gadget/function/f_tcm.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/usb/gadget/function/f_tcm.c b/drivers/usb/gadget/function/f_tcm.c
-index 9e6d4f39900a27..12e2b20e33b921 100644
+index 12e2b20e33b921..f2e7a9ad77809a 100644
 --- a/drivers/usb/gadget/function/f_tcm.c
 +++ b/drivers/usb/gadget/function/f_tcm.c
-@@ -139,7 +139,7 @@ static void bot_send_bad_status(struct usbg_cmd *cmd)
- 		req->complete = bot_err_compl;
- 		req->context = cmd;
- 		req->buf = fu->cmd[0].buf;
--		usb_ep_queue(ep, req, GFP_KERNEL);
-+		usb_ep_queue(ep, req, GFP_ATOMIC);
- 	} else {
- 		bot_enqueue_sense_code(fu, cmd);
- 	}
-@@ -167,7 +167,7 @@ static int bot_send_status(struct usbg_cmd *cmd, bool moved_data)
- 		csw->Status = US_BULK_STAT_OK;
- 		fu->bot_status.req->context = cmd;
+@@ -330,7 +330,7 @@ static int bot_prepare_reqs(struct f_uas *fu)
+ 	fu->bot_status.req->complete = bot_status_complete;
+ 	fu->bot_status.csw.Signature = cpu_to_le32(US_BULK_CS_SIGN);
  
--		ret = usb_ep_queue(fu->ep_in, fu->bot_status.req, GFP_KERNEL);
-+		ret = usb_ep_queue(fu->ep_in, fu->bot_status.req, GFP_ATOMIC);
- 		if (ret)
- 			pr_err("%s(%d) ERR: %d\n", __func__, __LINE__, ret);
- 	} else {
+-	fu->cmd[0].buf = kmalloc(fu->ep_out->maxpacket, GFP_KERNEL);
++	fu->cmd[0].buf = kzalloc(fu->ep_out->maxpacket, GFP_KERNEL);
+ 	if (!fu->cmd[0].buf)
+ 		goto err_buf;
+ 
 -- 
 2.43.0
 
