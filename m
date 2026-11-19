@@ -1,84 +1,85 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.210.180
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.216.41
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795094244;
-	b=PROQQVOyTwuySQ8zQGfmakGOTMtoPlS1vFdpFTzWkzhXkYsX8R7WrQdS9ZWwW6YeiBLV
-	 Lmx3sCkZWqbZEnf/fLtDzQhWXX/t+1A9cR2rst/JHSv9auTOPW/YikF2gxD9GtcVn/MnT
-	 4gVPZcJuM6nwqFZHlZmEEJPj/IxCoGK/wOElFN42kfaTM1lwpJnoIzE4wGDQ7a6doKgym
-	 Ac6vDjSqQVU14lVEeno+vajOv/ZzoNEdFJYyrsynMT3DidPuokJZIf/DzdiM/Fl9va45u
-	 jvdcIIe1aPs15K4gC6r9VMHOTyfNXvaCvpI2YCaxCWEwM1g1ymNxY4208ZpdJuxa6Hw==
+	t=1795094307;
+	b=MfOHCM3+1Y+HLnjgeUQwqMKJ4tj47ucEKiVm3oEmSd4OsP3yeJCUgWXPAmJYoYEuKgG+
+	 cengNF4ZKMsBrjIgVgacwj5bCuDIUrFJxVDE4/Sn53ZBeBuQGSkAjOKCoxwd9/PgO22YY
+	 sB1p9WPJ9S3li8lNQ/z/bLRRcBpDQ9L1QeMnDifIp47mqi7wAmil1vCaZdyu3BfJiPW9d
+	 zQPcJolTkQ8ezgFOChqOHSL1yLvsOy7i1DFZGI0I6e+j+jZekXxwV/+NJJ+jQcc0KD6Fa
+	 FEQIQmlY3/EYjlU5FgkOsIiBHkSovtBa0Xd6y8cGwq6gRJUwDuL3blnWjJc1GPqeaYw==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795094244;
+	a=rsa-sha256; c=relaxed/relaxed; t=1795094307;
 	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
 	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
 	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:
-	 MIME-Version:Content-Transfer-Encoding;
-	bh=1F5PhsVSMvlAKbqeP5i5JDJo+bg6gq7qbiCDaCKQio0=;
-	b=IEug5Pra8/QORDdRxwzelv1oWdw4IdBZtYRGPI1Qor178S5bAv8OgJAstogLWdb0PRER
-	 DHaJzmDVk3gFVnZokHZhU/ictPvQoptg9A938J7dhGcLPIm4K/lAb/ETpElLmdK34Dlm/
-	 Yk7DdcwdhOkeErCaN5zMc94BzDQhtzhNABenMsYjd0ZQG6fIDob/s6QYE4eF4yfo1OTTf
-	 4vnlmxaNHkuCDHWVTgrHLqEsM0ty4iwD6rxWedqTAj53z5lRHqqxNwgAFxXWzYEoqTwTi
-	 8IJGluu9Z111JaEd8Zt+4uEme8CRBKRX5cRrjGEPtUPEc9o4VwTX/ubr9WoFUc755CA==
+	 MIME-Version:Content-Type:Content-Transfer-Encoding;
+	bh=lW0rsTzAv8g0kMd3ojP3+GnYyed/cwVnxWGi5+Nic2w=;
+	b=XioU6b5EpPzX9rpXbWhlMU+IjmPxGUS75aR0z9zQ3uUehXapaPRG6gTectU7N4XelwQ1
+	 /pg+QsovBTtz3ETlb+2NSLSnj50KmVgqq4/45rjvfhbFJb3mYwkH+jA04Snekis9dx/o0
+	 E8DAGge3Z5UYWqRTJTBO4A5FARH04Lb3Koz6dUOp1cqqsBVYLQiV7UVec6DE7U1nzzwv2
+	 OxRZ3HQBPu7ECuiVcN+Vvs5MThbio2qRs0dYD7rB5KVAQrwoyq64OXzTJxUanwktHqs2N
+	 a2eL7gW4RKKHDNb28ZjbR78JGEseQ6WANpL0oEie4rb68yYcV3hT0WnHr9NfilP2/4g==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=fail header.from=isslab.korea.ac.kr;
 	spf=none smtp.mailfrom=isslab.korea.ac.kr;
-	dkim=pass header.d=isslab-korea-ac-kr.20260707.gappssmtp.com header.i=@isslab-korea-ac-kr.20260707.gappssmtp.com header.a=rsa-sha256 header.s=20260707 header.b="dMc79+3/";
-	arc=none smtp.remote-ip=209.85.210.180
-Received: from mail-pf1-f180.google.com (mail-pf1-f180.google.com [209.85.210.180])
+	dkim=pass header.d=isslab-korea-ac-kr.20260707.gappssmtp.com header.i=@isslab-korea-ac-kr.20260707.gappssmtp.com header.a=rsa-sha256 header.s=20260707 header.b=PnsugRTi;
+	arc=none smtp.remote-ip=209.85.216.41
+Received: from mail-pj1-f41.google.com (mail-pj1-f41.google.com [209.85.216.41])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2AB2960A2636
-	for <target-devel@vger.kernel.org>; Thu, 19 Nov 2026 13:17:23 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 2AB2960A2636
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DE054606A32C
+	for <target-devel@vger.kernel.org>; Thu, 19 Nov 2026 13:18:26 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org DE054606A32C
 Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=isslab.korea.ac.kr
 Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=isslab.korea.ac.kr
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=isslab-korea-ac-kr.20260707.gappssmtp.com header.i=@isslab-korea-ac-kr.20260707.gappssmtp.com header.a=rsa-sha256 header.s=20260707 header.b=dMc79+3/
-Received: by mail-pf1-f180.google.com with SMTP id d2e1a72fcca58-8b6b22be970so1038780b3a.1
-        for <target-devel@vger.kernel.org>; Thu, 19 Nov 2026 05:17:23 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=isslab-korea-ac-kr.20260707.gappssmtp.com header.i=@isslab-korea-ac-kr.20260707.gappssmtp.com header.a=rsa-sha256 header.s=20260707 header.b=PnsugRTi
+Received: by mail-pj1-f41.google.com with SMTP id 98e67ed59e1d1-3ac9f49b984so649514a91.1
+        for <target-devel@vger.kernel.org>; Thu, 19 Nov 2026 05:18:26 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=isslab-korea-ac-kr.20260707.gappssmtp.com; s=20260707; t=1795094243; x=1795699043; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=1F5PhsVSMvlAKbqeP5i5JDJo+bg6gq7qbiCDaCKQio0=;
-        b=dMc79+3/bbz2dq/bJUjd6kyg4QIMok8By+PE3QK8cvP6ZawvYbZUM2YRgN4WmchUGo
-         9cMCKmDqt7cBFOeH6A4qxfuGvgJnyvlamjSTmtMkbWxM+xGEcWswf4ZwbqNsl/SvPaXy
-         zPCk6pxp4IBpZa9hNMp3Davj09P/kLs6qcW89RuyrDEv4GBJLHhEgHUb3s/9QOeiRu10
-         +T1LfJVBnstPqqdz/eTr2mBE0x3w+PivdvlePMqVqEjGmyph0JKJ2Bjvo5h4Ir/IXDbs
-         wEqNgxOUUlKXDZICvVHa1OEPQ2Gdn3oAoytRqBZpg4RRBT9Zd6vWlCR1UIjho5DM5SX5
-         vbkg==
+        d=isslab-korea-ac-kr.20260707.gappssmtp.com; s=20260707; t=1795094306; x=1795699106; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:mime-version:references
+         :in-reply-to:message-id:date:subject:cc:to:from:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=lW0rsTzAv8g0kMd3ojP3+GnYyed/cwVnxWGi5+Nic2w=;
+        b=PnsugRTi43kd8Jc6wW0hk/YmUu0oNjvvRG1DQNje/m8SbD3TlSSeMEupfF4A15j0K0
+         HHQbAEpzZbImTOgkUBPzUgfM2+34y+Z1Z3LIGfstav+IDG1RD4I2Cz0fIFwUVCFgap/W
+         ko9db2jEwjEMacCCr6UIQxyv0rQFSJbLtRxjZVppSI41nq2x19GgjfGV/qPASE07OR6U
+         1OppQBWCjSjSHcxZYnVd9Iq9hI1paPuJVUlegnwTpsZdlrGCng2ATgrKzd6hLmo89yy0
+         gqeWEAFW62yKxK36qNil/zzi7Qh4eIVuAxFDAwaoe6Cy6S73PAL3j7f3kmooKXmhtUGi
+         i2ZQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1795094243; x=1795699043;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=1F5PhsVSMvlAKbqeP5i5JDJo+bg6gq7qbiCDaCKQio0=;
-        b=uFW+ESZdUJ4zMWIxXp//b3Jgm0xkrATpnJCVfeavwEWKXOGwkhMy6F4wiDENlYp1u6
-         5v3/3j7X1YoXRu0Do1LNS/V0GW0JC7lgW6CzoIFiAQc5duzDeidt9y3vHdMwZjIB+uJK
-         T8XOMBRHESYyF8trfFdGTAYTfHBQvSesaUAFZ2OUr3mSQjucvPnW84npZrDirvHHGghu
-         mVukBLoorqL6jP+fitWKr/CPIhbf6aFlCCA3o/U+hs6DpzS+bf6o6rPsJFWPdlhioDdh
-         BFIaHGUX8u97I62KrRv4soCbhK/HDwzrdVGtPJWBNYyxQvMM5FElrmWc7WoI4vy/nHdS
-         C8bA==
-X-Forwarded-Encrypted: i=1; AL+hErHkzDuAkFMIql/xeknXHDYvOO6kwXkxfsHhT0SkNNfMHF6btGuYidxB2i9ebeTAOBGOPOslUsLvMHofMRY=@vger.kernel.org
-X-Gm-Message-State: APuU4Z9QtXkzAhfNywa3vzKISuUhEMULi6l20SErYsuTygSDRyID7c0w
-	NcQO9/kfi5NHdg0/HmzXQDK2ttohrVDCcWFdUZemhsYzEHzLWU5c5Wsuor4BOPpg09M=
-X-Gm-Gg: AYBFou2Jymm98nzSIsUDniwtROVFEqQeT37B8i9MNa8Fl73kBk1E646D4k4xpwbRBUI
-	H11yx0MHnyVUwWpCBFqfRL0CfFs6za46eGSH7hnAwP2y1KVFanJABJhl4gXtsGH4VkAPsti5VUH
-	KaoC/UXKpIW6/6N/D6xS+QafyOBBTShrKxaadM2SS/g5kSanxifRcKoyfDBuvFmcv5Nf6N0UEcY
-	qc6w4ybOs6YKzpDfdF2J7+/CdGSt15J6ZSWN+gHK2YU6fpTZa6qhRA1MJhwiVWXgXzKUYpf9VXI
-	AkA6UGkrKwsSbqgUS9h+q6PF144mDr7E1T838F/iu8+q4WPYHDpVsX6d72XOrh+9zPw23ES9gZj
-	39FVn7asRd7YlbP4UgyX4DlxPvV/ulf8v1IJ1Lh9p11BzllbnvIfrqp9ZOz1LbOsh/WVr9Ig2iW
-	vdBnEbpj6SY9lLdUEqrc5sDLTMnc9GGYFhTimEwKnIwg9Td9d0GCIPvozpZYnZwiQbiuTCF+GZ9
-	TaaHMp/lno3AwkmE/YaS1VtswEKojdOKju+Z3dGaBSD1N6OyVwHRoVyjNqKAkoNkrP//BI1b9XB
-	zBICVAj+raThpuFgjCAOTYMk05mPXmB5elEwcAwQbuLoYXTtyOxT3z4IsO8yv1hOw0njgRK0CRK
-	/2T2y4rw/WPzBFgORvqQVmdE0zkZOHT8zPlVOzA==
-X-Received: by 2002:a05:6a00:230c:b0:8ba:f51a:1bc1 with SMTP id d2e1a72fcca58-8c5d3639dadmr5519001b3a.24.1795094243488;
-        Thu, 19 Nov 2026 05:17:23 -0800 (PST)
+        d=1e100.net; s=20260707; t=1795094306; x=1795699106;
+        h=content-transfer-encoding:content-type:mime-version:references
+         :in-reply-to:message-id:date:subject:cc:to:from:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=lW0rsTzAv8g0kMd3ojP3+GnYyed/cwVnxWGi5+Nic2w=;
+        b=Svp/sdo5eAU7evxWNQexMLmPgJ56BrcKdLBCM6x5tAxZcru8QdbezoCXiBWdPbBdsE
+         XaNXNzx9a189jMFOhbWBVvA6FGLBp920GpOfshe8gXNvH7rqB90FuRdAHImVGK84tTp/
+         1lqSloArsu9+U5ympmlmMHF9sXAcaC0fhW5/HAGpfzxkCbYumZxa1r7tBOwoe2a/rLvC
+         mldMMMGGMzLzXzQ5plgdnhnTopW2SKGhoxeX8EJriJJBswLLRIf/2//hKg4HnEaduxRV
+         YzT5uYDHlX1aYUja4M+yVj0I8FOnsdGe587heeM6pTsPGoPvAnmrlmNaOyNg7ycnOqmr
+         KHcA==
+X-Forwarded-Encrypted: i=1; AL+hErE8LM896mSkOSlSS21ON3qJwz56UJCckP8bvG6PD20hyEYgOAMyZrl4MY90K7sY0XYm1ZmHMMterScxG1o=@vger.kernel.org
+X-Gm-Message-State: APuU4Z+77OAwbuerwtp6xAHRKJjFCKEAhnEx5H3TzHLgZQLvJPnx9Idc
+	G7OH3LvA82fdWJQpqP5S1PVP6CO11lXMFHqtpO6S6TOKjAzTaE6C6V5g2Tf2KSWfmSg=
+X-Gm-Gg: AZFdTZcp4uxwVMhUy41+98NveJF9f+OYXU1FvQXRqZQ6TH++nC+zU6+in9zLFxfZq5V
+	84cCLz20a+ehltA7uV/dy23A35LFAd9JoMTAkGeG2KGOLii2JXYAcDDusfUNlqumL/1563ShZ1L
+	8Ks07QIOlzj81f160u4AoqeKC5+u0dURJ2ncGAuLchkbNS7KRxQEUXCylGF0XKxJ2VBM/oorI38
+	Wv8+eEiGZaIl8aIzyWxlHvJRCRN1dJ8cu7RJpCcLRuSC0ye4jWW8VbZ1JVc4SKxPye+/8KBuIR3
+	QqcbiSRnh3zANxlmcQw9SPeSHvx8mlneF+ss0gBD7tpdz0c0cm9VT2yN1EP5vR0qXrFVTO2cXER
+	tSQvKKZNz4/GtIHXSzaclrWSiLP7lx/bSye8+B/MAUczOok0PAjz4ub6u1r3yDiqfZixKJphK3m
+	3W1E/PFm7/CJHJj9DndNInzw1gEO+0gprgKbESPmDcoG7/3o/fT9GCj+/gZJLzHau0Py8cRpiVU
+	dtmZWhb37F/b9reESJv77rnIMN8TmQGKFskmrq8JVU1X2bUA3M+sD6fVhGixCDtkGqUkKQ9w6I3
+	d+9z/wTWy2Ngtesrubkydbhol4uRioDpZnfjDz7QHsxkXsjqMk0QFgILJ3mx2nCtzTdVB16wleD
+	JyG0Zd3y3szdZgPXq6MgCgowmg1m56P11j3q2rQ==
+X-Received: by 2002:a17:90b:2c90:b0:3b0:9bfa:72ac with SMTP id 98e67ed59e1d1-3b40a0e1cffmr734949a91.21.1795094306265;
+        Thu, 19 Nov 2026 05:18:26 -0800 (PST)
 Received: from yhlee-960QFG.Davolink ([2406:5900:1044:110c:1076:1f1f:dde8:a816])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-8c5c7f99f91sm2809467b3a.5.2026.11.19.05.17.21
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3b40543eda7sm2794953a91.0.2026.11.19.05.18.23
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 19 Nov 2026 05:17:23 -0800 (PST)
+        Thu, 19 Nov 2026 05:18:25 -0800 (PST)
 From: Yehyeong Lee <yhlee@isslab.korea.ac.kr>
 To: sagi@grimberg.me,
 	jgg@ziepe.ca,
@@ -88,12 +89,12 @@ Cc: linux-rdma@vger.kernel.org,
 	target-devel@vger.kernel.org,
 	linux-scsi@vger.kernel.org,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH v4 4/4] IB/isert: do not leak the receive descriptor of a dropped Data-Out
-Date: Thu, 19 Nov 2026 22:17:00 +0900
-Message-ID: <20261119131700.2722108-5-yhlee@isslab.korea.ac.kr>
+Subject: Re: [PATCH v3 0/4] isert: the commands the target core allocates itself
+Date: Thu, 19 Nov 2026 22:18:15 +0900
+Message-ID: <20261119131815.2722343-1-yhlee@isslab.korea.ac.kr>
 X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20261119131700.2722108-1-yhlee@isslab.korea.ac.kr>
-References: <20261119131700.2722108-1-yhlee@isslab.korea.ac.kr>
+In-Reply-To: <20261118211503.2526705-1-yhlee@isslab.korea.ac.kr>
+References: <20261118211503.2526705-1-yhlee@isslab.korea.ac.kr>
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Post: <mailto:target-devel@vger.kernel.org>
@@ -103,95 +104,11 @@ List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:target-devel+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-isert_handle_iscsi_dataout() works on the command it finds by ITT, which
-holds the descriptor of the SCSI Command PDU and not of this Data-Out,
-which is why the function posts its own descriptor explicitly when it
-succeeds.  None of its other returns do, and isert_recv_done() ignores
-what the handler returned, so each such Data-Out costs one of the
-ISERT_QP_MAX_RECV_DTOS buffers.  That includes the returns where
-iscsit_check_dataout_hdr() answers 0 without a command at all: 200
-Data-Outs carrying an ITT that matches no command stop the connection
-after exactly 128 of them, with no response to a NOP-Out sent afterwards
-and nothing logged beyond the per-PDU "Unable to locate ITT" message;
-with this patch all 200 are taken and the NOP-Out is answered, in 5 boots
-out of 5.
+This is superseded by v4:
+  https://lore.kernel.org/all/20261119131700.2722108-1-yhlee@isslab.korea.ac.kr/
 
-So give isert_handle_iscsi_dataout()'s other returns the same post its
-success path already does.
-
-That one function only.  Everywhere else a handler returns non-zero, the
-command isert allocated still holds that descriptor and the response
-posts it from isert_post_response(), so re-posting from
-isert_recv_done() would post the same descriptor twice; the second post
-is skipped only while the descriptor has not been refilled, which is not
-something the receive path can promise.  iscsit_handle_logout_cmd() even
-returns 1 for an ordinary logout.
-
-Fixes: 4366b19ca5eb ("iser-target: Change the recv buffers posting logic")
-Cc: stable@vger.kernel.org
-Signed-off-by: Yehyeong Lee <yhlee@isslab.korea.ac.kr>
----
- drivers/infiniband/ulp/isert/ib_isert.c | 19 ++++++++++++-------
- 1 file changed, 12 insertions(+), 7 deletions(-)
-
-diff --git a/drivers/infiniband/ulp/isert/ib_isert.c b/drivers/infiniband/ulp/isert/ib_isert.c
-index b7dcfc5f88b916..804148ace398aa 100644
---- a/drivers/infiniband/ulp/isert/ib_isert.c
-+++ b/drivers/infiniband/ulp/isert/ib_isert.c
-@@ -1141,17 +1141,16 @@ isert_handle_iscsi_dataout(struct isert_conn *isert_conn,
- 	int rc, sg_nents, sg_off, page_off;
- 
- 	rc = iscsit_check_dataout_hdr(conn, buf, &cmd);
--	if (rc < 0)
--		return rc;
--	else if (!cmd)
--		return 0;
-+	if (rc < 0 || !cmd)
-+		goto repost;
- 	/*
- 	 * FIXME: Unexpected unsolicited_data out
- 	 */
- 	if (!cmd->unsolicited_data) {
- 		isert_err("Received unexpected solicited data payload\n");
- 		dump_stack();
--		return -1;
-+		rc = -1;
-+		goto repost;
- 	}
- 
- 	isert_dbg("Unsolicited DataOut unsol_data_len: %u, "
-@@ -1169,7 +1168,8 @@ isert_handle_iscsi_dataout(struct isert_conn *isert_conn,
- 	if (page_off) {
- 		isert_err("unexpected non-page aligned data payload\n");
- 		dump_stack();
--		return -1;
-+		rc = -1;
-+		goto repost;
- 	}
- 	isert_dbg("Copying DataOut: sg_start: %p, sg_off: %u "
- 		  "sg_nents: %u from %p %u\n", sg_start, sg_off,
-@@ -1180,13 +1180,18 @@ isert_handle_iscsi_dataout(struct isert_conn *isert_conn,
- 
- 	rc = iscsit_check_dataout_payload(cmd, hdr, false);
- 	if (rc < 0)
--		return rc;
-+		goto repost;
- 
- 	/*
- 	 * multiple data-outs on the same command can arrive -
- 	 * so post the buffer before hand
- 	 */
- 	return isert_post_recv(isert_conn, rx_desc);
-+
-+repost:
-+	/* Nothing else owns this Data-Out's receive descriptor. */
-+	isert_post_recv(isert_conn, rx_desc);
-+	return rc;
- }
- 
- static int
--- 
-2.43.0
-
+Best regards,
+Yehyeong Lee
