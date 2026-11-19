@@ -1,96 +1,56 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.210.177
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795097212;
-	b=MsyRwIRMk9F26zwv06353nwi0i2gjglfP2mXJRd+/lSz5rgipr61xW9VEuP2rdhQte0c
-	 W5ou89IwIG0EDpnTw19tJnLXBYjVt7pOPelJ1mfPCm98Y+1kdOQDscq15FROtPI0sBZ7A
-	 uFBo+x97y02DOsTcdRuu+JWQOjR1TM8/+e6hfd3P368FElHWsgsjQ5RiW7I+WvxmJK85k
-	 8jwtBMQ6aepC3ksQ6mA2tAYlN641EYhdT/7xATcvkGkgrbl4Ftu5+MY60+R+cYtgJtVd0
-	 XQ4busMImyEhEa3nKmPiGtpdN2dpVr2n4J1OzuM2PO0MHQLAbfaD4DvbiaQP2ugngdA==
+	t=1795098098;
+	b=JSQTa5U08oTr9JfFI6LfaxVfkPc9IOOoUw96IGEVempSIhe4k9wqXedihNV5ik+5peTy
+	 1l2Kh1vDpTuU9SpNMXOsaKBmM89R6A+QhivA6C70febCrlQz9d/0O/B0KqZrWEgWGC0gG
+	 hXZkXdt+OnaaxtMV73KZDyiOp5S92ym7lJrwHJDgkn0/LeSBrzBe+hd/Pp0oMHTjd4YZs
+	 ZmQpXyIYb4PzC1JxpHXiY+D4xv7wBNoe255wbedVj5i8IefzFWjK1+IYIN0wOk9hgbOed
+	 ef8h/2NNdtZEW86OuOCClZzArxie9APImIKxHm0vjBkM2CnqehmkS+XP+XgsnOJVXaw==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795097212;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:MIME-Version:
-	 Content-Transfer-Encoding;
-	bh=fKe6Wwe+uM8ct2ILYG9GC0z59MDxTFu3ZRvOh8CsW+s=;
-	b=TdCrpspdl8hQV/gOE5m007sv6sgy2Orbdt25aQTM+7Dzb1ATFYlw0k1TT0LrQmYN28A1
-	 s8dNYMsnYPU01MsvS1vEMfMLpbcPVHdypjGCv0gBFmIry7VmwHjvBL8K5xVks0DHWCEZn
-	 YEDsoEVbDRdN1DHos95J4Gq27gT4WZZDQyXROGm5+RuOCU8wHW90th1+DmfCopzJDroXk
-	 Ra30r0BLMU8E3r+uP/E8Fx8B3KopUqMSrAmcBrKisAEz7RSctNs5DQ9AoNjN2OGqQtvoA
-	 hiUZ7nab48fEPrs9OhpszNKYqtQHgnA40t2QOiI2qxTeF/04qEFl2YMADNZ59Uz5Uuw==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795098098;
+	h=Received:DKIM-Signature:Message-ID:From:Subject:Reply-To:To:Cc:
+	 In-Reply-To:References:Content-Type:Content-Transfer-Encoding:Date;
+	bh=wkSqqGgCFN84aZAl8/Lb7dsxadkH7LkBRIP76S7TKwI=;
+	b=E2Q9aEkUlYQKY5PUB1cnd2SG2vu2PBbO7y4hAfhqVjKi4QozeH40nMC5SnsGvoJUn85B
+	 /y2liiWwWrMh9ZYNS2cOkK96b6ZbUqdgzTXVMqCMRs2iKK3Nahouoj9JKPQ1OKPt0+oB2
+	 Fj53m7JNJGpAOFbWCyOQj6UVDWCGaZb1kC3UL15hYgdVVbAq5wOuMZsBkUuGEJqI1Il8s
+	 +hqf3L6Ey2NkFIDoLdWtjGiTJye/zFMdMZEY+XWnx9lUKtl1kqG2ioSHwxeAweV1BSRYi
+	 osOA020z1YENYbLCdPxxlu2TJLIoctRUrHCOrU72S5LsRbuut2ussiw3Rf4R1lEKN2A==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=fail header.from=isslab.korea.ac.kr;
-	spf=none smtp.mailfrom=isslab.korea.ac.kr;
-	dkim=pass header.d=isslab-korea-ac-kr.20260707.gappssmtp.com header.i=@isslab-korea-ac-kr.20260707.gappssmtp.com header.a=rsa-sha256 header.s=20260707 header.b=qMGi1RB0;
-	arc=none smtp.remote-ip=209.85.210.177
-Received: from mail-pf1-f177.google.com (mail-pf1-f177.google.com [209.85.210.177])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=OHfWT6x5;
+	arc=none smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E5199606A32F
-	for <target-devel@vger.kernel.org>; Thu, 19 Nov 2026 14:06:50 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org E5199606A32F
-Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=isslab.korea.ac.kr
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=isslab.korea.ac.kr
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 32921606A33C;
+	Thu, 19 Nov 2026 14:21:37 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=isslab-korea-ac-kr.20260707.gappssmtp.com header.i=@isslab-korea-ac-kr.20260707.gappssmtp.com header.a=rsa-sha256 header.s=20260707 header.b=qMGi1RB0
-Received: by mail-pf1-f177.google.com with SMTP id d2e1a72fcca58-8b5a6f2f27fso1123061b3a.3
-        for <target-devel@vger.kernel.org>; Thu, 19 Nov 2026 06:06:50 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=isslab-korea-ac-kr.20260707.gappssmtp.com; s=20260707; t=1795097210; x=1795702010; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=fKe6Wwe+uM8ct2ILYG9GC0z59MDxTFu3ZRvOh8CsW+s=;
-        b=qMGi1RB01nCTpeGcD+3NQ8KonAivL3GAgldd75Fc5LllsDJ78EPnPBepVdshc8isQD
-         GxyCtBkLhMMfXe7C3p/WEPYBoH/Q6q4JIYQ0hKi0KmIZI55b9tZJCRbxdjkn7yX6Y5ue
-         xELcvthzb2Ac9EbY0GOTePQyt7uUJI+U5qE19R7kqhG0TQP7CZZf3emnB0o9gGFMKCof
-         OluppgY8UpuQSl78qEYIpYiWqFBxt1p0PQtvAueAoWMtd9gKK9RoFnkD2v05Ipk1JrbY
-         pt87+Ej1vdvmWgIli9h1GfqVjit/v7kmR/lwNle5qY2zj8VUW951R9CZxiAXEd6GMhBa
-         /QeA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1795097210; x=1795702010;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=fKe6Wwe+uM8ct2ILYG9GC0z59MDxTFu3ZRvOh8CsW+s=;
-        b=TSYZ41cuaROJtPIU5NtBoDkBCqnnKcBd+n0w+bUVgodLy+Jl2fKmIuh+fe//ODqsTl
-         yEBayw1gAqkrhN3dL9agX0lqD0fozOFMx7VasbE1cwOZv6O+Xo4oBpnGvSf/NAmJ1Ckv
-         7IBSG+VU7TXZgcm7cK1R7EuEASAdI59kGLsBKQ7qr65lDh7Ya6JuK3AcrcrniZN0rOw3
-         45eNDzHTrmesyW7rvmUEkoiINEQ4xEZSlGkQ0Wc5AniyAoO/KeY+5ffDbZUtyLMRfRkX
-         QuTCUNCGNNOiYj9yJ8AsBqeqJLHZuzd2/rmuYaUNRcGnM6tuLA791wtN7L1KGOhUB9Mb
-         CF0w==
-X-Forwarded-Encrypted: i=1; AL+hErFP9jJD4j4e9tBoH/7BBG6ES8KMH1w3MQ6JIyO8j5l7v729zCW4AddKmetpXQ22f83NqPWtl93vl/j9AX4=@vger.kernel.org
-X-Gm-Message-State: APuU4Z83KM821owEjFGNhFbuSCKMdsUF2Rsuo5euHYFX9okx8nbD4ZoF
-	5aM/9aHU6xqD9kuh4fRKjsMokaFKLvdNjIVr8B0/Hgj7XQe04d+12IqqGy/c89QVuAg=
-X-Gm-Gg: AYBFou1W6va9sXiScmAVcX8tlVdjepBEHpztBnsKR0OtPVAOUUoDypEBAGOp3Ucg2CO
-	MPzzAhZoQz84y4T1auYU7bsa/j3SVd0jp1CKViYYW9XJIWhJ/hSZmo6RiA3V9PHTSxorN3sZYKD
-	n0ReVX9b5+zir2Y6i5LTJO4E/TRG/JuzyrP33KqPZyuN+UTOZ+wZsNEqJ5EF9Qjn5Tsm6dojKuw
-	JP6UvXw4w76G2i19j0YYXbHvL/vfkiEwh/ORku+blwB9ny3/fkhtdPdI+m6Rp94dZijbRb7f21c
-	zPwAPVTKAKbXwSOSfi/r3NYCc1d/no0mBJw7KjmK9ANjjQuPUNVVeJnyDYXP8cLAz+UZ5YbL603
-	cpnjEiRUpv1UHbazqnbwFnJcUVjIFLjeR99n+e0xKKdfH0YG6DPsMzvmZSguhiQ/cQjhxPWbzYy
-	eGXg4w+H2l0/FJSi47Pl8cnCA0hk1XzbPVB9gn/8oe5vxM1QuELnHfJvTeVHXWHFCNPtm8Qjg2p
-	II3QS12YSPWn2K/8pQRGLxdvbzLeO2Mq+1dUevJDBVeVjn2iLxvSHnXsEWRvnZMQPrFYhijg4w3
-	IjcqeV9cgnJQ8Ar1OjVCw3K9CG5rCFxHw3nCIDp/SDxba8Jo8bX+eYSadj5EThIqlK+kIpBUeRe
-	wHlILYrIkTJorAz7uoPWDWRrmOTHQJipn21/Mlg==
-X-Received: by 2002:a05:6a20:c90a:b0:3fa:53f1:abf1 with SMTP id adf61e73a8af0-3fe8b6e5b13mr6374216637.66.1795097210065;
-        Thu, 19 Nov 2026 06:06:50 -0800 (PST)
-Received: from yhlee-960QFG.Davolink ([2406:5900:1044:110c:1076:1f1f:dde8:a816])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-8c5ca7aaadasm2808154b3a.13.2026.11.19.06.06.46
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 19 Nov 2026 06:06:49 -0800 (PST)
-From: Yehyeong Lee <yhlee@isslab.korea.ac.kr>
-To: gregkh@linuxfoundation.org,
-	nkapron@google.com,
-	linux-usb@vger.kernel.org
-Cc: Thinh.Nguyen@synopsys.com,
-	bigeasy@linutronix.de,
-	target-devel@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	lgs201920130244@gmail.com
-Subject: [PATCH] usb: gadget: f_tcm: put the overlapped command's request back on ep_cmd
-Date: Thu, 19 Nov 2026 23:06:40 +0900
-Message-ID: <20261119140641.2768465-1-yhlee@isslab.korea.ac.kr>
-X-Mailer: git-send-email 2.43.0
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=OHfWT6x5
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 94F5A1F000D2;
+	Thu, 19 Nov 2026 14:21:37 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1795098097;
+	bh=wkSqqGgCFN84aZAl8/Lb7dsxadkH7LkBRIP76S7TKwI=;
+	h=From:Subject:Reply-To:To:Cc:In-Reply-To:References:Date;
+	b=OHfWT6x5htd9s5bvTlH7vH8oE6msc/QgzStnNMLzEbo3lTETIJhqOHwPK3Z+SpUUJ
+	 i5IoDzMmA2OkjRm5Wx6gB2gRvWa6/+XShlwjo2Q6uP4FXgM56O6JdqJJMn7swJr6p+
+	 ppwTQVx6EpJ1Iovb6C5o8I4fEF9pW8DrhLVQH+6vAshNBo8rb1jkT/asCHqsSgeh8/
+	 Yrr0mtWs3htRNFvqmkbyacDwVzZSmQZAf9ZWOdmckARRxNsFO+VSAYfOLkA4oWK1xr
+	 1YD1jyfJcQDQ2CDVEhsQenc6OuO4qiZUpwaH/OnNogovEbl9VF7Kgr1HVJim3nuhMe
+	 qFqM8A29Ghi0w==
+Message-ID: <sashiko-outbox-223285@kernel.org>
+From: sashiko-bot@kernel.org
+Subject: Re: [PATCH] usb: gadget: f_tcm: put the overlapped command's
+ request back on ep_cmd
+Reply-To: sashiko-reviews@lists.linux.dev
+To: "Yehyeong Lee" <yhlee@isslab.korea.ac.kr>, linux-usb@vger.kernel.org
+Cc: target-devel@vger.kernel.org
+In-Reply-To: <20261119140641.2768465-1-yhlee@isslab.korea.ac.kr>
+References: <20261119140641.2768465-1-yhlee@isslab.korea.ac.kr>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+Date: Thu, 19 Nov 2026 14:21:37 +0000
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Post: <mailto:target-devel@vger.kernel.org>
@@ -99,74 +59,60 @@ List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:target-devel+owner@vger.kernel.org>
 Precedence: list
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
 
-When usbg_cmd_work() confirms an overlapped command tag it returns the
-duplicate command's slot to the session tag pool and cancels the active
-command's transfer, but it never hands the duplicate's own request back to
-ep_cmd.  The two sanity exits just above it pass that request to
-usbg_submit_command(), and the status path gives the active command's
-request back once its response has been sent, so only this path drops one.
+Thank you for your contribution! Sashiko AI review found no new issues
+in this patch, but noticed 1 related pre-existing issue it does not
+introduce:
+- [Critical] usb: gadget: f_tcm: NULL pointer dereference in
+  usbg_aborted_task() [1]
+--
 
-The request is not leaked - it stays in fu->cmd[] until uasp_free_cmdreq()
-frees it - but it stops being posted, so the gadget can receive one COMMAND
-IU fewer for the rest of the alternate setting.  There are USBG_NUM_CMDS of
-them, and a host spends one by sending two COMMAND IUs with the same tag,
-so the command endpoint ends up with nothing posted and no command is
-received at all.  There is no memory error to catch here, so count the
-posted requests instead: on a dummy_hcd gadget in UAS mode the count falls
-by one per overlap and reaches 0 after 32, and the gadget then answers none
-of four following commands, while with this patch 33 overlaps leave the
-count at 33 and all four are answered.  Three fresh boots per arm.
+commit 8fc2b5f7f30651e73e59207af565a062eb0d398b
+Author: Yehyeong Lee <yhlee@isslab.korea.ac.kr>
 
-Take the request pointer before the slot goes back to the pool, because
-from then on it can belong to a new command, and queue it after the abort
-so that nothing else in the path moves.  A queue that fails leaves the
-request in fu->cmd[] for uasp_free_cmdreq(), as at the other two sites that
-post to ep_cmd after setup.
+usb: gadget: f_tcm: put the overlapped command's request back on ep_cmd
 
-Fixes: 29ed17053872 ("usb: gadget: f_tcm: Check overlapped command")
-Cc: stable@vger.kernel.org
-Signed-off-by: Yehyeong Lee <yhlee@isslab.korea.ac.kr>
----
- drivers/usb/gadget/function/f_tcm.c | 9 +++++++++
- 1 file changed, 9 insertions(+)
+This commit requeues the USB request of a duplicate overlapped command on
+ep_cmd before returning its tag slot to the session tag pool in
+usbg_cmd_work().
 
-diff --git a/drivers/usb/gadget/function/f_tcm.c b/drivers/usb/gadget/function/f_tcm.c
-index 9e6d4f39900a27..4dcf2ba0083848 100644
---- a/drivers/usb/gadget/function/f_tcm.c
-+++ b/drivers/usb/gadget/function/f_tcm.c
-@@ -1275,6 +1275,7 @@ static void usbg_cmd_work(struct work_struct *work)
- 		struct uas_stream *stream = NULL;
- 		struct hlist_node *tmp;
- 		struct usbg_cmd *active_cmd = NULL;
-+		struct usb_request *req;
- 
- 		se_sess = cmd->fu->tpg->tpg_nexus->tvn_se_sess;
- 
-@@ -1318,6 +1319,12 @@ static void usbg_cmd_work(struct work_struct *work)
- 			return;
- 		}
- 
-+		/*
-+		 * Take the request before the slot goes back to the pool; it
-+		 * is queued on ep_cmd below.
-+		 */
-+		req = cmd->req;
-+
- 		/*
- 		 * The command isn't submitted to the target core, so we're safe
- 		 * to remove the bitmap index from the session tag pool.
-@@ -1333,6 +1340,8 @@ static void usbg_cmd_work(struct work_struct *work)
- 		active_cmd->tmr_rsp = RC_OVERLAPPED_TAG;
- 		usbg_aborted_task(&active_cmd->se_cmd);
- 
-+		usb_ep_queue(fu->ep_cmd, req, GFP_ATOMIC);
-+
- 		/* Send the response after the transfer is aborted. */
- 		return;
- 	}
--- 
-2.43.0
+> diff --git a/drivers/usb/gadget/function/f_tcm.c b/drivers/usb/gadget/fun=
+ction/f_tcm.c
+> index 9e6d4f39900a2..4dcf2ba008384 100644
+> --- a/drivers/usb/gadget/function/f_tcm.c
+> +++ b/drivers/usb/gadget/function/f_tcm.c
+[ ... ]
+> @@ -1333,6 +1340,8 @@ static void usbg_cmd_work(struct work_struct *work)
+>  		active_cmd->tmr_rsp =3D RC_OVERLAPPED_TAG;
+>  		usbg_aborted_task(&active_cmd->se_cmd);
+> =20
+> +		usb_ep_queue(fu->ep_cmd, req, GFP_ATOMIC);
 
+[Severity: Critical]
+This problem wasn't introduced by this patch, but can usbg_aborted_task()
+dereference a NULL stream->req_out pointer in Bulk-Only Transport (BOT)
+mode [1]?
+
+The target core also registers usbg_aborted_task() as the .aborted_task
+callback and invokes it on task abort sequences such as a LUN reset.
+Because stream requests are only allocated for UAS mode, stream->req_out
+remains NULL in BOT mode:
+
+drivers/usb/gadget/function/f_tcm.c:usbg_aborted_task() {
+	...
+	struct uas_stream *stream =3D &fu->stream[se_cmd->map_tag];
+	int ret =3D 0;
+
+	if (stream->req_out->status =3D=3D -EINPROGRESS)
+		ret =3D usb_ep_dequeue(fu->ep_out, stream->req_out);
+	...
+}
+
+Aborting a task in BOT mode therefore causes a NULL pointer dereference and
+kernel panic.
+
+[1] https://sashiko.dev/#/bug/linux-02bb90fe-74db-45ad-a2cf-107fe1a41bc4
+
+--=20
+Sashiko AI review =C2=B7 https://sashiko.dev/#/patchset/20261119140641.2768=
+465-1-yhlee@isslab.korea.ac.kr?part=3D1
