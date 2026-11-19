@@ -1,57 +1,75 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=95.215.58.209
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795037356;
-	b=hC32is/NKyTrJQo1vIvqRsMv3zEhTdQZHKZgNaOZ6brNto0OLfPNJCO28LeZbcta17Id
-	 vJGGAqN7EN4Bod0sWpHusc2RNuE3Bfl7l3oEBsgzol5TZD8LnzgIy2iU+UitTgWkVIBGE
-	 dHndaykhjbzCSJ6L5uyeBlDS8Ix1P+kcTJTKSBOappTVJUJM5T65tSZFGM0u28atLN7Pz
-	 7fdh9nxKWbUUhOa2Pgyr8DRuaEFA4Bf+AHDYxmzKOkNw3TkqNnlwym3TGixDb1S5uWQDj
-	 77iH54wihetRq+t9VcCDN7oMzQcAu4nl05USuhzHh4fNwjugpubz0j7/KAglfdvV+pA==
+	t=1795050165;
+	b=f8ZPpbGiQDvjHDfut/J8pjHjkg3pjUqysXdnvWHXQZNJRdUQxaeTc+uTpt1tM/1JK3ve
+	 il2ijcz0PzDlQ0BWuTryh2nbvfbjrF8X6xFlW007ayFV+ycSbaHjuf9AcZ3p3OPE7DS3n
+	 Jg25JUdCJNo8yF6QbsHjokvpvPCVNRRob1pJAP39JsP5pgkwJN6pahYr3DbU1Xrrvj77U
+	 X7oIeFsXMySZWGbfZUV4hcvAGy/y1L7VACpIR3HUUzldIkJP9Qeh/1x3BO6/kYQYpF7Ug
+	 nRAtclntAx6po76zYv7FhBXmW5eJNv7EuLOB1KIBj/ezV+3mLOug7PRF4RpuRsNwI8A==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795037356;
-	h=Received:DKIM-Signature:Message-ID:From:Subject:Reply-To:To:Cc:
-	 In-Reply-To:References:Content-Type:Content-Transfer-Encoding:Date;
-	bh=C3QlfZ+wK6lyf08+qEikLrmLhlgppq+P5MHxH0U5RZk=;
-	b=n8vIUdWPprXsx/87Twn/DKbFaDKdfQAf0YMOLM+gXBB/kvcUVaHITSRcflwmEVgOxeVB
-	 GewoyNPh+SwogwUUtYwHxS1+G8Kt4UAbRUmbH6GMnIYm62KOFS42x/7Cyb6gXx2MaPqMJ
-	 o7agA7ByGGSu54/tCeiRAJXg5u3sPVlEtFKSj8DcDGBXrF1q6e6HVNTsAMOAjpsES/VLQ
-	 ZLLAGbRbltbdb2GHWlfG+tj0nMUj/tWU1Y5NQe1mDd5cGoRLtBUzzRtaklutbCDO8NtPg
-	 b/OkTbL52flpUW/P4QOCt7JET9GJ368o+aPYWGLSeCY/FF3jvwEcXmtO2MLTtTLfYFw==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795050165;
+	h=DMARC-Filter:X-Envelope-To:DKIM-Signature:X-Envelope-To:Received:
+	 X-Mizu-Trace-ID:X-Migadu-Flow:From:To:Cc:Subject:Date:Message-ID:
+	 X-Mailer:In-Reply-To:References:MIME-Version:
+	 Content-Transfer-Encoding;
+	bh=BlL4W75h1MApHqdiv3CTVmX4B2zbrj1hbYs9giA+q5g=;
+	b=4ZRBrgAE7psjA2VOOBLNwO1Tx669RUrd83q6MbNj4fAZlwQDH5dBFzofLkE/GU9EmXtS
+	 Yt5pxArBn01qaVg/Dwx0GwN3TA2cjk1LObB4C0fLFZkWHmIgIE0a0ue/ptkNIl1vjmVzh
+	 V90nb+lMJGc5DUKKx2UZOEeVC7mLm5IiVHFyHtyC435fIwKzZHJKbGMudxSXGlZKrlf82
+	 z6zHG52EFOYyuV1O2Z7ZKtn+Fvg4oQL63QaR4dfKT0wQGmnOH5RT2PCJqHW5PhS6mIkWq
+	 Ero0MpYBJtLgj95vWzPLV2dsWWKdX9rCXVFFdWlU9FMkdNw4UIiS/5VwL7DNYO8uogA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=F7O+ZVcp;
-	arc=none smtp.remote-ip=100.103.45.18
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	dmarc=pass header.from=linux.dev;
+	spf=pass smtp.mailfrom=linux.dev;
+	dkim=pass header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=fpFl4L4R;
+	arc=none smtp.remote-ip=95.215.58.209
+Received: from mta1.migadu.com (out-209.mta1.migadu.com [95.215.58.209])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 964B3606A32C;
-	Wed, 18 Nov 2026 21:29:16 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D0E4B606A330
+	for <target-devel@vger.kernel.org>; Thu, 19 Nov 2026 01:02:44 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org D0E4B606A330
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.dev
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=F7O+ZVcp
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2E7E51F000C5;
-	Wed, 18 Nov 2026 21:29:16 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795037356;
-	bh=C3QlfZ+wK6lyf08+qEikLrmLhlgppq+P5MHxH0U5RZk=;
-	h=From:Subject:Reply-To:To:Cc:In-Reply-To:References:Date;
-	b=F7O+ZVcpmI9iu4q6m73SUnLlUP3NfDFnG6TJII5WnCwlbsdHYGLDY35+Fgt3viUHs
-	 n9uyQiCK0Aj4nfetbTf6c+JI3/5RW/ll0GdBZwM0FVApu5qPJCbHdIPxxReEwY1MdE
-	 rrz+ZKxlFjI+0jE33OYIddRQ5a0Oj8Ox+qVYGvjN5QlOwyzIh8WL7iuRen1WUGyO47
-	 b4ZgHLAu7B09GL5gcGQSXmb0Hb9yjGxT2spX624lydhm89v8lnUMS8HpF+vZzFmx3H
-	 QyUp/unRT2S2aEm8y/J6T2ifwWJ3qmnC59xdnwtXQilaNtMi9Ps9dKm4ORuy4iHsxC
-	 yZsTBGo+8b3hQ==
-Message-ID: <sashiko-outbox-221994@kernel.org>
-From: sashiko-bot@kernel.org
-Subject: Re: [PATCH v3 1/4] scsi: target: iscsi: retire an unsolicited
- NOP-In only once
-Reply-To: sashiko-reviews@lists.linux.dev
-To: "Yehyeong Lee" <yhlee@isslab.korea.ac.kr>
-Cc: linux-rdma@vger.kernel.org, target-devel@vger.kernel.org, linux-scsi@vger.kernel.org
-In-Reply-To: <20261118211503.2526705-2-yhlee@isslab.korea.ac.kr>
-References: <20261118211503.2526705-1-yhlee@isslab.korea.ac.kr>
- <20261118211503.2526705-2-yhlee@isslab.korea.ac.kr>
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
-Date: Wed, 18 Nov 2026 21:29:15 +0000
+	dkim=pass (1024-bit key, unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=fpFl4L4R
+X-Envelope-To: target-devel@vger.kernel.org
+DKIM-Signature: a=rsa-sha256; bh=ux0kfY5j7nM7oh8a7BfUtbSzQISJcSgoiHsY5y3C7fo=;
+ c=simple/simple; d=linux.dev;
+ h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
+ t=1795050162; v=1; x=1795654962;
+ b=fpFl4L4RdOYRvsiHM+GOdTXfY0EaUgQcWvxjZu5E3Iv9+BQZa/n8b9XA4f9Z5qDlBLG+tUXI
+ lzbf8E45R6pbwSlF/bLPvWn8nZdmKdusdtPneU0j6QT68TFJKw7pUq/iGap/n11nC8WuHFZhFq1
+ iOkoa/h2KlJBvxgUm+WIY/0U=
+X-Envelope-To: target-devel@vger.kernel.org
+Received: by smtp.migadu.com with ESMTPS id 5966f3fd4a58c3d7;
+	Thu, 19 Nov 2026 01:02:42 +0000
+X-Mizu-Trace-ID: 5966f3fd4a58c3d7
+X-Migadu-Flow: FLOW_OUT
+From: Qiliang Yuan <qiliang.yuan@linux.dev>
+To: Ming Lei <tom.leiming@gmail.com>
+Cc: Qiliang Yuan <qiliang.yuan@linux.dev>,
+	"Martin K. Petersen" <mkp@kernel.org>,
+	Shuah Khan <shuah@kernel.org>,
+	Jonathan Corbet <corbet@lwn.net>,
+	Shuah Khan <skhan@linuxfoundation.org>,
+	Randy Dunlap <rdunlap@infradead.org>,
+	linux-kernel@vger.kernel.org,
+	linux-scsi@vger.kernel.org,
+	target-devel@vger.kernel.org,
+	linux-kselftest@vger.kernel.org,
+	linux-doc@vger.kernel.org,
+	Jens Axboe <axboe@kernel.dk>,
+	io-uring@vger.kernel.org,
+	Mike Christie <michael.christie@oracle.com>,
+	Bodo Stroesser <bostroesser@gmail.com>
+Subject: Re: [PATCH RFC 00/18] scsi: target: Add target_core_uring, an io_uring based user backstore
+Date: Wed, 18 Nov 2026 20:02:33 -0500
+Message-ID: <20261119010233.2917434-1-qiliang.yuan@linux.dev>
+X-Mailer: git-send-email 2.43.0
+In-Reply-To: <av0CAptnbIZP-53U@fedora-laptop>
+References: <20261115-feat-target-core-uring-v1-0-28cdc137eac6@linux.dev> <avprIhtn1TuYLX1b@fedora-laptop> <20261117024640.3184554-1-qiliang.yuan@linux.dev> <av0CAptnbIZP-53U@fedora-laptop>
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Post: <mailto:target-devel@vger.kernel.org>
@@ -60,103 +78,101 @@ List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:target-devel+owner@vger.kernel.org>
 Precedence: list
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 
-Thank you for your contribution! Sashiko AI review found 1 potential
-issue to consider:
-- [High] scsi: target: iscsi: race on unsent NOP-In in
-  iscsit_take_nopin_from_ttt()
---
+On Tue, Nov 17, 2026 at 07:40:18PM -0600, Ming Lei wrote:
+> Can you share your setup? It is supposed that you run fio from VM,
+> otherwise you can just compare ublk with scsi backed with tcmu.
+>
+> But if you run fio from VM, I believe you can setup virtio-scsi backed by
+> ublk block device directly, which should cover your requirement, or maybe
+> I miss something?
 
-commit 079f94c5aa78a5118ce1f2b2658476b66fcf7998
-Author: Yehyeong Lee <yhlee@isslab.korea.ac.kr>
+Everything runs in one 32 CPU guest. For tcm_loop and iSCSI (16
+sessions over 127.0.0.1), fio runs in that guest on the initiator
+disks. For vhost-scsi, fio runs in a nested 16 vCPU KVM guest on the
+vhost-scsi disk, with the target and the backstore server in the outer
+guest. In the ublk runs, kublk serves the file as /dev/ublkbN and
+target_core_iblock exports that through the same fabric.
 
-scsi: target: iscsi: retire an unsolicited NOP-In only once
+You are not missing anything. This backstore has block semantics: the
+kernel emulates the SCSI commands, PR and ALUA included, exactly as for
+iblock, so ublk behind target_core_iblock offers the same function on
+every fabric, and for a VM a virtio-scsi or vhost-scsi disk on top of
+the ublk device covers it as well. What the series adds over that is
+only performance, and outside tcm_loop the numbers I sent do not show a
+consistent gain.
 
-This commit introduces iscsit_take_nopin_from_ttt() to match unsolicited
-NOP-In commands by opcode and TTT under conn->cmd_lock and clear their tag
-so a NOP-In cannot be queued for removal more than once.
+[...]
 
-Link: https://lore.kernel.org/all/1437516477-30554-4-git-send-email-sbaugh@=
-catern.com/
+> My question is actually why there is regression wrt. 4k randread:
+>
+>  workload               TCM/USER (MB/s)   uring (MB/s)          change
+>   4k randread, 1 job      426 (409-463)      369 (366-384)         -13%
+>
+> Maybe you can focus on single job perf only, which is easy to compare and
+> investigate.
 
-> diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/i=
-scsi_target.c
-> index 124ff269b8e75..b0dd3e84e68e0 100644
-> --- a/drivers/target/iscsi/iscsi_target.c
-> +++ b/drivers/target/iscsi/iscsi_target.c
-> @@ -1783,6 +1783,33 @@ int iscsit_setup_nop_out(struct iscsit_conn *conn,=
- struct iscsit_cmd *cmd,
->  }
->  EXPORT_SYMBOL(iscsit_setup_nop_out);
-> =20
-> +/*
-> + * Take the NOP-In under cmd_lock, which the tx thread holds when it unl=
-inks
-> + * and frees the command, and clear its tag so only the first answer get=
-s it.
-> + */
-> +static struct iscsit_cmd *iscsit_take_nopin_from_ttt(struct iscsit_conn =
-*conn,
-> +						     u32 targ_xfer_tag)
-> +{
-> +	struct iscsit_cmd *cmd;
-> +
-> +	spin_lock_bh(&conn->cmd_lock);
-> +	list_for_each_entry(cmd, &conn->conn_cmd_list, i_conn_node) {
-> +		if (cmd->iscsi_opcode !=3D ISCSI_OP_NOOP_IN ||
-> +		    cmd->targ_xfer_tag !=3D targ_xfer_tag)
-> +			continue;
-> +
-> +		cmd->targ_xfer_tag =3D 0xFFFFFFFF;
-> +		cmd->i_state =3D ISTATE_REMOVE;
-> +		spin_unlock_bh(&conn->cmd_lock);
-> +		return cmd;
-> +	}
+It comes from the scheduler moving fio between CPUs. The pwrite() I
+pointed to in my last mail is not it: doing that copy inside
+io_uring_enter() instead makes no difference.
 
-[Severity: High]
-Can iscsit_take_nopin_from_ttt() claim an unsolicited NOP-In before
-iscsit_add_nopin() has queued it or before the TX thread has built and
-sent it?
+tcm_loop queues the LIO submission and completion work on the CPU that
+submitted the command, so with one job, fio's CPU always has bound
+kworkers and ksoftirqd runnable next to fio. The load balancer cannot
+move those and moves fio instead. This backstore gives it more chances:
+the completion work on fio's CPU handles 14 commands per run here
+against 24 with TCM/USER, so per 1000 I/Os the completion kworker and
+ksoftirqd run about 57 times against 35, fio is preempted as often, and
+it is moved two to three times as often. With balancing on, fio's own
+CPU time per I/O doubles here, from 3.1 to 6.3 us, against 3.4 to 4.9 us
+with TCM/USER, spread over the whole submission path rather than in one
+function.
 
-session_get_next_ttt() assigns sequential TTTs, and iscsit_add_nopin()
-drops conn->cmd_lock after adding cmd to conn->conn_cmd_list, before
-starting nopin_response_timer and queuing ISTATE_SEND_NOPIN_WANT_RESPONSE:
+Turning load balancing off for fio's CPUs and nothing else reverses the
+result. Single job, 4k randread at iodepth 32 over tcm_loop, 6 s per run,
+five alternating runs, median (min-max). fio runs in a cpuset of CPUs
+4-31 and the server threads are pinned to CPUs 0-3; the cpuset is either
+a normal member (balanced) or an isolated partition (not balanced):
 
-<softirq>                              rx_thread / tx_thread
-iscsit_handle_nopin_timeout()
-  iscsit_add_nopin()
-    spin_lock_bh(&conn->cmd_lock)
-    list_add_tail(..., &conn->conn_cmd_list)
-    spin_unlock_bh(&conn->cmd_lock)
-                                       iscsit_process_nop_out()
-                                         iscsit_take_nopin_from_ttt()
-                                           cmd->targ_xfer_tag =3D 0xFFFFFFFF
-                                         iscsit_stop_nopin_response_timer()
-                                         iscsit_add_cmd_to_immediate_queue(
-                                           ..., ISTATE_REMOVE)
-    iscsit_start_nopin_response_timer()
-    iscsit_add_cmd_to_immediate_queue(
-      ..., ISTATE_SEND_NOPIN_WANT_RESPONSE)
-                                       iscsit_immediate_queue()
-                                         case ISTATE_REMOVE:
-                                           iscsit_free_cmd(cmd, false)
-                                         case ISTATE_SEND_NOPIN_WANT_RESPON=
-SE:
-                                           iscsit_send_unsolicited_nopin(cm=
-d)
-                                             <-- use-after-free
+  fio CPUs 4-31, backstore      bandwidth (MB/s)   change
+  balanced, TCM/USER               439 (398-462)
+  balanced, uring                  379 (371-388)   -13.7%
+  not balanced, TCM/USER           662 (544-710)
+  not balanced, uring              760 (575-798)   +14.8%
 
-Because iscsit_free_cmd(cmd, false) does not purge remaining immediate
-queue entries for cmd, the subsequent ISTATE_SEND_NOPIN_WANT_RESPONSE
-entry runs on a freed (and potentially reallocated) command slot while
-leaving nopin_response_timer running.
+Booting the guest with idle=poll removes the gap as well: with fio free
+to move, five runs give a median of 612 MB/s with TCM/USER and 627 MB/s
+here.
 
-Even when ISTATE_SEND_NOPIN_WANT_RESPONSE is queued before the NOP-Out is
-processed, if iscsit_take_nopin_from_ttt() runs before the TX thread
-executes iscsit_build_nopin_rsp(), overwriting cmd->targ_xfer_tag with
-0xFFFFFFFF causes the outgoing unsolicited NOP-In PDU to be transmitted
-with hdr->ttt set to 0xFFFFFFFF.
+That points at what each switch costs in a guest. An idle vCPU executes
+HLT, which exits to the host and puts the vCPU thread to sleep; waking
+it for a kworker, ksoftirqd or a migrated fio takes an IPI, a host
+wakeup and a VM entry, and the host may run the thread on another
+physical CPU, so the guest code then runs with cold caches. With
+idle=poll the vCPUs spin instead, stay on their physical CPUs and take
+the IPI without an exit. This backstore makes more of those switches
+per I/O, so it pays more of that cost, and fio's slowdown spread over
+the whole submission path looks like cold caches.
 
---=20
-Sashiko AI review =C2=B7 https://sashiko.dev/#/patchset/20261118211503.2526=
-705-1-yhlee@isslab.korea.ac.kr?part=3D1
+What is measured is that idle=poll removes the gap and that the gap
+follows the switches and migrations. Which part of the cost is the exit
+and wakeup latency and which part is the vCPU thread landing on another
+physical CPU is inferred: I cannot trace the host side here. Waking an
+idle CPU is much cheaper on bare metal, so I expect the gap to be
+smaller there, but I have not measured it. idle=poll is only a
+diagnostic, it burns a host CPU per idle vCPU.
+
+[...]
+
+> When userspace target becomes more efficient, I'd suggest you to think
+> about why these applications can't be improved or refactored for the
+> potential (bigger)perf requirement.
+
+Agreed. Since this backstore only takes block commands, an application
+that can move to it can just as well move to ublk, and one that needs
+SCSI semantics in userspace is not served by it either.
+
+Thanks,
+Qiliang
