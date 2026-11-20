@@ -1,56 +1,96 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.210.181
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795191508;
-	b=5EsKXHlw6bLlM1l+J6JLDTpMObtTWPgzmal2Lqz3lzbrDHhlVrOTAt++3HycjrdspMeJ
-	 fYguQyxCfdf1mIvBEAdE5oJZv2C1bniUF4Gr7U4MRqVsJ/qmQ5On8i4L+rhjehlsHTMaG
-	 iaMPVeR+d8LZ4vXeDeci39FOxaAHfefxj4593vhXvRHRmR/oimgJkfj7BAaQsVWy99nau
-	 VXuDdxi5+3jO1ixHZSY4Bl/kbYo1SeO2w7qduleAOILTxH+9mAOjpHUdcNlEzQzJQhxPn
-	 tbUWNYkDWOZTRyFR/UTUYpvzOS30oRelSIIzRM7swzKRUEgH5zrol62S/L1B/nrGdCg==
+	t=1795195726;
+	b=gutSbyo6wYavBGZAo7DqBbfFp2rmUzk1Yy6LWWFkNctgOmAwQJfgtwy7/+5Op2xXfbrj
+	 MD0HR5aYsMtLPLr0Pgif3dmeJ1AfwgMf0hvVmBoqV8yjy0eMHFUGfPujkXqj8UlncUJbD
+	 H12wRcWZJMlfhtbqzjQBClM0UrLIx7TQ79nR+j18YitqrM1mcdI3ifIBTzOt6wbAs10um
+	 jh+0sBnFD2XBIkJQUzwjkZDSDh15bSgDW1LkQQG4hNkhsG+0ZxlxLVI21X7XSjoAD+40D
+	 81Tvnfyefvm/+3Csr7TO94Go2TvBRWpcZ9Wif3fi0u2tAtfT1QYznf46aaeY7zXRaKg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795191508;
-	h=Received:DKIM-Signature:Message-ID:From:Subject:Reply-To:To:Cc:
-	 In-Reply-To:References:Content-Type:Content-Transfer-Encoding:Date;
-	bh=Yuo0+Pw8Cic/oPO/CJ6MTAhVLVtBofsbkkLBYKbgeu8=;
-	b=lQbPZ+5T5/YawkwBYPg4LI/r+vZ3+1IhmMfuqXslRALbqvxCN8k9XDD4QacCuew1v2zx
-	 j8TodhKGsqbtHocY8kU5hoJzDep1rTYU6EL+OmZtdA95atFl72RW2eEzpJOBDl4eTGA0v
-	 pMbyliKkXGllK+oOXXYdY3eWrakH7xdVJ1CYa0iAsJrJHqvpWaWRHtX4XRPmOWE/qxPh5
-	 uUDxevw+GaDA8UBLt9PHStc3Hz0cw5iHjiVJ32lvdyAXEP6bXcQCvt5vWDjYtJTJ8x/3H
-	 +mO4irrN6YUm3z9a8X5LrSmk1Adb8Af3cRwZd9OKaLtP+29kAnv2C53oQXbj+kss9Zw==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795195726;
+	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
+	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:MIME-Version:
+	 Content-Transfer-Encoding;
+	bh=/lQFrumXY/eO2ACD5OArHzMhyMrdljnPb2HKCmNt8i0=;
+	b=ibgGH/wJbwEOUByls7a3/DVrRFKJstrsLabltT9+buHePqEj30srMCMM/RB7ZpU11QzW
+	 Dui6LtJ09UR2YwmalzuKeXTSdEefc2GEq8R9h5VO3s5i7ObbFPj6F/VCAXvtSzCq8+ABs
+	 N8Hgwc7xnyblbLE09aP/hihdiHE1eAgPBxNxIE8TD1bJ9c+y/j6wKaBH7gFuJr7SW3Cnh
+	 ezvKikXJ1qGxzDwRrlcDms4aaiOodVf+H15uj+gQwjwkPsaDgUoNGnZQf7fCfkwRlV/Au
+	 A/zbHsMoamRS+vZ2HGD6oDHUvPzX4X4GVs3nGvuRfHjqk4R8jqSOWIwW+4jOBAebw6w==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=aysi+C8i;
-	arc=none smtp.remote-ip=100.103.45.18
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	dmarc=fail header.from=isslab.korea.ac.kr;
+	spf=none smtp.mailfrom=isslab.korea.ac.kr;
+	dkim=pass header.d=isslab-korea-ac-kr.20260707.gappssmtp.com header.i=@isslab-korea-ac-kr.20260707.gappssmtp.com header.a=rsa-sha256 header.s=20260707 header.b=dfH6Gy+a;
+	arc=none smtp.remote-ip=209.85.210.181
+Received: from mail-pf1-f181.google.com (mail-pf1-f181.google.com [209.85.210.181])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 27F4C606A325;
-	Fri, 20 Nov 2026 16:18:27 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5BA7D606A320
+	for <target-devel@vger.kernel.org>; Fri, 20 Nov 2026 17:28:45 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 5BA7D606A320
+Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=isslab.korea.ac.kr
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=isslab.korea.ac.kr
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=aysi+C8i
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 874E91F000C6;
-	Fri, 20 Nov 2026 16:18:27 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795191507;
-	bh=Yuo0+Pw8Cic/oPO/CJ6MTAhVLVtBofsbkkLBYKbgeu8=;
-	h=From:Subject:Reply-To:To:Cc:In-Reply-To:References:Date;
-	b=aysi+C8iuycwU52jP+cRNCO4lNKJ2M9m5KVkkhJpb0T81e0Eqjw0rw2uOYLtSVWJB
-	 oW2Vx7AtY9JyF6hqsQsfB24PJWIQZ+Tos7vNTZdD2TTWFNPU5DyAS1qcBRAo1/LO6b
-	 9MSJbYy4yMx+4R/dmT960dPVl1Ob9do7CdYu2mWYF/W7d4UNeax+WQ8UM/mkZwOR7v
-	 ExVGx2QTYKoAU2rG6MOnp9Xf6cbM5O/X4jTroZ5OlLWqM3cJcU4pdkppbCl7kaPV97
-	 4gbeu5F22QNPOsvHeFYH+LI7L2bAZ3zDth8BVIiIgpoy9t0Ro4eyP9a1aKtRip+w/Z
-	 r5aAiawLNuTmw==
-Message-ID: <sashiko-outbox-225553@kernel.org>
-From: sashiko-bot@kernel.org
-Subject: Re: [PATCH] usb: gadget: f_tcm: lock the UAS stream requests in
- .aborted_task()
-Reply-To: sashiko-reviews@lists.linux.dev
-To: "Yehyeong Lee" <yhlee@isslab.korea.ac.kr>, linux-usb@vger.kernel.org
-Cc: target-devel@vger.kernel.org
-In-Reply-To: <20261120160616.3219043-1-yhlee@isslab.korea.ac.kr>
-References: <20261120160616.3219043-1-yhlee@isslab.korea.ac.kr>
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
-Date: Fri, 20 Nov 2026 16:18:27 +0000
+	dkim=pass (2048-bit key) header.d=isslab-korea-ac-kr.20260707.gappssmtp.com header.i=@isslab-korea-ac-kr.20260707.gappssmtp.com header.a=rsa-sha256 header.s=20260707 header.b=dfH6Gy+a
+Received: by mail-pf1-f181.google.com with SMTP id d2e1a72fcca58-89d6bd67045so575537b3a.0
+        for <target-devel@vger.kernel.org>; Fri, 20 Nov 2026 09:28:45 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=isslab-korea-ac-kr.20260707.gappssmtp.com; s=20260707; t=1795195724; x=1795800524; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=/lQFrumXY/eO2ACD5OArHzMhyMrdljnPb2HKCmNt8i0=;
+        b=dfH6Gy+aSviOS1anR7xvcOw6hlW1P/zVeUP1d6jCiadqppqlOXcSVj8En2+UuWYn0p
+         eRy+8Vv3YB+V6f7QILp1yqfa3nhh3dL1EClu/RNtmuk92/9v9KAKiD5EE3cXcqAiM/Me
+         oZLaMxLnI7HdHnrI4310uvFtDudAq7MI/rrEvLZtkZD47KqvC0ZCpRIDPH90Uq0Mtio+
+         NghmoS86I2dFndjeWGz4EpRJjEUSx0eCxI2oMMPDNXKq94zu+tEo6ejO5aub39gTJ+01
+         4f2KC3v8fvePDD1wsNeGaskua9ba9CfoWx2mIhGP/mMoyIHj9ZBq6j6223BfTGiHZSdq
+         vgfA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1795195724; x=1795800524;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=/lQFrumXY/eO2ACD5OArHzMhyMrdljnPb2HKCmNt8i0=;
+        b=ngGhyuZWNJX7ohaYgDNS2nPPTHqDZtkuizNTLFJUp9u6DvGEh9Ieylc8sQe8ztxNhM
+         Yej5yujXDz3i5WhyvoH4L4dlqZPNnIpc5JqVGu8utwIjpcnA6HI0VIwe4h7DBiSdX1yB
+         G0XJWVqL4hrCbIQQ1R3J5lBrGFixq3UrBPWhyBLLBtxKPzM4plcbcI1m/WDYB1BgI4rK
+         PEasePE/lITs2tz+LW1RBqBIVweZYmEv372LM/gCTo231JDBXc6TD5FYK+ul4SoNiDV3
+         mNpX5D96orQ3zp4X7tcB1QCq2KgApKqgjvcGKR+JRHes1te0DsN/nsFHGxl55y7Dy//y
+         k+jg==
+X-Forwarded-Encrypted: i=1; AL+hErFt5vyg5EqlOhZfGQKVrf6AItpyaL94+z7sTzBDI6zGqXVfMO7T1YUjwFiqjmyAIyDYC1rY95fRu0Nhq0Q=@vger.kernel.org
+X-Gm-Message-State: APuU4Z+HsrkatYSg+IcqwxEy+Letxq0SkUGNUR7Keynwwdm5+y+shTrZ
+	lGiPGuTQheh79lm8qbc77znJCfcny5Qdn76UqlgQqavRRH2Z77QceHGKad4aNzGpEss=
+X-Gm-Gg: AZFdTZd20gllhLmsK85rxP0Ya+8WLiaN5/m8O/lzA2dDb9BH4C+L3E98j0ytzEGQcWb
+	ZD7KjkJ8d3LQgQEVS7bzJDHJFdkKQqTVrl/83ZT4C0sACx8rULoVEBsvX9ISOnJKzil3Uiu5ie2
+	8/DSAaEXLAXIEjYW+xoqFNRlataohQcXWX3C/wB6Uyvs68nAQdPDL4WFYltdzrA1lD9cSfy1b+O
+	whP4+hoI2ySnJeDY/D9DCPnqkqCa2+qr/GGdKoeeIBOOmU70w/d/rUB1x7iknKpZlLK0dm1Vjn+
+	nDo9RtwnQ8s1AxaScOAgAb9gVYyTAwyGh3Kxcs7nd5PgqBhcslCL5eisWUzuQZFa++Q2PzOpZzJ
+	vm0a42ZJoLuWDDYwJn/qQeBXvZrTFjX06hmYR7i1nTWgT9kJo8RRq2hJCPM+Kkg156m/f1psODJ
+	qVeCBHQkqx08wAYWJubHdccVTRIRlqWC0DWA8YFcK4fbHb2uG1pIrUmea+08lqSp2rRmNQeqAuI
+	XbrwSqMyN1Fg9gtZvVGYVERwh6OZIVlL2y53yubRipXEMYSDpzD6lc0p4ttFg/lpX6+V7PwM1zg
+	RNwz2Y+GcMKB+jo16JRrKqY0TWrXoSOPZ3DW2KYn8yMXWfCVcnoqgqW0Cec8ZOSnT8X8OXdw8A4
+	WIHF2ITpu3pyUrjDBRtL/o6PjK0qzhIKZ7l3f
+X-Received: by 2002:a05:6a00:3003:b0:8a0:550f:bb43 with SMTP id d2e1a72fcca58-8c7ddfb0281mr3651179b3a.34.1795195724025;
+        Fri, 20 Nov 2026 09:28:44 -0800 (PST)
+Received: from yhlee-960QFG.Davolink ([2406:5900:1044:110c:8b25:951:ad8d:5cc1])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-8c87334890csm1867911b3a.33.2026.11.20.09.28.41
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 20 Nov 2026 09:28:43 -0800 (PST)
+From: Yehyeong Lee <yhlee@isslab.korea.ac.kr>
+To: gregkh@linuxfoundation.org,
+	nkapron@google.com,
+	linux-usb@vger.kernel.org
+Cc: Thinh.Nguyen@synopsys.com,
+	bigeasy@linutronix.de,
+	target-devel@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	benquike@gmail.com
+Subject: [PATCH v9 0/3] usb: gadget: f_tcm: fix infoleaks and a UAF in the BOT path
+Date: Sat, 21 Nov 2026 02:28:26 +0900
+Message-ID: <20261120172829.3286180-1-yhlee@isslab.korea.ac.kr>
+X-Mailer: git-send-email 2.43.0
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Post: <mailto:target-devel@vger.kernel.org>
@@ -59,48 +99,27 @@ List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:target-devel+owner@vger.kernel.org>
 Precedence: list
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 
-Thank you for your contribution! Sashiko AI review found no new issues
-in this patch, but noticed 1 related pre-existing issue it does not
-introduce:
-- [Critical] usb: gadget: f_tcm: use-after-free due to stale tpg pointer
-  in tcm_alloc() [1]
---
+Three remote-triggerable bugs in the f_tcm BOT path: two infoleaks to the
+host and a freed scatter list handed to the controller.
 
-commit 6cf4e81d4473dd79e435edcd1431deef1606dc92
-Author: Yehyeong Lee <yhlee@isslab.korea.ac.kr>
+The first patch of v8 is in usb-linus as 69b3b657087f, so this is the
+remaining three.  v8 was posted here:
 
-usb: gadget: f_tcm: lock the UAS stream requests in .aborted_task()
+https://lore.kernel.org/r/20261118124005.2428068-1-yhlee@isslab.korea.ac.kr
 
-This commit adds fu->stream_lock to synchronize allocation, teardown, and
-dequeueing of the UAS stream requests across uasp_alloc_stream_res(),
-uasp_cleanup_one_stream(), and usbg_aborted_task().
+Yehyeong Lee (3):
+  usb: gadget: f_tcm: zero the CBW buffer the status path sends
+  usb: gadget: f_tcm: reject a short write data-out transfer
+  usb: gadget: f_tcm: clear the scatter list when reusing the BOT status
+    request
 
-> diff --git a/drivers/usb/gadget/function/f_tcm.c b/drivers/usb/gadget/fun=
-ction/f_tcm.c
-> index 9e6d4f39900a2..21e5ef629319a 100644
-> --- a/drivers/usb/gadget/function/f_tcm.c
-> +++ b/drivers/usb/gadget/function/f_tcm.c
+ drivers/usb/gadget/function/f_tcm.c | 14 +++++++++++---
+ drivers/usb/gadget/function/tcm.h   |  1 +
+ 2 files changed, 12 insertions(+), 3 deletions(-)
 
-[ ... ]
+-- 
+2.43.0
 
-> @@ -2757,6 +2777,7 @@ static struct usb_function *tcm_alloc(struct usb_fu=
-nction_instance *fi)
->  	fu->tpg =3D tpg_instances[i].tpg;
->  	INIT_WORK(&fu->delayed_set_alt, tcm_delayed_set_alt);
->  	spin_lock_init(&fu->delayed_set_alt_lock);
-> +	spin_lock_init(&fu->stream_lock);
-
-[Severity: Critical]
-This problem wasn't introduced by this patch, but caching fu->tpg in
-tcm_alloc() [1] can leave a dangling pointer if the TPG is dropped and
-recreated before the gadget binds.  When userspace removes the TPG,
-usbg_drop_tpg() frees it, and creating a new TPG re-enables opts->can_attach
-without updating fu->tpg in the already-allocated function.  Can tcm_bind()
-refresh fu->tpg instead of relying on the pointer cached at allocation time?
-
-[1] https://sashiko.dev/#/bug/linux-abce2989-69f9-4b30-b16f-d2b7ee05baa9
-
---=20
-Sashiko AI review =C2=B7 https://sashiko.dev/#/patchset/20261120160616.3219=
-043-1-yhlee@isslab.korea.ac.kr?part=3D1
