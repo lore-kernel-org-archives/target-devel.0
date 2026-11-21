@@ -1,58 +1,58 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795231502;
-	b=vtxe+9d8sN3GYujw2f4igrrXgZ6+4cY8kHE/9AM8HvQoHCj0gla1YctnvJ6f3lFC0bFx
-	 99zo9jIzIwVXTpg6MbL9rVazZ7osGTQc5eyB5jVfOZr10W9xhZUdr9ZLzqrfWXVXai/XK
-	 vX8Z2EgjZqMhwPbmyZJyzVbiZUgaofPefe9lQNEQ2V6GFpYynqWwbPR0yU44HA53CWPf4
-	 lql2G5Nb7DXP/QF9iHck2HByllhfJAZwLQI9uipmyxVXQtZVd9EVNCPQVs1R99QVvSQj4
-	 uze0rOUTzg+Lj+ZDLUijewre0DzfBGC/qVoD4FuLoYwyZeDC6UxtqmXvFmNWsV9GHhQ==
+	t=1795231507;
+	b=r2CUoCv4oJp4l3lH+I1zKl5QUkP7lNJfuz/Nkip3hxxs9bpWSZNH8eJ6J3eHfaBlowDl
+	 3c3Fc7j3fkbi6fTdoofq+btje844drwxWCLTLIxehFO83Fbt7kC2Vyoaju4WdIC6taUPL
+	 L9N6XdUuKtP22cgRGciqEvi7Hsi8zmbKbt1B45y6j7OS5p95FqZCNBljG9PKa0q4kWJKp
+	 OEFQD+1APfnW6HZq7dCvQzWCU/ehM3JAXNJ5t6HtylXtCyhppiQhPC4cMb/GrTYenXKvo
+	 CDFK5q5A++spLj20/sncQfKMcK3pRAG6JGhSK2XEjeMJHMlR0Q9IKXVryc5pQk19YDQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795231502;
+	a=rsa-sha256; c=relaxed/relaxed; t=1795231507;
 	h=Received:DKIM-Signature:From:To:Cc:Subject:Date:Message-ID:X-Mailer:
 	 In-Reply-To:References:MIME-Version:Content-Type:
 	 Content-Transfer-Encoding;
-	bh=lvSyLytB5SwO0LPvkN3MPCaXDUFv1bn9tN9WJbt8r6Q=;
-	b=uGmHf7HZ6N2qOdIhiUK0hZDlnUSrZEyAzCMrSX062KHN1VpCbldoLPCZzCOdL8GfBjgJ
-	 bOW0enWslM0fpelBfkM7d7TrWc9/z0V7/w0mwYVTW6hxCgk2Qfzj9JQEJqLWh6SiGgR3Z
-	 JFkghamkPVZoMBM9Cs5yKd97b0JAtmA/ay3CHbUFJyKUR01AZhFdj8WBEKHjzDT/FnK7s
-	 d6IHVxY/XTXNnblBnDuwJSAlRw8yEXzq65zMqJXow8wXYNud29EoXnyoo5dojkmovMyOj
-	 KXqWoeOTIszlpqlAIPJNGre3WImNl0gGsDkM+JPl7B/EROpqUuvdU9neslITT1K+hZA==
+	bh=7ElCoO/c/pEcUZpeQuAv5csB+KztHEVsCcAnqZZm1G8=;
+	b=B+7B3iLxUewuB2nllJb/jUIbCGv83mvoIS9WTgSEXcfSrf01WP7PKdnqBEpmacxO5xdy
+	 hg4Ii8S78jGs1jLwYC5i3l6LQsbQH7BirwIkRmh62tCdDHEyHIo+UakpjV7uNtUBZ1VMS
+	 FGfinFuE2TYpYNGv59/0aN5ekBlIrLoj+8lk29YVApfeB42FIL/tTWd1LaHXxEhsWFhah
+	 vtCARDE6Iws2Yq2358wfVz7eXtkyOMufjquNtOfPDDz1Dm2GkuCqoD7xvzVqfF7AlfTbe
+	 SVCccJBomVxIrP8AUWrjjhqdGbBX3dFjK5HDSX3HEC20XwhsqPIuOsUClqu5ZpXdZLg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Hsisy7x6;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=JIuzgqJZ;
 	arc=none smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A84C4606A338;
-	Sat, 21 Nov 2026 03:25:02 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DFAE2606A6BE;
+	Sat, 21 Nov 2026 03:25:06 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Hsisy7x6
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 81B841F000C4;
-	Sat, 21 Nov 2026 03:25:01 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=JIuzgqJZ
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C5D541F000D4;
+	Sat, 21 Nov 2026 03:25:05 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795231502;
-	bh=lvSyLytB5SwO0LPvkN3MPCaXDUFv1bn9tN9WJbt8r6Q=;
+	s=k20260515; t=1795231506;
+	bh=7ElCoO/c/pEcUZpeQuAv5csB+KztHEVsCcAnqZZm1G8=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=Hsisy7x69QPQ4mQwO4vYWpJz+wIDoJQ4ef4aQSyHktC3aEINhK04Te27z1g0G7Kp7
-	 8XMVIWb+aMqntPnuq6w+93RPo0FaYsEFZcrZLhkKWCgcR618edK4Df/UQBzjeJhuEg
-	 wgzEkk3n/AnrJUzegdazauo1dkdkUhQsiHLPue2CcgzsdjH3r9yEw3uUtOF8jrEXpU
-	 +o2WWIKctUmF5fRDw1utuoYTb9q3X9R4+wNn0bV914HIcryTVHL4gyfP6i8N6qck8y
-	 aOxTo8+oob+szDQC6kWDHcyGTZitotQftopsxrJMesS+YjUATveKtb7ZmSe42gbb/A
-	 IaNTT3YU2qrRA==
+	b=JIuzgqJZf6cMRoto2yhyF0++LTVZ8orX3rZgn5s4NBl3Oz2MK6moFLqmDNADtFwaP
+	 agY/GM+WXvyfLfQZqXgObFazjx2TVQaPS6ZZeTP2+pMTFoinvIBP5YtzwreFnQfMSx
+	 DW6wA9/zsgYK7k70q6ylcUNunR+/3pYcfXCGrZKbEW8B+BIIJUr1InZq22Mn1OHlMQ
+	 Q9WgCphRe+dNX2UZtymmW90H/L7fIAww/Gqo3BSjBwsch/NViGNJHsIhen/xDZzXRM
+	 xVYKOyB3RNaLgEC5KDDV1PF/Ro+JTC9WFoA6akiX7RTV5A5FB+XKKeXH5RurLy2fKa
+	 9kpK9vfZ/fTPw==
 From: "Martin K. Petersen (Oracle)" <mkp@kernel.org>
-To: Ciro Iriarte <ciro.iriarte+software@gmail.com>
+To: yong liu <pkfxxxing@gmail.com>
 Cc: "Martin K . Petersen" <mkp@kernel.org>,
-	target-devel@vger.kernel.org,
 	linux-scsi@vger.kernel.org,
+	target-devel@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
-	stable@vger.kernel.org
-Subject: Re: [PATCH v2] scsi: target: compare all six ISID bytes when identifying a nexus
-Date: Fri, 20 Nov 2026 22:24:49 -0500
-Message-ID: <179523145636.420187.17732155640521575769.b4-ty@b4>
+	security@kernel.org
+Subject: Re: [PATCH v2] scsi: target: Disable protection processing for zero-block commands
+Date: Fri, 20 Nov 2026 22:24:52 -0500
+Message-ID: <179523145635.420187.12410606192780745246.b4-ty@b4>
 X-Mailer: git-send-email 2.56.1
-In-Reply-To: <8b1ac7d9-b0e4-42ac-b8a2-c4c70cccdddc@gmail.com>
-References: <8b1ac7d9-b0e4-42ac-b8a2-c4c70cccdddc@gmail.com>
+In-Reply-To: <20261111030544.1216434-1-pkfxxxing@gmail.com>
+References: <20261111030544.1216434-1-pkfxxxing@gmail.com>
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Post: <mailto:target-devel@vger.kernel.org>
@@ -65,21 +65,22 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 
-On Mon, 09 Nov 2026 11:31:01 -0300, Ciro Iriarte wrote:
+On Wed, 11 Nov 2026 11:05:43 +0800, yong liu wrote:
 
-> lio_sess_get_initiator_sid() reports the ISID as twelve hex digits, and
-> iSCSI TransportIDs carry the same digits. __transport_register_session(),
-> __core_scsi3_do_alloc_registration() and
-> core_scsi3_alloc_aptpl_registration() turn that text into
-> sess_bin_isid and pr_reg_bin_isid with get_unaligned_be64(), which takes
-> the first eight characters, i.e. the first four ISID bytes.
+> A READ(10) with its TRANSFER LENGTH field set to zero on a PI-enabled
+> LUN can select TARGET_PROT_DIN_STRIP while leaving cmd->prot_length at
+> zero. transport_generic_new_cmd() then allocates an empty protection
+> scatterlist, causing a target-side Oops, which can also lead to
+> use-after-free during subsequent iSCSI connection cleanup. A logged-in
+> iSCSI initiator can trigger this on a FILEIO LUN with protection
+> information enabled.
 > 
 > [...]
 
 Applied to 7.4/scsi-fixes, thanks!
 
-[1/1] scsi: target: compare all six ISID bytes when identifying a nexus
-      https://git.kernel.org/mkp/scsi/c/fb8fd1da808f
+[1/1] scsi: target: Disable protection processing for zero-block commands
+      https://git.kernel.org/mkp/scsi/c/6b745a4ae88a
 
 -- 
 Martin K. Petersen
