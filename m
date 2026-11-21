@@ -1,89 +1,92 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.128.48
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795279145;
-	b=1+yZtjDJnyEcutzY9rR/3j6/LKgnoez6oSRW98JGGoKPG+bvYu9UTNOYIljk/d+UK0Le
-	 JAhJjpVb1IwN7Xhc/KvjixwQSFIWwDSRwvvOTx5662v5hg8R2ffZRXtUfQtNt32l3UD5v
-	 R3PT5m66segwllWt3MPMi5ryAwoWraFFejdDQEhmoAO15vFDqyB0r7uDuXi3lhOmOpRZ7
-	 vB27j1Tj7SaWMsRAPveLC2PqFpcGoFUmwLNFXd4MwhhoCeerTfgD+v8trJbiDjFwNgKpz
-	 v5c4i+kOOj47hXiIBKLhceWxA9ehZzTxrmQH9KnjSusEEY8tVSbVABsVvJiH/UlpAYA==
+	t=1795279146;
+	b=dzEPpI7khQjXs5VW8zaRdP7tNm5UzFFvjVu29Dztac2RzeLqHg2K8mv0PP/Vv5ZOmC7L
+	 zcpzOnJMTCMrD83Xo6NiQUYrVAYnNiXHVR85BAYtaDZjf9M+SO74Ld4VaEPRlqa5tNSN+
+	 +gMU/SmDr/hbqCK9rP+4t1PjVppv7IzbJrkmdbx03ETcNegz+XOv0Ly2qSYXQQXxohGeb
+	 EMuRtPkN4fIUCf9z0BzBDsw9k5gCElLDTRVGvV1u0E2qXbvZ5jG/BMxUJfkMt14k5ht48
+	 oVnACJKiCQnBWp8GMAzQJfioy++XMx7hf5S/TkflH3pFcajaOouCu0XkVfqCZ+KNEvQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795279145;
+	a=rsa-sha256; c=relaxed/relaxed; t=1795279146;
 	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
 	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 Subject:From:To:Cc:Date:Message-ID:Content-Type:
-	 Content-Transfer-Encoding:MIME-Version;
-	bh=UvpOy7GOb9rkObKegTI8SaLmn0rbNgwEAUXCgiEk9Sg=;
-	b=I8xXA92QMsQFNBjAsbaYlzMOBAogh4wgQ2CuJYvC7nMFvPInv5FDtV1lds5ikc5aSagk
-	 Y/ph8wn+9vpXRQQ1sTYZgyKWvbQaq4+YdSlhWepnr7qaplrdhrQI3VViZ4xdBd1aF5jTk
-	 FEOJvHIW4L2EwuRWiKnPq+sEq4hSCzF/CEGYOgOb/RxMTNYJdNdzUE51AKA9KJrzV2fL4
-	 nd9XEalng1v8pZA79rLd/0O69j4vl5AznfOs/XabejNgu1T7Lsw7BEJF+I6BpH2E0yLfK
-	 q5TnWoEyhbLoDwDJsR1AE8BUinltcJe1/ScV2iOgJDLQEu1wopk1wOhQ0wCsp1jW6ng==
+	 Subject:From:To:Cc:Date:Message-ID:In-Reply-To:References:
+	 Content-Type:Content-Transfer-Encoding:MIME-Version;
+	bh=aJagQIak0BRtppgANFUQl/qR942eiwZ9P0AShQ9wWS0=;
+	b=q1XmmnYYKDNstkqm+kk65gBpckOT3aE2Knog8CnuV6LPVhK+lK+y1jyFJHRB7y/DmEDs
+	 WZgkcDaTt5R4YAPYAArjbAGgtXrtflQCjso3VBWkzYEhYwxlX7xVQz34N19fCzz9VRCLW
+	 7XHVK+Dr2pfAMlJa7SVTaPt9bT6US4l2H+aSBM7Lia4hR4NtrcdQ/ZKQ9zIuvg0ZcJE90
+	 8zgUV3aJo/bAYUmuad/5mxnrZTO8oGvf1z7iN60r7h4lLFyWgquRtDJeDWLOrPU5RRkBE
+	 I+wSMo8Jl3UpIU1Z5kyJXoUsKSP2Yw3n32jdgHEG3IugbCfiW+23lbTxXOU8FVBg1jA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=gmail.com;
 	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=f+MzvHFf;
+	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=oZaGse3B;
 	arc=none smtp.remote-ip=209.85.128.48
 Received: from mail-wm1-f48.google.com (mail-wm1-f48.google.com [209.85.128.48])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EE9E0606A320
-	for <target-devel@vger.kernel.org>; Sat, 21 Nov 2026 16:39:04 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org EE9E0606A320
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A5644606A332
+	for <target-devel@vger.kernel.org>; Sat, 21 Nov 2026 16:39:05 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org A5644606A332
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=f+MzvHFf
-Received: by mail-wm1-f48.google.com with SMTP id 5b1f17b1804b1-4a214c5c4c0so17672685e9.3
-        for <target-devel@vger.kernel.org>; Sat, 21 Nov 2026 08:39:04 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=oZaGse3B
+Received: by mail-wm1-f48.google.com with SMTP id 5b1f17b1804b1-4bb64ef5a14so20510105e9.1
+        for <target-devel@vger.kernel.org>; Sat, 21 Nov 2026 08:39:05 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1795279143; x=1795883943; darn=vger.kernel.org;
-        h=mime-version:content-transfer-encoding:content-type:message-id:date
-         :cc:to:from:subject:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=UvpOy7GOb9rkObKegTI8SaLmn0rbNgwEAUXCgiEk9Sg=;
-        b=f+MzvHFfqQ9WcbUSNKxJj1Ic+3RE+07hDar/TjwNI5eDF9Qio/PkinckXvA/B9AC4q
-         SQZJsP69aC01AzYvoojV9pj8fpG7bmLXfjM83jVrB2QwD/3JahcKWGlzGFztuyk0SE4l
-         C9Wbx73I5pQxtxIQRauurGKZZZyWH5csSjD/6BUu7b12cLSa3ufRkyAOlSZ1VFUUp8yh
-         kOCQ65OkPWm/SEe+z7C3wxy37KuDBaElNZeOtipOTXYGi8uAczrYwqeotlRWPxz+64i1
-         Y4I2dkkPzLS8XuAQt+7hkD3x8jdYamrzMoUaPT6rjiwk4aNIvDAIqodTht+Mnk96mZA4
-         IbjQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1795279143; x=1795883943;
-        h=mime-version:content-transfer-encoding:content-type:message-id:date
-         :cc:to:from:subject:x-gm-gg:x-gm-message-state:from:to:cc:subject
+        d=gmail.com; s=20260707; t=1795279144; x=1795883944; darn=vger.kernel.org;
+        h=mime-version:content-transfer-encoding:content-type:references
+         :in-reply-to:message-id:date:cc:to:from:subject:from:to:cc:subject
          :date:message-id:reply-to:content-type;
-        bh=UvpOy7GOb9rkObKegTI8SaLmn0rbNgwEAUXCgiEk9Sg=;
-        b=QG9iMaYk9QSXlM/IHyYcIfhHJywpUrlmvSpD/Thj6sZ8OF2YkdTsoKUrikB+CFT77A
-         +Dlpim9aiZQRnSBQpMXE1I2ZgZwZIzCnBr+WWFoW/BzdA+x5+EqVSCwyNYzZ86dg05tC
-         4cz9M6VlPePjhQGWR95VCSYpfHEYKkTB3F7QBeIdj6ItjY//5HD5cov92lptu4Aq6ciz
-         pIGdLQRVNnaCNZ5bLZ1USz4vtmQN2eCxZg52Lo6Zjb+bUjwTTtBkElG3EPBuKFnpLAZ1
-         jQ97szOHhFYCCPBXOOlFs3AnfCYsdNJboBchMCAzWE4rn5tmJxBigOXn7gMoTee0OP6X
-         K+Cw==
-X-Forwarded-Encrypted: i=1; AL+hErEWr3OnTTTKYutcvZ8+/r14IQDw76ZiqZ9hHjqDFCRgKisRQsTa5xjFuzpKSUzjMcbKtgT+rT4p6apEBp8=@vger.kernel.org
-X-Gm-Message-State: APuU4Z8hkLfBeCSmsLdvdQRipABKmnJWvmU5zu1yTA8h/bzaG9rBQ11W
-	PGZinePbkF9BvAULKJbSc9Ze70L0HPVNYwiUHcIORPCYU8cnZTohGzra
-X-Gm-Gg: AZFdTZd2Jo2jZl8EOfaXdyja0AjM3zA88KXOJtsztQ6H4iLxf5zmbMjekT7iQFHPdgj
-	Bin53h6d+h3Oz3w7A0Ftca41tOV5JExpgFhgAoGrR6ecISiMBjlaM5kOuQFMs0qv/OutLXFa6/Q
-	S/9J8aEQROi602JjcPYX8CvKKaOmycj2QPtc3pQhS0z42VAaEG5Fai+9c7I1A8Ujy+4PfZmqAWO
-	5pOdcNJ/KdVALm/ODp7lBNuA0x+xZbiKPHmbVA8PcB9Tbc5lMjWs4i05GUGZug9tlheUq2B1yvk
-	jaQIKzIAY0sCYs44OY1RNmCyJ+4bCFsI8PEgCSwt+1TXaR6N+AWMYXt6lfZk1IZvHCO6wKxMgUi
-	3tOGNNj4X4/onCbiunNZ29+ExXqNIjoQ9L56QUQpPiPLQ2YxJMIBxF8zNf349CTiYWJLooVanh8
-	4lcqnLhbAkxBJT5e3lkDrGFsA40FUVQ8cueokeDd0z9XNmB64bMGwNh3bETFbBiSkTwEFVTBoVy
-	3IZz27D0M2QNd8kOdkRDGszuymbrrPN1PFGJSsgE53cbjx9Sl94qtJIerJli1HHFvfm/0+cYm0t
-	6liNr7Tvq+QoP2iCrNIdeLQ3iyJ8mdN9sGuYR84hpDvb
-X-Received: by 2002:a05:600c:5246:b0:4bb:60ba:49e0 with SMTP id 5b1f17b1804b1-4bb88930707mr157734315e9.26.1795279143087;
-        Sat, 21 Nov 2026 08:39:03 -0800 (PST)
+        bh=aJagQIak0BRtppgANFUQl/qR942eiwZ9P0AShQ9wWS0=;
+        b=oZaGse3BRu13yzlOR83x5vEkHZPhBpB3/wKNUHuVByLLjz1dOEKr1S6G8WE4hP237Y
+         esy4s7j2RizS5XZHqk3AzIzX0Dvcn33IgYjpS3PfUo7hZlLeaPi/iygiKJr3eiEr/IJ4
+         +mB5YglndJpcWaXm0wHieAE07b9/gYGD2XUSCOvhj4hmscdJUTodvEqaNCoaC4KPXMwf
+         vxyKf/47hIeM2SrQ0kuGYSQRCCyIaeD+2pdkYH4IuNIHiqmAIT8+W/9+gwIQIe/pWR+M
+         QYiMSN5/VgCE7lV1Qg7kH/n7E1HXYdciP+BmnKVy6biCcNIi9WyoRMXBLRkZk21nXgWM
+         xtPA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1795279144; x=1795883944;
+        h=mime-version:content-transfer-encoding:content-type:references
+         :in-reply-to:message-id:date:cc:to:from:subject:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=aJagQIak0BRtppgANFUQl/qR942eiwZ9P0AShQ9wWS0=;
+        b=QqIjZKi/ieBBefyf7KWLFUzjHS8b9ktBnIaeMUD+iu2h9r4spUHQ24ujI8KV+ZYLqS
+         UzM9NN48cj9ahZv/KeWXPOga3QEyRmksuEzrOHj4FOCDDRvDGHRriMWU0+r9c0qENPLG
+         moxFp2xgQ8zUxyABiKowCBW2xFMF3s7rmOrYQB2l1604OXZM+8lRAYDhbztFqxWG4pxP
+         Ozq16C3KLNaD3hmJzgWiaAJfstkFi6/oR5VpM8eThf9mr/9zV5bL3EIpwjt+ej+T9s+L
+         STHarkyw1y1drGdc6uGlBsnQI/91Y4TFDkOAhRqk1wl6V50udClmPGUYBscWAFQS12P4
+         qWNQ==
+X-Forwarded-Encrypted: i=1; AL+hErHMtxNrqTc1jg5O+9rYweTAMwpEC/MelQLOU28c/yNk6y6zKA8ZSnxEK4UiI0WH1x36eA6s34YYLM4TEQM=@vger.kernel.org
+X-Gm-Message-State: APuU4Z+uvuHu0Z1/Wx+07P2hoFNm4E7+tof7U/tmziBvxo/wWBevj7va
+	2EonOs8mNly3bQagoq819ObMC42sbVRKyvwhfvdt8crmJKjCm0UV3IFU
+X-Gm-Gg: AZFdTZcBz57Ir5A20FevAm1L+F3zFPtWMLl0NHNneFbEAVelOLiDS/JRi/qOboDCmbl
+	O47QO5YM8lYmKBjbQpGNVkw6S3J4KF/xz5QCdgBPB8QLZkSuK3/7gYhEDYeJrUZrzAM+qMQSKOy
+	+f+iLv9aLQKbdycET35FXtUkUJEbKoUHt/cTTio6fkWKWlt/BUVjWu1SJ+/x19MTNoApOi6wYO6
+	Mv/5E9Xq1ILGEN6DifkR3OuhXGZRxrwFfRAMaD8i81wMEN8Di/VuFmCCrsVQPOJqQc/serMZNsS
+	0/nEc3/Wac0ZvBiF0Ig1z9lyehA93UdfWzjTwl/GxdA9OkHIdHfyDsrtkRBC7k22KbkOr9XThYU
+	PW8aZHeY+Qed/Ev/iSq6mEgxaq8p5pBJjvuqt9EaLB9JpH9CuFACYU48nUaO4hCvcoHihDazBoT
+	Poyup9EIWOCHlKj7ZzXjpt3xw+1Vv+moHxnbEShhsLolUozvt7+S7c09cfYd6bNoyTzOXAuJyOb
+	2Ws1UedLDJYtN6EILmKbVmJCcvDonTuSmwi50vtphCrpaq4czkwNWukhOQCCv/uTbyCg1ulqtfM
+	cisA6sEPbwXZzAriJCFA2tFhD2W3F9pB9rK/mnnnEk25
+X-Received: by 2002:a05:600c:1549:b0:4bb:6a2d:b440 with SMTP id 5b1f17b1804b1-4bb887e0699mr151063275e9.2.1795279144008;
+        Sat, 21 Nov 2026 08:39:04 -0800 (PST)
 Received: from [10.77.1.44] ([94.188.8.172])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-4ab69bf61b8sm11212895f8f.19.2026.11.21.08.39.02
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-4ab69bf61b8sm11212895f8f.19.2026.11.21.08.39.03
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 21 Nov 2026 08:39:02 -0800 (PST)
-Subject: [PATCH 0/1] scsi: target: iscsi: fix use-after-free in iscsit_stop_session()
+        Sat, 21 Nov 2026 08:39:03 -0800 (PST)
+Subject: [PATCH 1/1] scsi: target: iscsi: fix use-after-free in iscsit_stop_session()
 From: Vitalii Dodonov <dreamer.two@gmail.com>
 To: linux-scsi@vger.kernel.org
 Cc: stable@vger.kernel.org,target-devel@vger.kernel.org
 Date: Sat, 21 Nov 2026 19:38:57 +0300
-Message-ID: <179527913740.32224.2426414360492240680@gmail.com>
+Message-ID: <179527913740.32224.16728687439026782592@gmail.com>
+In-Reply-To: <179527913740.32224.2426414360492240680@gmail.com>
+References: <179527913740.32224.2426414360492240680@gmail.com>
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 X-Mailing-List: target-devel@vger.kernel.org
@@ -96,98 +99,131 @@ List-Owner: <mailto:target-devel+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
 
-The iSCSI target panics with a general protection fault inside
-iscsit_stop_session() when a session that has more than one connection is
-torn down while another thread closes one of those connections.
-
 iscsit_stop_session() walks sess->sess_conn_list with
-list_for_each_entry_safe() and drops sess->conn_lock inside the loop.  A
-connection that is being shut down concurrently runs iscsit_close_connection(),
-which removes itself from the list with list_del() under the same lock and
-leaves LIST_POISON1 in conn->conn_list.next.  Pinning the next connection with
-iscsit_inc_conn_usage_count() keeps the object alive, but not the list links,
-so the following iteration computes conn_tmp = list_next_entry() from the
-poisoned pointer and passes it to iscsit_inc_conn_usage_count(), which takes a
-spinlock at *(conn_tmp + offsetof(conn_usage_lock)) and faults on
+list_for_each_entry_safe() while dropping sess->conn_lock inside the loop.
+A connection that is being shut down concurrently removes itself from that
+list with list_del() under the same lock, which leaves LIST_POISON1 in
+conn->conn_list.next.
+
+Taking a reference on the next connection keeps the object alive, but not
+the list links: the next iteration computes conn_tmp = list_next_entry()
+from the poisoned pointer and passes it to iscsit_inc_conn_usage_count(),
+which takes a spinlock inside the bogus struct and faults on
 0xdead000000000004.
 
-Crash, 7.3.0-11-generic, LIO target with MaxConnections=8, Microsoft iSCSI
-initiator holding 8 MC/S connections, graceful reboot of the initiator while
-I/O is in flight:
+This is reachable whenever a session has more than one connection: on
+logout (iscsit_logout_post_handler -> iscsit_stop_session) and on session
+reinstatement, when a new login arrives while the old connections are
+being closed (iscsi_check_for_session_reinstatement -> iscsit_stop_session).
+With MaxConnections=1 list_is_last() is true, conn_tmp is never
+dereferenced and the bug stays hidden, which is why single-connection
+setups never hit it.
 
-  Oops: general protection fault, probably for non-canonical address 0xdead000000000004: 0000 [#1] SMP PTI
-  CPU: 0 UID: 0 PID: 9028 Comm: kworker/0:2 Not tainted 7.3.0-11-generic #12-Ubuntu PREEMPT(lazy)
-  Workqueue: events iscsi_target_do_login_rx [iscsi_target_mod]
-  RIP: 0010:_raw_spin_lock_bh+0x18/0x50
-  RDI: dead000000000004   RBX: deacfffffffffcb0   R15: deacfffffffffcb0
-  Call Trace:
-   ? iscsit_inc_conn_usage_count+0x1b/0x40 [iscsi_target_mod]
-   iscsit_stop_session+0x7d/0x1b0 [iscsi_target_mod]
-   iscsi_check_for_session_reinstatement+0x1e1/0x290 [iscsi_target_mod]
-   iscsi_target_handle_csg_one+0x135/0x160 [iscsi_target_mod]
-   iscsi_target_do_login+0x32/0xe0 [iscsi_target_mod]
-   iscsi_target_do_login_rx+0x2d2/0x420 [iscsi_target_mod]
-   process_one_work+0x1dc/0x3f0
-   ...
-  Kernel panic - not syncing: Fatal exception in interrupt
-
-The same fault is reachable from the logout path:
-iscsit_stop_session <- iscsit_logout_post_handler <- iscsit_response_queue <-
-iscsi_target_tx_thread, with the identical 0xdead000000000004.
-
-Where it was first seen (field report).  A Proxmox VE host (7.0.14-9-pve,
-later 7.0.14-28-pve) exported zvols through LIO to Windows 11 clients using
-the Microsoft iSCSI initiator with MC/S.  The host had been stable for 95 days
-with MaxConnections=1; after raising it to 2 there were four panics in one
-night, all with the same general protection fault at 0xdead000000000004 and
-the logout stack above, and the journal of one of them contains "Received
-logout request on connection that is not in logged in state".  The panic also
-reproduced on 7.0.14-28-pve, so it is not tied to a single build.  The module
-carrying this fix has been running on that host for 9 days with
-MaxConnections=4 and 72 active iSCSI connections, without a single panic.
-
-Reproducer (any MC/S-capable initiator; open-iscsi does not implement MC/S, so
-a Microsoft iSCSI initiator was used):
-
- 1. LIO target with MaxConnections=8, no CHAP, generate_node_acls=1.  The
-    value lives in configfs and is not exported by targetcli:
-
-      echo 8 > /sys/kernel/config/target/iscsi/<iqn>/tpgt_1/param/MaxConnections
-
-    With MaxConnections=1 the extra connection is refused with
-    ISDSC_TOO_MANY_CONNECTIONS and nothing happens, so the target has to be
-    configured first.
-
- 2. Initiator: log in, for example on Windows
-
-      Connect-IscsiTarget -NodeAddress <iqn> -TargetPortalAddress <ip>
-
-    and then add the remaining connections to the *same* session, one call
-    per connection:
-
-      iscsicli SessionList                 # take the "Session Id"
-      iscsicli ListInitiators              # -> ROOT\ISCSIPRT\0000_0
-      iscsicli QAddConnection <SessionId> ROOT\ISCSIPRT\0000_0 <portal-ip>
-
-    Repeat until the session holds MaxConnections connections.
-    AddIScsiConnectionW() does the same thing programmatically, and the
-    "MCS..." button in the iSCSI Initiator GUI (target -> Properties ->
-    Sessions) as well.
-
- 3. Bring the LUN online, mount a filesystem on it and start writing to it.
-
- 4. Reboot the initiator gracefully while the I/O is still in flight; repeat.
-    The stock module crashed on the 2nd-4th cycle (2 panics in ~20 minutes).
-
-Results: stock module 2 crashes in 8 cycles, patched module 0 in 118 cycles
-(the target stayed up for the whole run).
-
-Patch 1/1 takes a snapshot of the connections, with a reference on each, while
-conn_lock is held, and then works only on that snapshot; the order in which the
+Fix it by taking a snapshot of the connections (with a reference on each)
+while holding conn_lock, and using only the snapshot afterwards.  The
+allocation happens before conn_lock is taken, on paths that already block
+in iscsit_cause_connection_reinstatement(..., 1) and in
+wait_for_completion(&sess->session_wait_comp).  The order in which the
 connections are reinstated is unchanged.
 
-Vitalii Dodonov (1):
-  scsi: target: iscsi: fix use-after-free in iscsit_stop_session()
+Tested with a LIO target (MaxConnections=8) and a Microsoft iSCSI
+initiator that adds MC/S connections and then reboots gracefully while
+I/O is in flight: the stock module panics in 2 of 8 cycles (general
+protection fault, address 0xdead000000000004), the patched module
+survives 118 of 118 cycles.
 
+Fixes: e48354ce078c ("iscsi-target: Add iSCSI fabric support for target v4.1")
+Cc: stable@vger.kernel.org
+Signed-off-by: Vitalii Dodonov <dreamer.two@gmail.com>
+---
  drivers/target/iscsi/iscsi_target.c | 68 ++++++++++++++++++++---------
  1 file changed, 47 insertions(+), 21 deletions(-)
+
+diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/iscsi_target.c
+index f3b7569..e644fe0 100644
+--- a/drivers/target/iscsi/iscsi_target.c
++++ b/drivers/target/iscsi/iscsi_target.c
+@@ -4672,36 +4672,62 @@ void iscsit_stop_session(
+ 	int session_sleep,
+ 	int connection_sleep)
+ {
+-	u16 conn_count = atomic_read(&sess->nconn);
+-	struct iscsit_conn *conn, *conn_tmp = NULL;
+-	int is_last;
++	struct iscsit_conn *conn, **conns = NULL;
++	unsigned int i, n, conn_count = 0;
++
++	/*
++	 * sess_conn_list may only be walked while holding sess->conn_lock: a
++	 * connection that is being shut down concurrently runs
++	 * iscsit_close_connection(), which removes itself from that list with
++	 * list_del() under the same lock and leaves LIST_POISON1 in
++	 * conn->conn_list.next.  Pinning the connection itself is not enough,
++	 * because the list links are poisoned as well, so take a snapshot of
++	 * the connections (with a reference on each) and work on that snapshot
++	 * only.
++	 *
++	 * The sleeping variant is called from process context only --
++	 * iscsi_target_tx_thread(), the login workqueue (session
++	 * reinstatement), configfs, iscsit_release_sessions_for_tpg() -- with
++	 * no locks held, and this function already blocks below in
++	 * iscsit_cause_connection_reinstatement(conn, 1) and in
++	 * wait_for_completion(&sess->session_wait_comp), so the GFP_KERNEL
++	 * allocation does not add a new constraint.
++	 */
++	if (connection_sleep) {
++		conn_count = atomic_read(&sess->nconn);
++		if (conn_count) {
++			conns = kcalloc(conn_count, sizeof(*conns), GFP_KERNEL);
++			if (!conns)
++				pr_warn("Unable to allocate %u connection slots for session %u, shutting down without waiting\n",
++					conn_count, sess->sid);
++		}
++	}
+ 
+ 	spin_lock_bh(&sess->conn_lock);
+ 
+-	if (connection_sleep) {
+-		list_for_each_entry_safe(conn, conn_tmp, &sess->sess_conn_list,
+-				conn_list) {
+-			if (conn_count == 0)
++	if (connection_sleep && conns) {
++		i = 0;
++		list_for_each_entry(conn, &sess->sess_conn_list, conn_list) {
++			if (i == conn_count)
+ 				break;
+-
+-			if (list_is_last(&conn->conn_list, &sess->sess_conn_list)) {
+-				is_last = 1;
+-			} else {
+-				iscsit_inc_conn_usage_count(conn_tmp);
+-				is_last = 0;
+-			}
+ 			iscsit_inc_conn_usage_count(conn);
++			conns[i++] = conn;
++		}
++		spin_unlock_bh(&sess->conn_lock);
+ 
+-			spin_unlock_bh(&sess->conn_lock);
++		for (n = 0; n < i; n++) {
++			conn = conns[n];
+ 			iscsit_cause_connection_reinstatement(conn, 1);
+-			spin_lock_bh(&sess->conn_lock);
+-
+ 			iscsit_dec_conn_usage_count(conn);
+-			if (is_last == 0)
+-				iscsit_dec_conn_usage_count(conn_tmp);
+-			conn_count--;
+ 		}
+-	} else {
++		kfree(conns);
++
++		spin_lock_bh(&sess->conn_lock);
++	} else if (!connection_sleep || conn_count) {
++		/*
++		 * Either the caller does not want to wait, or the snapshot could
++		 * not be allocated: tear the connections down without waiting.
++		 */
+ 		list_for_each_entry(conn, &sess->sess_conn_list, conn_list)
+ 			iscsit_cause_connection_reinstatement(conn, 0);
+ 	}
