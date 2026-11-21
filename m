@@ -1,100 +1,74 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.214.175
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795195901;
-	b=hk79djACABkzxAZ8VTouXBSb1cJqS4G8Y7TR+IjuWefp8CPBUIV3atVyjjvB/d/qzeS6
-	 ckYyE2yIAaTFQ6jECXK+oWzVE/dKRuxEVNhFHDbT30r0gyEpivRMmnzEYofZELFmcFylw
-	 4YPpILcsKzN+emyR/QZhcOdid5F/HUsVY89AWAt9104UggkjohV7lrYofAXHdPyoE81I6
-	 cPhthA8uxMT9gHu+wZSOv6uWpTgn2/cwCa51xykxvyBcSHHVrMGAFfwoexylceTnFasrK
-	 XtHC6tkB/S5UYNiPm0NyhJq55DILzayfHngZK6xt7s7Pt1IPVE3LEBeOPQ8vZN53P6w==
+	t=1795226035;
+	b=1yKcxEtqqb+WrmD/p0bnGGAhE+BpcwUM3rfjmICdY22MD+p4vinWC7V6dwmWO3YFn2K0
+	 ZuFJK8Uwug2AVseoMmVFxrIWNn3GW6bhZIPC262Vr2r54dhrtjD7L3yT2m+Fv6QAu2nca
+	 ucLxm99sp63buM7gBa4FcVpcINZzMrJ/ZmnhFY//MTQMCY6AkempICUuuC+SvRTlJfiqS
+	 j4QFoWrhG7kaqg+TYNUZpBg3kYIRd8kB+fDuwPmCLQ6nrUyKLebF7wdXi37j+HKqc9B0j
+	 UGa6byglHwguH0P1MpbaVnUCabE7kr4JBFSB0WkDDWBugmCNQn4qxNZ+1uH0qAps9+g==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795195901;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:
-	 MIME-Version:Content-Type:Content-Transfer-Encoding;
-	bh=bxKwdrIUuzixTrlHwEraSTTfViGb7kgcBDYdj0LG20I=;
-	b=PJCxUTU8KpphSQfJcxaSLeDrLecp75gS8zcA+Jal1pyc+JmqQXXRStF6LeoNIgQ+dMZ5
-	 1NIuRKtwcUNyLGsFnZZj98xBOHG93O9r2CrshOvwiKv51BQQb/h91bcMj4rrnlyzBCNaH
-	 lFbWsp7RZQD3q/mHelgy5PZyVuZ/d0u0xtB5q1m4L0IZ9JL8BT0/31c6Y/8BN9JM/YuVF
-	 Xv0hg5rQMa2Dwe47vI9IiPvVKWdDFjdWKhRAjn4Kn1cUKnnkV8p4AMZiHk0FA+xnZ82OV
-	 rTvpEQH4tzJsJ1SPUTddV4Wv4RReKtcfnsx16JUBmLRswiyCXG9qf1woquHiU5C7DeQ==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795226035;
+	h=Received:DKIM-Signature:To:Cc:Subject:From:In-Reply-To:Message-ID:
+	 References:Date:MIME-Version:Content-Type;
+	bh=bAEwXufd1aGDXQpyMZqUXHHvNXg6L4UcF55OuXC5FcA=;
+	b=agTTBEs4IUrgzHlaszNman+gviJJLeomj930JmgodZBxaeffzGcL36Fe6xcL3vhG6h7D
+	 434kT11icprU4VoFcw0znkgksk2/1NFYsQD0RmK2psBQMNQxU1JKp03bCY++2y8Eovmc7
+	 uo9794NJKJKS+4lWEKCwtbGDq117nJCdceofk/exnF/vDaLzNFH8RtmEoD1jm6IxaZE24
+	 IAdtxj7wy9ewKg/12VESbioJxemRYLpvIBmqy4ySgkyAOeaKIAeTPV8NeI75lQgrfE+FO
+	 O7jV8yYf9R/CwZJ5cy1dX+ShYdh0m5KwibLirwE7V032MnLt5KLB1n0ie0FXEmE17gQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=fail header.from=isslab.korea.ac.kr;
-	spf=none smtp.mailfrom=isslab.korea.ac.kr;
-	dkim=pass header.d=isslab-korea-ac-kr.20260707.gappssmtp.com header.i=@isslab-korea-ac-kr.20260707.gappssmtp.com header.a=rsa-sha256 header.s=20260707 header.b=h6UztEPa;
-	arc=none smtp.remote-ip=209.85.214.175
-Received: from mail-pl1-f175.google.com (mail-pl1-f175.google.com [209.85.214.175])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=opGg8+ns;
+	arc=none smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0F19860A2633
-	for <target-devel@vger.kernel.org>; Fri, 20 Nov 2026 17:31:40 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 0F19860A2633
-Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=isslab.korea.ac.kr
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=isslab.korea.ac.kr
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 02D52606A6A5;
+	Sat, 21 Nov 2026 01:53:54 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=isslab-korea-ac-kr.20260707.gappssmtp.com header.i=@isslab-korea-ac-kr.20260707.gappssmtp.com header.a=rsa-sha256 header.s=20260707 header.b=h6UztEPa
-Received: by mail-pl1-f175.google.com with SMTP id d9443c01a7336-2f0213202fdso6867605ad.3
-        for <target-devel@vger.kernel.org>; Fri, 20 Nov 2026 09:31:40 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=isslab-korea-ac-kr.20260707.gappssmtp.com; s=20260707; t=1795195900; x=1795800700; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:mime-version:references
-         :in-reply-to:message-id:date:subject:cc:to:from:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=bxKwdrIUuzixTrlHwEraSTTfViGb7kgcBDYdj0LG20I=;
-        b=h6UztEPas0J1ez1Yuh9unLqPaR1gDwtjlSvghhiSA9vaXNPrRi5uxF5XEJRGkESiUd
-         lRKd1Wx9WDP6/GvtOIgzygcN8Ir0csDzBM47drzwYJkDExX7qaqcrGuvB5kfqo5AgVyn
-         tCgkqmAja/nlGi4MFQMTlf/BWdsQwRzgAChDghUENbT+UCRDtKEo6NCCned5mLOSgJFC
-         VcyluTbKGOOqYmC+NIOZqGt1fcOy4nMjdTuJCGIJsNUktotD4q7DQVgyF39jjv95aZT0
-         pjjbTtCPbYJmKL+VT/Fy9v4YtXuX7drAsoAk1VQTGMiEivSpHruSjmRhsEEmpErZRVur
-         fo4g==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1795195900; x=1795800700;
-        h=content-transfer-encoding:content-type:mime-version:references
-         :in-reply-to:message-id:date:subject:cc:to:from:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=bxKwdrIUuzixTrlHwEraSTTfViGb7kgcBDYdj0LG20I=;
-        b=EDetn3LpuZJwgUB7jML+qR6t0k0V3IABbyV5gP4EudKKy89n8ZXzVNwYnkJT/kpKD5
-         vpdHzyhdEPWGSSyosvCJX1jyf/8e41fLAYyQUd3A2VMHQpxmA+v/DPB7exdMmgSqIzXq
-         8D79Mk1Iz/gfTOq2sktru6bAu/AclJ5C5JLEV64cUyfvRViOEcMEFNxDauBYToeaqGzb
-         3m/PRnP4cTM0SH1ZBhrU+JrpqJHFpYKrv6uBDoxD7xVCfje73aRm9BvpLgJRo+NUhTcT
-         Z00NbawTXPUt3R4JIfIshBlzTsJp733HLQiKBCgQwoBwWZfms4i3olWFvQc55i6lfcKQ
-         Lbow==
-X-Forwarded-Encrypted: i=1; AL+hErEgPbeiUAdCYMRYFzumqqi9OoMMEcwTz/YqHThTtSmsHbTmyRx6JvC4vvAH70oGtV1RffwzLELlcrwB6q8=@vger.kernel.org
-X-Gm-Message-State: APuU4Z+xJKButZW4QZ7xO92ZxkiTzm7qU1nMOzhEESp5ACbyR4CK2fSU
-	jF6z6nC2pmJeC9bDnKgafoDDWj00+ZDB7nTJxABW8SEA3IkoYMqvZquD7d5yb8SYNxg=
-X-Gm-Gg: AZFdTZeNJFur0lA7AJGtwB5ReMZr3qQLZF7qwCNLyI+GQ6S1l4QwE93WMozzjritE3y
-	AOpBW7dRcg7Puyhgdjr96KVV8EbGZFfUHbSxih9qQorx9fIJQHk6xQ7vjE2Da/3rfU1VcxRkaA+
-	twPG10wV3Z54CHYPoPzo/G6awwguyIB2NW7jGA1wc4NP2lxXqQM9AszYeO2/1pHGCktQJZ7LO9Q
-	MRSVpM0vRI5jifZilnl3Y07fw9PGgDeBXaEok4T7SbgyQV63d6mFoKgtiql73RXhuxoj9L6qK36
-	CwM8A0KoXI/+hjpceQ1zHLtlEbe2GvlrMPNWpgu03MuIit9T5WxKFudaibxfcEKBrKr6tMByC9U
-	LmbT+5eQtQ+RL8sL0fLmIVHFtQtC5Tw0yWBQrBwcgKnXI3oAEfer6uYR59NXbjzgCEk2IfkHLZG
-	G+RMSFcW+Xvo0GWsDZcrRGsMHXaWhH82yyMQvAJ8b8hz+BvDGgCef3KTF881qqdNedc7GIQqzWs
-	NKVFBcMvBr0rLjeehpSSZwzcgs1XTafX8cUIn0Ysj7t4WStA0/PEb7o3M6D8rCwg4cVXFSZYwla
-	LJ64rOGpyiuz7wcnS4dQ/CfHF21gBMTOyfXpjn7z0DMxiBQ7jtb54YQK8Y6tNK1i+QnlW+BFCMV
-	G5mtxexqmloEvTjbJCxMiG0j/NlOI04bSZQJR
-X-Received: by 2002:a17:902:dac1:b0:2ef:f819:3aa1 with SMTP id d9443c01a7336-2f03f1f0a26mr46054785ad.56.1795195900424;
-        Fri, 20 Nov 2026 09:31:40 -0800 (PST)
-Received: from yhlee-960QFG.Davolink ([2406:5900:1044:110c:8b25:951:ad8d:5cc1])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2f03f1482c3sm17173225ad.73.2026.11.20.09.31.37
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 20 Nov 2026 09:31:40 -0800 (PST)
-From: Yehyeong Lee <yhlee@isslab.korea.ac.kr>
-To: gregkh@linuxfoundation.org,
-	nkapron@google.com,
-	linux-usb@vger.kernel.org
-Cc: Thinh.Nguyen@synopsys.com,
-	bigeasy@linutronix.de,
-	target-devel@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	benquike@gmail.com
-Subject: Re: [PATCH v8 0/4] usb: gadget: f_tcm: fix infoleaks, sleep, and UAF in the BOT path
-Date: Sat, 21 Nov 2026 02:31:34 +0900
-Message-ID: <20261120173134.3286557-1-yhlee@isslab.korea.ac.kr>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20261118124005.2428068-1-yhlee@isslab.korea.ac.kr>
-References: <20261118124005.2428068-1-yhlee@isslab.korea.ac.kr>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=opGg8+ns
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 355461F000CA;
+	Sat, 21 Nov 2026 01:53:54 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1795226034;
+	bh=bAEwXufd1aGDXQpyMZqUXHHvNXg6L4UcF55OuXC5FcA=;
+	h=To:Cc:Subject:From:In-Reply-To:References:Date;
+	b=opGg8+nsP0elsmYvahbz6usW7HjsQqa3GSu6KnGpiohCy0PS8KdET/lScPkT7qAJr
+	 F546mCR7J9WDqoMR+653GPF6weueRkSSRqmpDcIjCstgxi9ZA9/xqpQ0at6s1oSaeQ
+	 LSMCPoudX3ER8CXSzgTqzugMMjTw7uVnU1k7/SXN48J0hEBGGgxxj+7dRBAwANfyXy
+	 UCVsRkYNLWj+DeqrHRgz576m1vba5Pm1nF+kDCA4+7241ffwOgHTI1i6ZZ0X+Ch+RW
+	 8WJ/3OONN4PAzYMJeo+nijM+KiY3Ps9Bw1mfPwqDRv3hRMKFTFMR1JOCimNNDYJHvs
+	 nRrj7Q5UF9iLg==
+To: =?utf-8?Q?Uwe_Kleine-K=C3=B6nig_=28The_Capable_Hub=29?=
+ <u.kleine-koenig@baylibre.com>
+Cc: "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,  "Martin
+ K. Petersen" <martin.petersen@oracle.com>,  Adam Radford
+ <aradford@gmail.com>,  Adaptec OEM Raid Solutions <aacraid@microsemi.com>,
+  Matthew Wilcox <willy@infradead.org>,  Hannes Reinecke <hare@suse.com>,
+  Finn Thain <fthain@linux-m68k.org>,  Michael Schmitz
+ <schmitzmic@gmail.com>,  Ram Vegesna <ram.vegesna@broadcom.com>,  Don
+ Brace <don.brace@microchip.com>,  HighPoint Linux Team
+ <linux@highpoint-tech.com>,  Brian King <brking@us.ibm.com>,  Kashyap
+ Desai <kashyap.desai@broadcom.com>,  Sumit Saxena
+ <sumit.saxena@broadcom.com>,  Shivasharan S
+ <shivasharan.srikanteshwara@broadcom.com>,  Chandrakanth patil
+ <chandrakanth.patil@broadcom.com>,  Jack Wang
+ <jinpu.wang@cloud.ionos.com>,  Junrui Luo <moonafterrain@outlook.com>,
+  Kees Cook <kees@kernel.org>,  Dave Jiang <dave.jiang@intel.com>,
+  Giovanni Cabiddu <giovanni.cabiddu@intel.com>,  Bjorn Helgaas
+ <bhelgaas@google.com>,  Lukas Wunner <lukas@wunner.de>,  Sebastian Andrzej
+ Siewior <bigeasy@linutronix.de>,  Thomas Gleixner <tglx@kernel.org>,
+  Duoming Zhou <duoming@zju.edu.cn>,  linux-scsi@vger.kernel.org,
+  linux-kernel@vger.kernel.org,  target-devel@vger.kernel.org,
+  storagedev@microchip.com,  megaraidlinux.pdl@broadcom.com,  Markus
+ Schneider-Pargmann <msp@baylibre.com>
+Subject: Re: [PATCH RESEND] scsi: Consistently define pci_device_ids using
+ named initializers
+From: "Martin K. Petersen" <mkp@kernel.org>
+In-Reply-To: <20261111183844.1906794-2-u.kleine-koenig@baylibre.com>
+Message-ID: <yq1fqwvosps.fsf@mail.kernel.org>
+References: <20261111183844.1906794-2-u.kleine-koenig@baylibre.com>
+Date: Fri, 20 Nov 2026 20:53:53 -0500
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Post: <mailto:target-devel@vger.kernel.org>
@@ -104,20 +78,19 @@ List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:target-devel+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
 
-On Wed, Nov 18, 2026 at 09:40:01PM +0900, Yehyeong Lee wrote:
-> Yehyeong Lee (4):
->   usb: gadget: f_tcm: queue the BOT status requests with GFP_ATOMIC
->   usb: gadget: f_tcm: zero the CBW buffer the status path sends
->   usb: gadget: f_tcm: reject a short write data-out transfer
->   usb: gadget: f_tcm: clear the scatter list when reusing the BOT status
->     request
 
-1/4 is in usb-linus as 69b3b657087f.  The other three are superseded by
-v9:
-  https://lore.kernel.org/all/20261120172829.3286180-1-yhlee@isslab.korea.ac.kr/
+Uwe,
 
-Best regards,
-Yehyeong Lee
+> ... and PCI device helpers.
+>
+> The various struct pci_device_id arrays were initialized mostly by one
+> of the PCI_DEVICE macros and then list expressions. The latter isn't
+> easily readable if you're not into PCI. Using named initializers is
+> more explicit and thus easier to parse.
+
+Applied to 7.5/scsi-staging, thanks!
+
+-- 
+Martin K. Petersen
