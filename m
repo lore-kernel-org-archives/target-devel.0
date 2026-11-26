@@ -1,72 +1,85 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.167.200
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795660546;
-	b=UUMF9LqQ/vkce5mjuAv4Q7pr7ddWK5mOQJKN71Jz47lD7KRJpjwKIdbYTYMacCrw2oiu
-	 M0XlFvG/V9bJeTBAQ6KypZY/4x5NE/mHF1PKueOkJ6FVY3dt0IScK+ehqpL5MIDWiVjEz
-	 bgk1glx/WJwEeja1bOPcjazXjjOUzJPSsttAkwOpIqHjtfLH045as/0uFV/Jo64OfZztN
-	 xu0/8gQC4iswZFaxEOhBUqgeQwtl67NstPli03aZS+TX2QVT9C+fZKyCf3TPA8XmQrfO9
-	 3vsvQjeIsqYovEtOpqxW8EVAH6pwFZPB0u5oAv5bSyDlm2LpHqSVatjuZt9WcmOaKLA==
+	t=1795664116;
+	b=ND/lRbRMV4NnuRjfmQIhv7XWGoJZvWiDJnzSmbMIu5+9EC+ZDlr9HiSEubYbdg+PSU+z
+	 uqNpVZNr+WkXkH2zIbgXr/EYAe4bbrQQK4wT4D6pmDrT+72W4zjucI9Nnd+4/oDf9utsg
+	 N+t4saSnYXNB7Q6pmq1BTmd37/quvIktWbVjzhJtc1/3kj4ssRBxcCLHMXUgROd93Uuj9
+	 Yd0lbx+Pbw1Y9xy8pTFBLUgE28wiKo82R0MTii3miTfzEtSs9d8Z2J4uAD7u+Svdr3iHE
+	 AEYpoF2DsbGgtjIebae1aDrBWXuZumzrJrJndxe4xUU2VYZCLpgmhSKTL48Iz2khKDQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795660546;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Received:Date:Mime-Version:
-	 X-Mailer:Message-ID:Subject:From:To:Cc:Content-Type;
-	bh=vnbaaCeQ4iuOjN0aXPIZIsjFxXeCrpxuuDRTSWpiltI=;
-	b=wEoUXNbuUREiHT7tsxEO62Td00jPC8zRA5qpUyVCbHpuq2T0iVvtSzEglKnzEvyrTXgL
-	 qmGNXt5LCV0H9gDCy4zXXWnf2VCvHG7ElKUL61TLWGUgakUvEjSeDldjeSqNVXX6Yxfi8
-	 NdhOtJYaWI7ZuLkV2qMQ3ofpU3b1NZSyVYgXCy4N7TYRbsHHaEKzTHmQwyNiYBAp/nWT9
-	 bLvH5IK4JQOrC7i/NXK/aSwzl2ofoo57JaHwaUV0Vh8LY3YWIKM2XvprtptK7TiugbPOm
-	 +DPRn+Mo72Elf0KgGnkUMQy7Vw9O4LmJTeYmju7yL2RhRHKMhH3Pyu8qrUw4sIUDR/w==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795664116;
+	h=Received:DKIM-Signature:From:To:Cc:Subject:Date:Message-ID:X-Mailer:
+	 In-Reply-To:References:MIME-Version:Content-Type:
+	 Content-Transfer-Encoding;
+	bh=74k3A1mvZKRD9oHJaqDoU3OL+iKBd00+OZL7CPLuCzw=;
+	b=SBCrtmeSWp3TbSGrkS2QsU171HQjkrXu7g8txYgsN7zxgatCrww4sLAstExwQJxtv9tR
+	 np4IdCXGwBd4L33lNyk3dAXpc8tkQWaYNW0/SvKP6G1/RhFqiVircbS0uw7RKWnR1C1+r
+	 OBNQaOqwcA64aPpqzpNRzS8iPmjTMbDUGCrArsBGjzCxoGUPrD6NiZFRYgRTByvFUoDx3
+	 nSfOsdwX5RreqXqGDN6msPSj/vnCu2c+JbZPEo0ZBmq3lykYJT5q2mR4LwUcPZcX+HCdN
+	 mKh3N9QQNShsQ7VvCU8BH11LpfuY1xM1yejcNZFqWZtaMhVfNk0dRdEMuj+m5NlOQ3w==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=google.com;
-	spf=pass smtp.mailfrom=flex--zhenwenliang.bounces.google.com;
-	dkim=pass header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=SO9NkoSY;
-	arc=none smtp.remote-ip=209.85.167.200
-Received: from mail-oi1-f200.google.com (mail-oi1-f200.google.com [209.85.167.200])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Cs1C4Aj2;
+	arc=none smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E6F39606A33F
-	for <target-devel@vger.kernel.org>; Thu, 26 Nov 2026 02:35:45 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org E6F39606A33F
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=flex--zhenwenliang.bounces.google.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 19704606A32E;
+	Thu, 26 Nov 2026 03:35:15 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=SO9NkoSY
-Received: by mail-oi1-f200.google.com with SMTP id 5614622812f47-4a7de733fa9so6592221b6e.3
-        for <target-devel@vger.kernel.org>; Wed, 25 Nov 2026 18:35:45 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20260707; t=1795660545; x=1796265345; darn=vger.kernel.org;
-        h=content-type:cc:to:from:subject:message-id:mime-version:date:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=vnbaaCeQ4iuOjN0aXPIZIsjFxXeCrpxuuDRTSWpiltI=;
-        b=SO9NkoSY76TdZ8L3QNZVqY4TxvBBzlHkUTD++MRIuj14TuIFlBRTuodK7IlCJ1yXNj
-         SJ0WES7uC9bJ6u0/sWhk1cIcLJU0zrxB1Qyz83kNZvOquDVVv7BltOY9WxMitCFGtGNi
-         ZeQMJ6iMNBKIne1loL8ZFTkQCENtrtdpp3ax+6xfurZH8VGTuFuPR+gFWH5jHx3cc279
-         KWzYKy5fctG+/jeUlh0/c2tDP2mQzfTqwZtS+L/fe5NT9pC1XRgH2tqv8KphLjlr2YgO
-         XfTUZsx7UGdBWaFuihu1s6gIQSi4S9eBZukI0yYVa242hohC+ybkBYpVlu8BJI0isA7f
-         egcQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1795660545; x=1796265345;
-        h=content-type:cc:to:from:subject:message-id:mime-version:date
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=vnbaaCeQ4iuOjN0aXPIZIsjFxXeCrpxuuDRTSWpiltI=;
-        b=11sX3SwV9/p1QvOEo95Y4B6dVTCjyzdJ3kycOTT1QeRxqT0NY0/tCA3ghTrdXbr2Ok
-         iorRLhCPMUKvjZ3cZCxtGlyyjCxkzJuZCt9NY3sDaKvAA8/Vp6pBOHa+QxTdPhqSQ0r2
-         wL6DqFCmVk30/WEvaPUpkYZh0dg4vw8PnOJbaDpRf1i47P8Q6u4BF2d9zJbzwlfXfEaZ
-         MQO5wJZJ6OPKEChBCFEGQEYkmyNSYUmgqfNrsyJaXStz+tR9mTSE1JeAsn+C5NJKQQUi
-         kyZeo94bhAZcoIhfPHp0v3/MvEgkqkQnLh1CyjkNyV0q2r1Hme2N72VOFbWBzJdGnoVF
-         +T7w==
-X-Forwarded-Encrypted: i=1; AL+hErESiwjHHivmJ4MrvDzJhCh9Oo6OFNOp3JJ9a66j5lXM8p4Tn3PZu/cfggrbahna1ppL4QcjrW3jq82JEC8=@vger.kernel.org
-X-Gm-Message-State: APuU4Z9E7mngAQBepJligr1r24+/a/uP0phw/pARFVtMwYO51pkLpM7n
-	Mne5xSunNXMdDSvffZ49/Fw2LRxbAaC9ue9gkUDCFnsqYnSID/B54+GKAZRMLfbXLEiBTTWZP4w
-	U1OFtjrVbsX2Hr1VDBQ1b6QDEwDme4g==
-X-Received: from ilef17-n2.prod.google.com ([2002:a05:6e02:6191:20b0:54e:a7dd:848b])
- (user=zhenwenliang job=prod-delivery.src-stubby-dispatcher) by
- 2002:a05:6808:4f29:b0:579:8a9e:1149 with SMTP id 5614622812f47-57a0ba4fbdemr23205010b6e.35.1795660544666;
- Wed, 25 Nov 2026 18:35:44 -0800 (PST)
-Date: Thu, 26 Nov 2026 02:35:43 +0000
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Cs1C4Aj2
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 46DF61F000D2;
+	Thu, 26 Nov 2026 03:35:12 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1795664115;
+	bh=74k3A1mvZKRD9oHJaqDoU3OL+iKBd00+OZL7CPLuCzw=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References;
+	b=Cs1C4Aj2dFSEvnYHbiXp/0HybyMpvIEXk0gHhvAZzSII5Ir6M9uWKrfl51RtfLt1w
+	 QoZE27aPysCF//WWLYm1g9G+FbVKUekIX6/gK+ODUbTYjEiiI6gVl+dkdDZafTSrnt
+	 KJRwrvtIYecXZs18pSmIqBo91H0ktExIh/ECkO9N4CRcspuN9pLw7TY2Q9ZssDEOjf
+	 R7Y5ydUSGtfgT6Bl2Rspi3WWHqXbKW8pfgo5InY88NRFdMr2N6GzOT78uudYJfXwa8
+	 RR4/lYloANDsCOa/nWhCLBOt7YVXh9NLatXV/Uo3Y/X9TwSFQV/DwNtRZfNAx5if/j
+	 LxcgcPGhXRFow==
+From: "Martin K. Petersen (Oracle)" <mkp@kernel.org>
+To: "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
+	"Martin K. Petersen" <mkp@kernel.org>,
+	=?UTF-8?q?Uwe=20Kleine-K=C3=B6nig=20=28The=20Capable=20Hub=29?= <u.kleine-koenig@baylibre.com>
+Cc: Adam Radford <aradford@gmail.com>,
+	Adaptec OEM Raid Solutions <aacraid@microsemi.com>,
+	Matthew Wilcox <willy@infradead.org>,
+	Hannes Reinecke <hare@suse.com>,
+	Finn Thain <fthain@linux-m68k.org>,
+	Michael Schmitz <schmitzmic@gmail.com>,
+	Ram Vegesna <ram.vegesna@broadcom.com>,
+	Don Brace <don.brace@microchip.com>,
+	HighPoint Linux Team <linux@highpoint-tech.com>,
+	Brian King <brking@us.ibm.com>,
+	Kashyap Desai <kashyap.desai@broadcom.com>,
+	Sumit Saxena <sumit.saxena@broadcom.com>,
+	Shivasharan S <shivasharan.srikanteshwara@broadcom.com>,
+	Chandrakanth patil <chandrakanth.patil@broadcom.com>,
+	Jack Wang <jinpu.wang@cloud.ionos.com>,
+	Junrui Luo <moonafterrain@outlook.com>,
+	Kees Cook <kees@kernel.org>,
+	Dave Jiang <dave.jiang@intel.com>,
+	Giovanni Cabiddu <giovanni.cabiddu@intel.com>,
+	Bjorn Helgaas <bhelgaas@google.com>,
+	Lukas Wunner <lukas@wunner.de>,
+	Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
+	Thomas Gleixner <tglx@kernel.org>,
+	Duoming Zhou <duoming@zju.edu.cn>,
+	linux-scsi@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	target-devel@vger.kernel.org,
+	storagedev@microchip.com,
+	megaraidlinux.pdl@broadcom.com,
+	Markus Schneider-Pargmann <msp@baylibre.com>
+Subject: Re: [PATCH RESEND] scsi: Consistently define pci_device_ids using named initializers
+Date: Wed, 25 Nov 2026 22:34:54 -0500
+Message-ID: <179566062790.467514.15408147834251467411.b4-ty@b4>
+X-Mailer: git-send-email 2.56.1
+In-Reply-To: <20261111183844.1906794-2-u.kleine-koenig@baylibre.com>
+References: <20261111183844.1906794-2-u.kleine-koenig@baylibre.com>
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Post: <mailto:target-devel@vger.kernel.org>
@@ -75,61 +88,25 @@ List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:target-devel+owner@vger.kernel.org>
 Precedence: list
-Mime-Version: 1.0
-X-Mailer: git-send-email 2.56.1.839.g22a8290db9-goog
-Message-ID: <20261126023543.4162289-1-zhenwenliang@google.com>
-Subject: scsi: target: core_free_device_list_for_node() walks an RCU hlist it
- is freeing without rcu_read_lock()
-From: Zhenwen Liang <zhenwenliang@google.com>
-To: "Martin K. Petersen" <mkp@kernel.org>
-Cc: linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 
-Hi,
+On Wed, 11 Nov 2026 19:38:43 +0100, Uwe Kleine-König (The Capable Hub) wrote:
 
-core_free_device_list_for_node()
-(drivers/target/target_core_device.c:233-243, mainline ebb7a8dc1e74) is:
+> ... and PCI device helpers.
+> 
+> The various struct pci_device_id arrays were initialized mostly by one
+> of the PCI_DEVICE macros and then list expressions. The latter isn't
+> easily readable if you're not into PCI. Using named initializers is more
+> explicit and thus easier to parse.
+> 
+> [...]
 
-    mutex_lock(&nacl->lun_entry_mutex);
-    hlist_for_each_entry_rcu(deve, &nacl->lun_entry_hlist, link)
-            core_disable_device_list_for_node(deve->se_lun, deve,
-                                              nacl, tpg);
-    mutex_unlock(&nacl->lun_entry_mutex);
+Applied to 7.5/scsi-queue, thanks!
 
-The loop body unlinks the current entry with hlist_del_rcu(&orig->link)
-and queues its free with call_rcu(&orig->rcu_head,
-target_free_dev_entry) (core_disable_device_list_for_node(), :467 and
-:479). The iterator then reads deve->link.next of that entry to advance.
-lun_entry_mutex serialises the writers but does not hold off the RCU
-callback, and there is no rcu_read_lock() around the walk. On a
-preemptible-RCU kernel, if the walker is preempted after call_rcu() for
-a full grace period, target_free_dev_entry() frees the entry and the
-next iterator step reads freed memory.
+[1/1] scsi: Consistently define pci_device_ids using named initializers
+      https://git.kernel.org/mkp/scsi/c/002ab4954ef6
 
-Since the walk holds the writer-side mutex, hlist_for_each_entry_safe()
-(or an rcu_read_lock() around the loop) looks like the natural fix.
-
-Reachability: core_free_device_list_for_node() runs when a node ACL is
-removed (configfs rmdir, core_tpg_del_initiator_node_acl()) and on TPG
-deregistration; with demo-mode dynamic ACLs (generate_node_acls=1, no
-ACL caching) it can also follow an initiator's session teardown. It
-needs CONFIG_PREEMPT_RCU and a preemption lasting a grace period inside
-the window, so it is narrow. Impact: a use-after-free read of
-se_dev_entry (KASAN would report it); with slab reuse, a wild pointer
-for the next iteration.
-
-Affected: the loop is unchanged in mainline ebb7a8dc1e74 and
-next-20261125. This is not the problem fixed by 6a6e7d7230cd ("Fix
-demo-mode dynamic ACL dev-entry UAF vs LUN teardown").
-
-Found by a formal analysis tool we are developing that uses AI
-assistance; I have reviewed the analysis and this report. The tool runs
-verbatim copies of the kernel functions with stubs for the rest of the
-kernel; it found the interleaving above, and the interleaving was
-replayed natively on that harness under the tool's schedule. Functions
-involved: core_free_device_list_for_node(),
-core_disable_device_list_for_node(), target_free_dev_entry(), with an
-RCU callback model. It has not been reproduced on a booted kernel.
-
-Thanks,
-Zhenwen Liang
+-- 
+Martin K. Petersen
